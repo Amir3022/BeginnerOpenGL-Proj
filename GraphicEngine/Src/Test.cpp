@@ -8,6 +8,7 @@
 
 const char* VertexShaderSource = "#version 330 core\nlayout(location = 0) in vec3 aPos;\nvoid main()\n{\ngl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0f);\n}";
 const char* FragmentShaderSource = "#version 330 core\nout vec4 FragColor;\nvoid main()\n{\nFragColor = vec4(1.0f, 0.6f, 0.0f, 1.0f);\n}";
+bool bDrawingInWireframe = false;
 
 void framebuffer_resize_callback(GLFWwindow* targetWindow, int newWidth, int newHeight);
 void processInput(GLFWwindow* window);
@@ -122,27 +123,43 @@ int main()
     //Bind the Vertex Array Object to be the one used to hold the VBO info
     glBindVertexArray(VAO);
 
+    //Draw a triangle
     //Create a vertices array
     float vertices[] =
     {
-        -0.5f, -0.5f, 0.0f,
-        0.0f, 0.5f, 0.0f,
-        0.5f, -0.5f, 0.0f
+       -0.7, -0.5, 0.0,
+       0.7, -0.5, 0.0, 
+       -0.7, 0.5, 0.0,
+       0.7, 0.5, 0.0
+    };
+
+    unsigned int indices[] =
+    {
+        0, 1, 2,
+        1, 3, 2
     };
 
     //Create Vertex Buffer Object (VBO)
     unsigned int VBO;
     glGenBuffers(1, &VBO);
-
     //Bind the created VBO to the Array Buffer
     glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
     //Move the vertices data to the target Buffer
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+    //Generate Elements Buffer Object (Indices array)
+    unsigned int EBO;
+    glGenBuffers(1, &EBO);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    //Move indices data to the Elements Buffer
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     //Set Vertix Attribute Data
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0); //0 Attribute in the vertex shader, 3 vec3 has 3 float values, GL_FLOAT each input is a float value, GL_FALSE no normalization to be used, size of each stride to move to the next vertex, pointer to the first element in the Vertex Buffer
     glEnableVertexAttribArray(0);
+
+    glBindVertexArray(0);
+    
 
     //Prevent application from closing when window shouldn't be closed
     while (!glfwWindowShouldClose(currentWindow))
@@ -164,7 +181,9 @@ int main()
             glBindVertexArray(VAO);
 
             //Draw triangle using previous data
-            glDrawArrays(GL_TRIANGLES, 0, 3);
+            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0);
+
+            glBindVertexArray(0);
         }
 
         //Context Swapping and check polling events
@@ -188,5 +207,11 @@ void processInput(GLFWwindow* window)
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {
         glfwSetWindowShouldClose(window, true);
+    }
+    //Change between wireframe and filled drawing mode when TAB is pressed
+    if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS)
+    {
+        bDrawingInWireframe = !bDrawingInWireframe;
+        glPolygonMode(GL_FRONT_AND_BACK, bDrawingInWireframe ? GL_LINE : GL_FILL);
     }
 }
