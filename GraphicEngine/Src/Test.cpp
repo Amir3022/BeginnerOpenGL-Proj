@@ -6,8 +6,8 @@
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 
-const char* VertexShaderSource = "#version 330 core\nlayout(location = 0) in vec3 aPos;\nout vec4 vertexColor;\nvoid main()\n{\ngl_Position = vec4(aPos, 1.0f);\nvertexColor = vec4(0.5f, 0.0f, 0.0f, 1.0f);\n}";
-const char* FragmentShaderSource = "#version 330 core\nuniform vec4 ourColor;\nout vec4 FragColor;\nvoid main()\n{\nFragColor = ourColor;\n}";
+const char* VertexShaderSource = "#version 330 core\nlayout(location = 0) in vec3 aPos;\nlayout(location = 1) in vec3 aColor;\nout vec4 ourColor;\nvoid main()\n{\ngl_Position = vec4(aPos, 1.0f);\nourColor = vec4(aColor, 1.0f);\n}";
+const char* FragmentShaderSource = "#version 330 core\nin vec4 ourColor;\nout vec4 FragColor;\nvoid main()\n{\nFragColor = ourColor;\n}";
 bool bDrawingInWireframe = false;
 
 void framebuffer_resize_callback(GLFWwindow* targetWindow, int newWidth, int newHeight);
@@ -127,16 +127,14 @@ int main()
     //Create a vertices array
     float vertices[] =
     {
-       -0.7, -0.5, 0.0,
-       0.7, -0.5, 0.0, 
-       -0.7, 0.5, 0.0,
-       0.7, 0.5, 0.0
+       -0.7f, -0.7f, 0.0f, 1.0f, 0.0f, 0.0f,
+       0.0f, 0.7f, 0.0f, 0.0f, 1.0f, 0.0f,
+       0.7f, -0.7f, 0.0f, 0.0f, 0.0f, 1.0f
     };
 
     unsigned int indices[] =
     {
-        0, 1, 2,
-        1, 3, 2
+        0, 2, 1
     };
 
     //Create Vertex Buffer Object (VBO)
@@ -155,8 +153,10 @@ int main()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
     //Set Vertix Attribute Data
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0); //0 Attribute in the vertex shader, 3 vec3 has 3 float values, GL_FLOAT each input is a float value, GL_FALSE no normalization to be used, size of each stride to move to the next vertex, pointer to the first element in the Vertex Buffer
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0); //0 Attribute in the vertex shader, 3 vec3 has 3 float values, GL_FLOAT each input is a float value, GL_FALSE no normalization to be used, size of each stride to move to the next vertex, pointer to the first element in the Vertex Buffer
     glEnableVertexAttribArray(0);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
     glBindVertexArray(0);
     
@@ -177,8 +177,7 @@ int main()
         //Draw triangle from vertices
         {
             //Update the current color to set in the Uniform property in shader program
-            greenColorVal = 0.5f + sin(4 * glfwGetTime()) / 2.0f;
-            std::cout << "Green Color Value: " << greenColorVal << std::endl;
+            greenColorVal = 0.5f + sinf(4 * glfwGetTime()) / 2.0f;
             unsigned int ourColorUniformLocation = glGetUniformLocation(shaderProgram, "ourColor");
 
             //Use the Shader Program to draw Vertices using the defined vertex and fragment shaders
@@ -191,7 +190,7 @@ int main()
             glBindVertexArray(VAO);
 
             //Draw triangle using previous data
-            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0);
+            glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, (void*)0);
 
             glBindVertexArray(0);
         }
