@@ -6,8 +6,8 @@
 #define WINDOW_WIDTH 800
 #define WINDOW_HEIGHT 600
 
-const char* VertexShaderSource = "#version 330 core\nlayout(location = 0) in vec3 aPos;\nvoid main()\n{\ngl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0f);\n}";
-const char* FragmentShaderSource = "#version 330 core\nout vec4 FragColor;\nvoid main()\n{\nFragColor = vec4(1.0f, 0.6f, 0.0f, 1.0f);\n}";
+const char* VertexShaderSource = "#version 330 core\nlayout(location = 0) in vec3 aPos;\nout vec4 vertexColor;\nvoid main()\n{\ngl_Position = vec4(aPos, 1.0f);\nvertexColor = vec4(0.5f, 0.0f, 0.0f, 1.0f);\n}";
+const char* FragmentShaderSource = "#version 330 core\nuniform vec4 ourColor;\nout vec4 FragColor;\nvoid main()\n{\nFragColor = ourColor;\n}";
 bool bDrawingInWireframe = false;
 
 void framebuffer_resize_callback(GLFWwindow* targetWindow, int newWidth, int newHeight);
