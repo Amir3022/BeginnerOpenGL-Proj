@@ -116,43 +116,83 @@ int main()
     glDeleteShader(vertexShaderObject);
     glDeleteShader(fragmentShaderObject);
 
-    //Generate Vertex Array Object (VAO)
-    unsigned int VAO;
-    glGenVertexArrays(1, &VAO);
+    //Generate first Vertex Array Object (VAO)
+    unsigned int VAO1;
+    glGenVertexArrays(1, &VAO1);
 
     //Bind the Vertex Array Object to be the one used to hold the VBO info
-    glBindVertexArray(VAO);
+    glBindVertexArray(VAO1);
 
     //Draw a triangle
     //Create a vertices array
-    float vertices[] =
+    float vertices1[] =
     {
-       -0.7, -0.5, 0.0,
-       0.7, -0.5, 0.0, 
-       -0.7, 0.5, 0.0,
-       0.7, 0.5, 0.0
+       -1.0f, -0.5f, 0.0f, 
+       -0.5f, 0.5f, 0.0f,
+       0.0f, -0.5f, 0.0f
     };
 
-    unsigned int indices[] =
+    unsigned int indices1[] =
     {
-        0, 1, 2,
-        1, 3, 2
+        0, 2, 1
     };
 
-    //Create Vertex Buffer Object (VBO)
-    unsigned int VBO;
-    glGenBuffers(1, &VBO);
+    //Create first Vertex Buffer Object (VBO)
+    unsigned int VBO1;
+    glGenBuffers(1, &VBO1);
     //Bind the created VBO to the Array Buffer
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    glBindBuffer(GL_ARRAY_BUFFER, VBO1);
     //Move the vertices data to the target Buffer
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices1), vertices1, GL_STATIC_DRAW);
 
     //Generate Elements Buffer Object (Indices array)
-    unsigned int EBO;
-    glGenBuffers(1, &EBO);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+    unsigned int EBO1;
+    glGenBuffers(1, &EBO1);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO1);
     //Move indices data to the Elements Buffer
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices1), indices1, GL_STATIC_DRAW);
+
+    //Set Vertix Attribute Data
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0); //0 Attribute in the vertex shader, 3 vec3 has 3 float values, GL_FLOAT each input is a float value, GL_FALSE no normalization to be used, size of each stride to move to the next vertex, pointer to the first element in the Vertex Buffer
+    glEnableVertexAttribArray(0);
+
+    glBindVertexArray(0);
+
+    //Generate Second Vertex Array Object (VAO)
+    unsigned int VAO2;
+    glGenVertexArrays(1, &VAO2);
+
+    //Bind the Vertex Array Object to be the one used to hold the VBO info
+    glBindVertexArray(VAO2);
+
+    //Draw a triangle
+    //Create a vertices array
+    float vertices2[] =
+    {
+       0.0f, -0.5f, 0.0f,
+       0.5f, 0.5f, 0.0f,
+       1.0f, -0.5f, 0.0f
+    };
+
+    unsigned int indices2[] =
+    {
+        0, 2, 1
+    };
+
+    //Create second Vertex Buffer Object (VBO)
+    unsigned int VBO2;
+    glGenBuffers(1, &VBO2);
+    //Bind the created VBO to the Array Buffer
+    glBindBuffer(GL_ARRAY_BUFFER, VBO2);
+    //Move the vertices data to the target Buffer
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices2), vertices2, GL_STATIC_DRAW);
+
+    //Generate Elements Buffer Object (Indices array)
+    unsigned int EBO2;
+    glGenBuffers(1, &EBO2);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO2);
+    //Move indices data to the Elements Buffer
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices2), indices2, GL_STATIC_DRAW);
 
     //Set Vertix Attribute Data
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0); //0 Attribute in the vertex shader, 3 vec3 has 3 float values, GL_FLOAT each input is a float value, GL_FALSE no normalization to be used, size of each stride to move to the next vertex, pointer to the first element in the Vertex Buffer
@@ -177,11 +217,15 @@ int main()
         {
             //Use the Shader Program to draw Vertices using the defined vertex and fragment shaders
             glUseProgram(shaderProgram);
-            //Bind the VAO
-            glBindVertexArray(VAO);
-
+            //Bind the first VAO
+            glBindVertexArray(VAO1);
             //Draw triangle using previous data
-            glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0);
+            glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, (void*)0);
+
+            //Bind the second VAO
+            glBindVertexArray(VAO2);
+            //Draw triangle using previous data
+            glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, (void*)0);
 
             glBindVertexArray(0);
         }
