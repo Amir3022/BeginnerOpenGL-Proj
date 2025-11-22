@@ -151,6 +151,11 @@ int main()
         processInput(currentWindow);
         
         //Render Logic
+
+        //Clear previous buffer
+        glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
         //Draw triangle from vertices
         {
             //Use the Shader Program to draw Vertices using the defined vertex and fragment shaders
