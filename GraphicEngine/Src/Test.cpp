@@ -173,10 +173,20 @@ int main()
         glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
         glClear(GL_COLOR_BUFFER_BIT);
 
+        float greenColorVal = 0.0f;
         //Draw triangle from vertices
         {
+            //Update the current color to set in the Uniform property in shader program
+            greenColorVal = 0.5f + sin(4 * glfwGetTime()) / 2.0f;
+            std::cout << "Green Color Value: " << greenColorVal << std::endl;
+            unsigned int ourColorUniformLocation = glGetUniformLocation(shaderProgram, "ourColor");
+
             //Use the Shader Program to draw Vertices using the defined vertex and fragment shaders
             glUseProgram(shaderProgram);
+
+            //Setting the Uniform color value in current used shader program
+            glUniform4f(ourColorUniformLocation, 0.0f, greenColorVal, 0.0f, 1.0f);
+
             //Bind the VAO
             glBindVertexArray(VAO);
 
