@@ -152,7 +152,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\Src\glad\glad.c" />
-    <ClCompile Include="Src\Test.cpp" />
+    <ClCompile Include="Src\Private\Main.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\FragmentShader.glsl" />
