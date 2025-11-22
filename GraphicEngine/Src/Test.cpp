@@ -8,6 +8,7 @@
 
 const char* VertexShaderSource = "#version 330 core\nlayout(location = 0) in vec3 aPos;\nvoid main()\n{\ngl_Position = vec4(aPos.x, aPos.y, aPos.z, 1.0f);\n}";
 const char* FragmentShaderSource = "#version 330 core\nout vec4 FragColor;\nvoid main()\n{\nFragColor = vec4(1.0f, 0.6f, 0.0f, 1.0f);\n}";
+const char* SecondFragmentShaderSource = "#version 330 core \nout vec4 FragColor;\nvoid main()\n{\nFragColor = vec4(1.0f, 1.0f, 0.0f, 1.0f);\n}";
 bool bDrawingInWireframe = false;
 
 void framebuffer_resize_callback(GLFWwindow* targetWindow, int newWidth, int newHeight);
@@ -112,9 +113,54 @@ int main()
         return -1;
     }
 
+    //Create Second Fragment Shader
+    unsigned int fragmentShaderObject2;
+    fragmentShaderObject2 = glCreateShader(GL_FRAGMENT_SHADER);
+    glShaderSource(fragmentShaderObject2, 1, &SecondFragmentShaderSource, nullptr);
+    glCompileShader(fragmentShaderObject2);
+    //Check if the second fragment shader is successfully compiled
+    int fragment2compileStatus;
+    char fragment2InfoLog[512];
+    glGetShaderiv(fragmentShaderObject2, GL_COMPILE_STATUS, &fragment2compileStatus);
+    if (fragment2compileStatus)
+    {
+        std::cout << "Second Fragment Shader compiled successfully!" << std::endl;
+    }
+    else
+    {
+        glGetShaderInfoLog(fragmentShaderObject2, 512, nullptr, fragment2InfoLog);
+        std::cout << "Second Fragment Shader failed to compile: " << fragment2InfoLog << std::endl;
+        glfwTerminate();
+        return -1;
+    }
+
+    //Create second Shader Program
+    unsigned int shaderProgram2;
+    shaderProgram2 = glCreateProgram();
+    glAttachShader(shaderProgram2, vertexShaderObject);
+    glAttachShader(shaderProgram2, fragmentShaderObject2);
+    glLinkProgram(shaderProgram2);
+    //Check second program linking status
+    int SP2LinkStatus;
+    char SP2InfoLog[512];
+    glGetProgramiv(shaderProgram2, GL_LINK_STATUS, &SP2LinkStatus);
+    if (SP2LinkStatus)
+    {
+        std::cout << "Second Shader program successfully linked!" << std::endl;
+    }
+    else
+    {
+        glGetProgramInfoLog(shaderProgram2, 512, nullptr, SP2InfoLog);
+        std::cout << "Second Shader Program failed to link: " << SP2InfoLog << std::endl;
+        glfwTerminate();
+        return -1;
+    }
+
+
     //Delete created shaders after linking them to Shader Program
     glDeleteShader(vertexShaderObject);
     glDeleteShader(fragmentShaderObject);
+    glDeleteShader(fragmentShaderObject2);
 
     //Generate first Vertex Array Object (VAO)
     unsigned int VAO1;
@@ -222,6 +268,8 @@ int main()
             //Draw triangle using previous data
             glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, (void*)0);
 
+            //use the Second Shader program to draw the second triangle vertices
+            glUseProgram(shaderProgram2);
             //Bind the second VAO
             glBindVertexArray(VAO2);
             //Draw triangle using previous data
