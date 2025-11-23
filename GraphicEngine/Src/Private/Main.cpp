@@ -113,6 +113,9 @@ int main()
                 //Use the Shader Program to draw Vertices using the defined vertex and fragment shaders
                 shader.Use();
 
+                //Set offset uniform to the Shader Program
+                shader.SetVec3("offset", 0.5, 0.0f, 0.0f);
+
                 //Bind the VAO
                 glBindVertexArray(VAO);
 

@@ -19,5 +19,6 @@ public:
 	void SetInt(const std::string& paramName, int value);
 	void SetBool(const std::string& paramName, bool value);
 	void SetColor(const std::string& paramName, float red, float green, float blue, float alpha);
+	void SetVec3(const std::string& paramName, float x, float y, float z);
 };
 #endif
