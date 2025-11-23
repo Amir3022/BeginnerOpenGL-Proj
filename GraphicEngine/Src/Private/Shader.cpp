@@ -31,6 +31,55 @@ Shader::Shader(const char* vertexShaderPath, const char* fragmentShaderPath)
 	const char* vShaderSource = vertexShaderSourceString.c_str();
 	const char* fShaderSource = fragmentShaderSourceString.c_str();
 
+	//variables to check for compile, link success
+	int state;
+	char infoLog[512];
+
+	//Create Vertex Shader
+	unsigned int vertexShader;
+	vertexShader = glCreateShader(GL_VERTEX_SHADER);
+	glShaderSource(vertexShader, 1, &vShaderSource, nullptr);
+	glCompileShader(vertexShader);
+	//Check if vertex shader is successfully compiled
+	glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &state);
+	if (!state)
+	{
+		glGetShaderInfoLog(vertexShader, 512, nullptr, infoLog);
+		std::cout << "Vertex Shader failed to Compile: " << infoLog << std::endl;
+		throw std::exception();
+	}
+
+	//Create Fragment Shader
+	unsigned int fragmentShader;
+	fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+	glShaderSource(fragmentShader, 1, &fShaderSource, nullptr);
+	glCompileShader(fragmentShader);
+	//Check if fragment shader is successfully compiled
+	glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &state);
+	if (!state)
+	{
+		glGetShaderInfoLog(fragmentShader, 512, nullptr, infoLog);
+		std::cout << "Fragment Shader failed to Compile: " << infoLog << std::endl;
+		throw std::exception();
+	}
+	
+	//Create Shader Program
+	shaderProgramID = glCreateProgram();
+	glAttachShader(shaderProgramID, vertexShader);
+	glAttachShader(shaderProgramID, fragmentShader);
+	glLinkProgram(shaderProgramID);
+	//Check if Shader Program is successfully linked
+	glGetProgramiv(shaderProgramID, GL_LINK_STATUS, &state);
+	if (!state)
+	{
+		glGetProgramInfoLog(shaderProgramID, 512, nullptr, infoLog);
+		std::cout << "Shader Program failed to Link: " << infoLog << std::endl;
+		throw std::exception();
+	}
+
+	//Destroy Vertex and Fragment Shaders
+	glDeleteShader(vertexShader);
+	glDeleteShader(fragmentShader);
 
 }
 
@@ -52,4 +101,9 @@ void Shader::SetInt(const std::string& paramName, int value)
 void Shader::SetBool(const std::string& paramName, bool value)
 {
 	glUniform1i(glGetUniformLocation(shaderProgramID, paramName.c_str()), value);
+}
+
+void Shader::SetColor(const std::string& paramName, float red, float green, float blue, float alpha)
+{
+	glUniform4f(glGetUniformLocation(shaderProgramID, paramName.c_str()), red, green, blue, alpha);
 }
