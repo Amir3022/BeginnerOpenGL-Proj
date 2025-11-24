@@ -186,15 +186,15 @@ unsigned int LoadImageIntoTexture(const char* imagePath, GLenum textureUnit, GLe
         //Generate Texture Object
         glGenTextures(1, &outTexture);
 
-        //Set Texture Parameters
-        glTexParameteri(outTexture, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(outTexture, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(outTexture, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(outTexture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
         //Activate Texture Unit and Texture to object
         glActiveTexture(textureUnit);
         glBindTexture(GL_TEXTURE_2D, outTexture);
+
+        //Set Texture Parameters
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         //Load image data to Texture object
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, dataFormat, GL_UNSIGNED_BYTE, data);
