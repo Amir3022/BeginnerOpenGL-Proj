@@ -154,6 +154,7 @@
     <ClCompile Include="..\Src\glad\glad.c" />
     <ClCompile Include="Src\Private\Main.cpp" />
     <ClCompile Include="Src\Private\Shader.cpp" />
+    <ClCompile Include="Src\Private\stb_image.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\FragmentShader.fs" />
@@ -161,6 +162,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\Public\Shader.h" />
+    <ClInclude Include="Src\Public\stb_image.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

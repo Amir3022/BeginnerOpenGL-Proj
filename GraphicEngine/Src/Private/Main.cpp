@@ -61,14 +61,16 @@ int main()
         //Create a vertices array
         float vertices[] =
         {
-           -0.7f, -0.7f, 0.0f, 1.0f, 0.0f, 0.0f,
-           0.0f, 0.7f, 0.0f, 0.0f, 1.0f, 0.0f,
-           0.7f, -0.7f, 0.0f, 0.0f, 0.0f, 1.0f
+           -0.7f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
+           0.7f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
+           -0.7f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f,
+           0.7f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f
         };
 
         unsigned int indices[] =
         {
-            0, 2, 1
+            0, 1, 2,
+            2, 3, 1
         };
 
         //Create Vertex Buffer Object (VBO)
@@ -107,7 +109,6 @@ int main()
             glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
             glClear(GL_COLOR_BUFFER_BIT);
 
-            float greenColorVal = 0.0f;
             //Draw triangle from vertices
             {
                 //Use the Shader Program to draw Vertices using the defined vertex and fragment shaders
@@ -117,7 +118,7 @@ int main()
                 glBindVertexArray(VAO);
 
                 //Draw triangle using previous data
-                glDrawElements(GL_TRIANGLES, 3, GL_UNSIGNED_INT, (void*)0);
+                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0);
 
                 glBindVertexArray(0);
             }
