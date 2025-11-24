@@ -12,6 +12,7 @@ bool bDrawingInWireframe = false;
 
 void framebuffer_resize_callback(GLFWwindow* targetWindow, int newWidth, int newHeight);
 void processInput(GLFWwindow* window);
+unsigned int LoadImageIntoTexture(const char* imagePath, GLenum textureUnit, GLenum dataFormat);
 
 int main()
 {
@@ -89,31 +90,9 @@ int main()
         //Move indices data to the Elements Buffer
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-        //Generate Texture
-        unsigned int texture;
-        glGenTextures(1, &texture);
-        glBindTexture(GL_TEXTURE_2D, texture);
-        //Setting Texture Parameters
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        //Load Image from Assets to be used as texture data
-        int width, height, nChannels;
-        unsigned char* data = stbi_load("Assets/Textures/container.jpg", &width, &height, &nChannels, 0);
-        if (data)
-        {   
-            //Load Texture object with image data
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-            glGenerateMipmap(GL_TEXTURE_2D);
-        }
-        else
-        {
-            std::cout << "Failed to load texture image" << std::endl;
-        }
-
-        //Free the loaded image
-        stbi_image_free(data);
+        //Load two Images into 2 different textures
+        unsigned int texture1 = LoadImageIntoTexture("Assets/Textures/container.jpg", GL_TEXTURE0, GL_RGB);
+        unsigned int texture2 = LoadImageIntoTexture("Assets/Textures/awesomeface.png", GL_TEXTURE1, GL_RGBA);
         
 
         //Set Vertix Attribute Data
@@ -144,6 +123,10 @@ int main()
             {
                 //Use the Shader Program to draw Vertices using the defined vertex and fragment shaders
                 shader.Use();
+
+                //Set the texture Unit for each sampler2D uniform parameter in the Fragment Shader
+                shader.SetInt("Texture1", 0);
+                shader.SetInt("Texture2", 1);
 
                 //Bind the VAO
                 glBindVertexArray(VAO);
@@ -189,4 +172,41 @@ void processInput(GLFWwindow* window)
         bDrawingInWireframe = !bDrawingInWireframe;
         glPolygonMode(GL_FRONT_AND_BACK, bDrawingInWireframe ? GL_LINE : GL_FILL);
     }
+}
+
+unsigned int LoadImageIntoTexture(const char* imagePath, GLenum textureUnit, GLenum dataFormat)
+{
+    unsigned int outTexture = -1;
+    //Load Texture Data from image path
+    int width, height, nChannels;
+    stbi_set_flip_vertically_on_load(true); //To match images and OpenGL texture y orientation
+    unsigned char* data = stbi_load(imagePath, &width, &height, &nChannels, 0);
+    if (data)
+    {
+        //Generate Texture Object
+        glGenTextures(1, &outTexture);
+
+        //Set Texture Parameters
+        glTexParameteri(outTexture, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(outTexture, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(outTexture, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(outTexture, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        //Activate Texture Unit and Texture to object
+        glActiveTexture(textureUnit);
+        glBindTexture(GL_TEXTURE_2D, outTexture);
+
+        //Load image data to Texture object
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, dataFormat, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+    }
+    else
+    {
+        std::cout << "Failed to load texture with path: " << imagePath << std::endl;
+    }
+
+    //Free loaded Image
+    stbi_image_free(data);
+
+    return outTexture;
 }
