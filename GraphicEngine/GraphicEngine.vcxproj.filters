@@ -29,8 +29,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="Shaders\VertexShader.vs" />
-    <None Include="Shaders\FragmentShader.fs" />
+    <None Include="Shaders\VertexShader.glsl" />
+    <None Include="Shaders\FragmentShader.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\Public\Shader.h">

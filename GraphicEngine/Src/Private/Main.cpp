@@ -49,7 +49,7 @@ int main()
     try
     {
         //Create Shader Program from Class
-        Shader shader("Shaders/VertexShader.vs", "Shaders/FragmentShader.fs");
+        Shader shader("Shaders/VertexShader.glsl", "Shaders/FragmentShader.glsl");
 
         //Generate Vertex Array Object (VAO)
         unsigned int VAO;
@@ -144,9 +144,6 @@ int main()
             {
                 //Use the Shader Program to draw Vertices using the defined vertex and fragment shaders
                 shader.Use();
-
-                //Bind the to be used Texture
-                glBindTexture(GL_TEXTURE_2D, texture);
 
                 //Bind the VAO
                 glBindVertexArray(VAO);
