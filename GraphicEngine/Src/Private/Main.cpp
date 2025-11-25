@@ -1,6 +1,7 @@
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
 #include <iostream>
+#include <algorithm>
 #include "Shader.h"
 #include "stb_image.h"
 
@@ -9,6 +10,8 @@
 #define WINDOW_HEIGHT 600
 
 bool bDrawingInWireframe = false;
+
+float texturesMixAlpha = 0.f;
 
 void framebuffer_resize_callback(GLFWwindow* targetWindow, int newWidth, int newHeight);
 void processInput(GLFWwindow* window);
@@ -106,7 +109,6 @@ int main()
 
         glBindVertexArray(0);
 
-
         //Prevent application from closing when window shouldn't be closed
         while (!glfwWindowShouldClose(currentWindow))
         {
@@ -127,6 +129,7 @@ int main()
                 //Set the texture Unit for each sampler2D uniform parameter in the Fragment Shader
                 shader.SetInt("Texture1", 0);
                 shader.SetInt("Texture2", 1);
+                shader.SetFloat("mixAlpha", texturesMixAlpha);
 
                 //Bind the VAO
                 glBindVertexArray(VAO);
@@ -172,6 +175,15 @@ void processInput(GLFWwindow* window)
         bDrawingInWireframe = !bDrawingInWireframe;
         glPolygonMode(GL_FRONT_AND_BACK, bDrawingInWireframe ? GL_LINE : GL_FILL);
     }
+    //Change the texture mix Alpha by 0.1f increments or decrements when arrow keys are pressed
+    if ((glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS))
+    {
+        texturesMixAlpha = std::clamp(texturesMixAlpha + 0.01f, 0.0f, 1.0f);
+    }
+    else if ((glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS))
+    {
+        texturesMixAlpha = std::clamp(texturesMixAlpha - 0.01f, 0.0f, 1.0f);
+    }
 }
 
 unsigned int LoadImageIntoTexture(const char* imagePath, GLenum textureUnit, GLenum dataFormat)
@@ -191,7 +203,7 @@ unsigned int LoadImageIntoTexture(const char* imagePath, GLenum textureUnit, GLe
         glBindTexture(GL_TEXTURE_2D, outTexture);
 
         //Set Texture Parameters
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
