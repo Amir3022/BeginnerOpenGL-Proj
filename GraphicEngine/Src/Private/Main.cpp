@@ -4,8 +4,6 @@
 #include <algorithm>
 #include "Shader.h"
 #include "stb_image.h"
-#include "glm/vec4.hpp"
-#include "glm/mat4x4.hpp"
 #include "glm/gtc/type_ptr.hpp"
 
 

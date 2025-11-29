@@ -6,6 +6,9 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include "glm/vec4.hpp"
+#include "glm/mat4x4.hpp"
+#include "glm/gtc/type_ptr.hpp"
 
 class Shader
 {
@@ -20,5 +23,6 @@ public:
 	void SetBool(const std::string& paramName, bool value);
 	void SetColor(const std::string& paramName, float red, float green, float blue, float alpha);
 	void SetVec3(const std::string& paramName, float x, float y, float z);
+	void SetMat44(const std::string& paramName, const glm::mat4& mat);
 };
 #endif
