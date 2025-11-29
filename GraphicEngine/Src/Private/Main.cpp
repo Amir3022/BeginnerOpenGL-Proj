@@ -4,7 +4,6 @@
 #include <algorithm>
 #include "Shader.h"
 #include "stb_image.h"
-#include "glm/gtc/type_ptr.hpp"
 
 
 #define WINDOW_WIDTH 800
