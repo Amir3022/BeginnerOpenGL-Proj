@@ -131,10 +131,32 @@ int main()
                 shader.SetInt("Texture2", 1);
                 shader.SetFloat("mixAlpha", texturesMixAlpha);
 
+                //Create Transform matrix to transform the drawn image
+                //Change texture rotation over time
+                float angleOverTime = glfwGetTime();
+                glm::mat4 transform = glm::identity<glm::mat4>();
+                transform = glm::translate(transform, glm::vec3(0.2f, -0.2f, 0.0f));
+                transform = glm::scale(transform, glm::vec3(0.5f));
+                transform = glm::rotate(transform, (angleOverTime * 2 * glm::pi<float>()) / 0.5f, glm::vec3(0.0f, 0.0f, 1.0f));
+
+                shader.SetMat44("inTransform", transform);
+
                 //Bind the VAO
                 glBindVertexArray(VAO);
 
                 //Draw triangle using previous data
+                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0);
+
+                glBindVertexArray(0);
+
+                //Set a new transform to scale the same texture over time using a sin function
+                transform = glm::identity<glm::mat4>();
+                transform = glm::translate(transform, glm::vec3(-0.5f, 0.5f, 0.0f));
+                transform = glm::scale(transform, 0.4f * glm::vec3(glm::abs(glm::sin((glfwGetTime() * 2 * glm::pi<float>()) / 0.5f))));
+                shader.SetMat44("inTransform", transform);
+
+                glBindVertexArray(VAO);
+
                 glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0);
 
                 glBindVertexArray(0);
