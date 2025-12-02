@@ -225,8 +225,8 @@ int main()
                 shader.SetMat44("model", model);
 
                 //Second, create the view matrix using camera lookAt target point
-                //glm::mat4 view = glm::lookAt(currentCamPos, currentCamPos + currentCamForwardDir,currentCamUpDir);
-                glm::mat4 view = internal_lookAt(currentCamPos, currentCamPos + currentCamForwardDir, currentCamUpDir);
+                glm::mat4 view = glm::lookAt(currentCamPos, currentCamPos + currentCamForwardDir,currentCamUpDir);
+                //glm::mat4 view = internal_lookAt(currentCamPos, currentCamPos + currentCamForwardDir, currentCamUpDir);
                 shader.SetMat44("view", view);
                 
                 //Third, create the projection matrix to project the view space to NDC
@@ -383,11 +383,11 @@ void processInput(GLFWwindow* window)
 
     glm::vec3 currentCamRightDir = glm::cross(currentCamForwardDir, currentCamUpDir);
     glm::vec3 moveForwardDir = currentCamForwardDir;
-    moveForwardDir.y = 0.0f;
-    moveForwardDir = glm::normalize(moveForwardDir);
+    //moveForwardDir.y = 0.0f;
+    //moveForwardDir = glm::normalize(moveForwardDir);
     glm::vec3 moveRightDir = currentCamRightDir;
-    moveRightDir.y = 0.0f;
-    moveRightDir = glm::normalize(moveRightDir);
+    //moveRightDir.y = 0.0f;
+    //moveRightDir = glm::normalize(moveRightDir);
 
     glm::vec3 moveDir = glm::normalize(moveForwardDir) * inputVec.y + glm::normalize(moveRightDir) * inputVec.x;
     
