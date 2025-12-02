@@ -42,6 +42,8 @@ void processInput(GLFWwindow* window);
 unsigned int LoadImageIntoTexture(const char* imagePath, GLenum textureUnit, GLenum dataFormat);
 void calculateDeltaTime();
 
+glm::mat4 internal_lookAt(glm::vec3 startPos, glm::vec3 targetPos, glm::vec3 upDir);
+
 struct PosOrientPair
 {
     glm::vec3 pos;
@@ -223,7 +225,8 @@ int main()
                 shader.SetMat44("model", model);
 
                 //Second, create the view matrix using camera lookAt target point
-                glm::mat4 view = glm::lookAt(currentCamPos, currentCamPos + currentCamForwardDir,currentCamUpDir);
+                //glm::mat4 view = glm::lookAt(currentCamPos, currentCamPos + currentCamForwardDir,currentCamUpDir);
+                glm::mat4 view = internal_lookAt(currentCamPos, currentCamPos + currentCamForwardDir, currentCamUpDir);
                 shader.SetMat44("view", view);
                 
                 //Third, create the projection matrix to project the view space to NDC
@@ -433,4 +436,28 @@ void calculateDeltaTime()
     currentFrameTime = glfwGetTime();
     deltaTime = currentFrameTime - lastFrameTime;
     lastFrameTime = currentFrameTime;
+}
+
+glm::mat4 internal_lookAt(glm::vec3 startPos, glm::vec3 targetPos, glm::vec3 upDir)
+{
+    glm::vec3 forwardDir = glm::normalize(startPos - targetPos);
+    glm::vec3 rightDir = glm::normalize(glm::cross(upDir, forwardDir));
+    glm::vec3 upActualDir = glm::normalize(glm::cross(forwardDir, rightDir));
+    glm::mat4 rotation = glm::mat4(1.0f);
+    rotation[0][0] = rightDir.x;
+    rotation[1][0] = rightDir.y;
+    rotation[2][0] = rightDir.z;
+    rotation[0][1] = upActualDir.x;
+    rotation[1][1] = upActualDir.y;
+    rotation[2][1] = upActualDir.z;
+    rotation[0][2] = forwardDir.x;
+    rotation[1][2] = forwardDir.y;
+    rotation[2][2] = forwardDir.z;
+
+    glm::mat4 translation = glm::mat4(1.0f);
+    translation[3][0] = -startPos.x;
+    translation[3][1] = -startPos.y;
+    translation[3][2] = -startPos.z;
+
+    return rotation * translation;
 }
