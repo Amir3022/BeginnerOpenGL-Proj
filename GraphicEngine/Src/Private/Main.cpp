@@ -379,8 +379,14 @@ void processInput(GLFWwindow* window)
         inputVec = glm::normalize(inputVec);
 
     glm::vec3 currentCamRightDir = glm::cross(currentCamForwardDir, currentCamUpDir);
+    glm::vec3 moveForwardDir = currentCamForwardDir;
+    moveForwardDir.y = 0.0f;
+    moveForwardDir = glm::normalize(moveForwardDir);
+    glm::vec3 moveRightDir = currentCamRightDir;
+    moveRightDir.y = 0.0f;
+    moveRightDir = glm::normalize(moveRightDir);
 
-    glm::vec3 moveDir = glm::normalize(currentCamForwardDir) * inputVec.y + glm::normalize(currentCamRightDir) * inputVec.x;
+    glm::vec3 moveDir = glm::normalize(moveForwardDir) * inputVec.y + glm::normalize(moveRightDir) * inputVec.x;
     
     currentCamPos += moveDir * cameraSpeed * deltaTime;
 }
