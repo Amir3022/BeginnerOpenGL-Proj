@@ -26,6 +26,8 @@ glm::vec3 currentCamPos;
 glm::vec3 currentCamForwardDir;
 glm::vec3 currentCamUpDir;
 glm::vec3 currentCamRot = glm::vec3(-90.0f, 0.0f, 0.0f); //Yaw, Pitch, Roll
+float currentFOV = 45.0f;
+float FOVChangeRate = 5.0f;
 float cameraSpeed = 1.0f;
 
 //Time variables
@@ -35,6 +37,7 @@ float deltaTime;
 
 void framebuffer_resize_callback(GLFWwindow* targetWindow, int newWidth, int newHeight);
 void mouseCursor_move_callback(GLFWwindow* window, double xpos, double ypos);
+void mouseScroll_change_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow* window);
 unsigned int LoadImageIntoTexture(const char* imagePath, GLenum textureUnit, GLenum dataFormat);
 void calculateDeltaTime();
@@ -81,6 +84,9 @@ int main()
     //Capturing mouse cursor input, and add callback to when camera cusror is moved
     glfwSetInputMode(currentWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
     glfwSetCursorPosCallback(currentWindow, mouseCursor_move_callback);
+
+    //Capture mouse scroll input, and add callback to when scroll is used
+    glfwSetScrollCallback(currentWindow, mouseScroll_change_callback);
 
     try
     {
@@ -221,7 +227,7 @@ int main()
                 shader.SetMat44("view", view);
                 
                 //Third, create the projection matrix to project the view space to NDC
-                glm::mat4 projection = glm::perspective(glm::radians(45.0f), float(WINDOW_WIDTH  / WINDOW_HEIGHT), 0.1f, 100.0f);
+                glm::mat4 projection = glm::perspective(glm::radians(currentFOV), float(WINDOW_WIDTH  / WINDOW_HEIGHT), 0.1f, 100.0f);
                 shader.SetMat44("projection", projection);
 
                 //Bind the VAO
@@ -288,6 +294,15 @@ void mouseCursor_move_callback(GLFWwindow* window, double xpos, double ypos)
         currentCamRot.y = -89.9;
 
     currentCamForwardDir = glm::normalize(glm::vec3(glm::cos(glm::radians(currentCamRot.x)) * glm::cos(glm::radians(currentCamRot.y)), glm::sin(glm::radians(currentCamRot.y)), glm::sin(glm::radians(currentCamRot.x)) * glm::cos(glm::radians(currentCamRot.y))));
+}
+
+void mouseScroll_change_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    currentFOV -= yoffset * FOVChangeRate;
+    if (currentFOV > 120.0f)
+        currentFOV = 120.0f;
+    else if (currentFOV < 20.0f)
+        currentFOV = 20.0f;
 }
 
 void processInput(GLFWwindow* window)
