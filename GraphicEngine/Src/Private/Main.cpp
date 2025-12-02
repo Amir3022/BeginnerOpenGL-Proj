@@ -132,6 +132,19 @@ int main()
                 shader.SetFloat("mixAlpha", texturesMixAlpha);
 
                 //Create Transform matrix to transform the drawn image
+                //First, create the model matrix to rotate the object in world space
+                glm::mat4 model = glm::identity<glm::mat4>();
+                model = glm::rotate(model, glm::radians(-50.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+                shader.SetMat44("model", model);
+
+                //Second, create the view matrix to move the object relative to camera position
+                glm::mat4 view = glm::identity<glm::mat4>();
+                view = glm::translate(view, glm::vec3(0.0f, 0.0f, -5.0f));
+                shader.SetMat44("view", view);
+
+                //Third, create the projection matrix to project the view space to NDC
+                glm::mat4 projection = glm::perspective(glm::radians(45.0f), float(WINDOW_WIDTH / WINDOW_HEIGHT), 0.1f, 100.0f);
+                shader.SetMat44("projection", projection);
 
                 //Bind the VAO
                 glBindVertexArray(VAO);
