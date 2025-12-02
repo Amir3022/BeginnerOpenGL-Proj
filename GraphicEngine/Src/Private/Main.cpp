@@ -144,7 +144,7 @@ int main()
         //Array for locations, rotations for 10 random cubes(x, y, z, rot orientation)
         PosOrientPair cubeTransforms[] =
         {
-           {glm::vec3(0.4f,  -0.8f,  -9.0f), glm::vec3(1.7f, -0.4f, 0.9f)},
+           {glm::vec3(-4.0f,  -0.8f,  -9.0f), glm::vec3(1.7f, -0.4f, 0.9f)},
            {glm::vec3(2.0f,  5.0f, -15.0f), glm::vec3(-1.3f, 1.8f, -2.0f)},
            {glm::vec3(-1.5f, -2.2f, -2.5f), glm::vec3(0.5f, -1.9f, 1.2f)},
            {glm::vec3(-3.8f, -2.0f, -12.3), glm::vec3(-0.8f, 0.3f, -1.5f)},
@@ -191,7 +191,7 @@ int main()
                 shader.SetMat44("view", view);
 
                 //Third, create the projection matrix to project the view space to NDC
-                glm::mat4 projection = glm::perspective(glm::radians(45.0f), float(WINDOW_WIDTH / WINDOW_HEIGHT), 0.1f, 100.0f);
+                glm::mat4 projection = glm::perspective(glm::radians(45.0f), float(WINDOW_WIDTH  / WINDOW_HEIGHT), 0.1f, 100.0f);
                 shader.SetMat44("projection", projection);
 
                 //Bind the VAO
@@ -204,7 +204,7 @@ int main()
                 for (int i = 0; i < (sizeof(cubeTransforms) / sizeof(PosOrientPair)); i++)
                 {
                     model = glm::identity<glm::mat4>();
-                    float angle = (i + 1) * 10 * glfwGetTime();
+                    float angle = (i + 1) * 20 * glfwGetTime();
                     model = glm::translate(model, cubeTransforms[i].pos);
                     model = glm::rotate(model, glm::radians(angle), cubeTransforms[i].orient);
                     shader.SetMat44("model", model);
