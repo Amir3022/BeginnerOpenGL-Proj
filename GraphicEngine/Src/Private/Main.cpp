@@ -3,6 +3,7 @@
 #include <iostream>
 #include <algorithm>
 #include "Shader.h"
+#include "Camera.h"
 #include "stb_image.h"
 
 
@@ -19,21 +20,14 @@ float objectYRotation = 0.0f;
 //Cursor movement variables
 glm::vec2 lastCursorPos;
 bool bFirstCursorUpdate = true;
-float mouseSensitivity = 0.1f;
-
-//Camera Movement variables
-glm::vec3 currentCamPos;
-glm::vec3 currentCamForwardDir;
-glm::vec3 currentCamUpDir;
-glm::vec3 currentCamRot = glm::vec3(-90.0f, 0.0f, 0.0f); //Yaw, Pitch, Roll
-float currentFOV = 45.0f;
-float FOVChangeRate = 5.0f;
-float cameraSpeed = 1.0f;
 
 //Time variables
 float currentFrameTime = 0.0f;
 float lastFrameTime = 0.0f;
 float deltaTime;
+
+//Create Camera instance from Class (TEMP, to be added to main class)
+Camera camera(glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(-90.0f, 0.0f, 0.0f));
 
 void framebuffer_resize_callback(GLFWwindow* targetWindow, int newWidth, int newHeight);
 void mouseCursor_move_callback(GLFWwindow* window, double xpos, double ypos);
@@ -41,8 +35,6 @@ void mouseScroll_change_callback(GLFWwindow* window, double xoffset, double yoff
 void processInput(GLFWwindow* window);
 unsigned int LoadImageIntoTexture(const char* imagePath, GLenum textureUnit, GLenum dataFormat);
 void calculateDeltaTime();
-
-glm::mat4 internal_lookAt(glm::vec3 startPos, glm::vec3 targetPos, glm::vec3 upDir);
 
 struct PosOrientPair
 {
@@ -187,11 +179,6 @@ int main()
            {glm::vec3(-1.3f,  1.0f, -1.5f), glm::vec3(1.2f, -1.4f, -0.5f)}
         };
 
-        //Set camera initial position and Dir
-        currentCamPos = glm::vec3(0.0f, 0.0f, 5.0f);
-        currentCamForwardDir = glm::vec3(0.0f, 0.0f, -1.0f);
-        currentCamUpDir = glm::vec3(0.0f, 1.0f, 0.0f);
-
         //Prevent application from closing when window shouldn't be closed
         while (!glfwWindowShouldClose(currentWindow))
         {
@@ -225,12 +212,11 @@ int main()
                 shader.SetMat44("model", model);
 
                 //Second, create the view matrix using camera lookAt target point
-                glm::mat4 view = glm::lookAt(currentCamPos, currentCamPos + currentCamForwardDir,currentCamUpDir);
-                //glm::mat4 view = internal_lookAt(currentCamPos, currentCamPos + currentCamForwardDir, currentCamUpDir);
+                glm::mat4 view = camera.GetLookAtMat(camera.GetCameraLocation() + camera.GetCameraForwardDir());
                 shader.SetMat44("view", view);
                 
                 //Third, create the projection matrix to project the view space to NDC
-                glm::mat4 projection = glm::perspective(glm::radians(currentFOV), float(WINDOW_WIDTH  / WINDOW_HEIGHT), 0.1f, 100.0f);
+                glm::mat4 projection = glm::perspective(glm::radians(camera.GetCameraFOV()), float(WINDOW_WIDTH  / WINDOW_HEIGHT), 0.1f, 100.0f);
                 shader.SetMat44("projection", projection);
 
                 //Bind the VAO
@@ -243,7 +229,7 @@ int main()
                 for (int i = 0; i < (sizeof(cubeTransforms) / sizeof(PosOrientPair)); i++)
                 {
                     model = glm::identity<glm::mat4>();
-                    float angle = (i + 1) * 20 * glfwGetTime();
+                    float angle = (i + 1) * 20.0f * glfwGetTime();
                     model = glm::translate(model, cubeTransforms[i].pos);
                     model = glm::rotate(model, glm::radians(angle), cubeTransforms[i].orient);
                     shader.SetMat44("model", model);
@@ -287,25 +273,13 @@ void mouseCursor_move_callback(GLFWwindow* window, double xpos, double ypos)
     }
     glm::vec2 deltaCursorPos = curCursorPos - lastCursorPos;
     lastCursorPos = curCursorPos;
-    deltaCursorPos.y = -1 * deltaCursorPos.y;
-    deltaCursorPos *= mouseSensitivity; //Add mouse sensitivity to mouse location difference
-    currentCamRot.x += deltaCursorPos.x;
-    currentCamRot.y += deltaCursorPos.y;
-    if (currentCamRot.y > 89.9f)
-        currentCamRot.y = 89.9f;
-    else if (currentCamRot.y < -89.9)
-        currentCamRot.y = -89.9;
 
-    currentCamForwardDir = glm::normalize(glm::vec3(glm::cos(glm::radians(currentCamRot.x)) * glm::cos(glm::radians(currentCamRot.y)), glm::sin(glm::radians(currentCamRot.y)), glm::sin(glm::radians(currentCamRot.x)) * glm::cos(glm::radians(currentCamRot.y))));
+    camera.ProcessMouseMovementInput(deltaCursorPos);
 }
 
 void mouseScroll_change_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    currentFOV -= yoffset * FOVChangeRate;
-    if (currentFOV > 120.0f)
-        currentFOV = 120.0f;
-    else if (currentFOV < 20.0f)
-        currentFOV = 20.0f;
+    camera.ProcessMouseScrollInput((float)(-yoffset));
 }
 
 void processInput(GLFWwindow* window)
@@ -381,17 +355,7 @@ void processInput(GLFWwindow* window)
     if (inputVec.x > 0 || inputVec.y > 0)
         inputVec = glm::normalize(inputVec);
 
-    glm::vec3 currentCamRightDir = glm::cross(currentCamForwardDir, currentCamUpDir);
-    glm::vec3 moveForwardDir = currentCamForwardDir;
-    //moveForwardDir.y = 0.0f;
-    //moveForwardDir = glm::normalize(moveForwardDir);
-    glm::vec3 moveRightDir = currentCamRightDir;
-    //moveRightDir.y = 0.0f;
-    //moveRightDir = glm::normalize(moveRightDir);
-
-    glm::vec3 moveDir = glm::normalize(moveForwardDir) * inputVec.y + glm::normalize(moveRightDir) * inputVec.x;
-    
-    currentCamPos += moveDir * cameraSpeed * deltaTime;
+    camera.ProcessKeyboardInput(inputVec, deltaTime);
 }
 
 unsigned int LoadImageIntoTexture(const char* imagePath, GLenum textureUnit, GLenum dataFormat)

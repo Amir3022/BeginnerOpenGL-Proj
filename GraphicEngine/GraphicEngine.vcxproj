@@ -152,6 +152,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\Src\glad\glad.c" />
+    <ClCompile Include="Src\Private\Camera.cpp" />
     <ClCompile Include="Src\Private\Main.cpp" />
     <ClCompile Include="Src\Private\Shader.cpp" />
     <ClCompile Include="Src\Private\stb_image.cpp" />
@@ -161,6 +162,7 @@
     <None Include="Shaders\VertexShader.glsl" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Src\Public\Camera.h" />
     <ClInclude Include="Src\Public\Shader.h" />
     <ClInclude Include="Src\Public\stb_image.h" />
   </ItemGroup>
