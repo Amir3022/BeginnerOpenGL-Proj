@@ -20,6 +20,12 @@ void framebuffer_resize_callback(GLFWwindow* targetWindow, int newWidth, int new
 void processInput(GLFWwindow* window);
 unsigned int LoadImageIntoTexture(const char* imagePath, GLenum textureUnit, GLenum dataFormat);
 
+struct PosOrientPair
+{
+    glm::vec3 pos;
+    glm::vec3 orient;
+};
+
 int main()
 {
     //Initialize GLFW Context
@@ -135,6 +141,21 @@ int main()
         //Enable Depth Test to allow usage of Z-Buffer
         glEnable(GL_DEPTH_TEST);
 
+        //Array for locations, rotations for 10 random cubes(x, y, z, rot orientation)
+        PosOrientPair cubeTransforms[] =
+        {
+           {glm::vec3(0.4f,  -0.8f,  -9.0f), glm::vec3(1.7f, -0.4f, 0.9f)},
+           {glm::vec3(2.0f,  5.0f, -15.0f), glm::vec3(-1.3f, 1.8f, -2.0f)},
+           {glm::vec3(-1.5f, -2.2f, -2.5f), glm::vec3(0.5f, -1.9f, 1.2f)},
+           {glm::vec3(-3.8f, -2.0f, -12.3), glm::vec3(-0.8f, 0.3f, -1.5f)},
+           {glm::vec3(2.4f, -0.4f, -3.5f), glm::vec3(2.0f, 1.1f, -0.7f)},
+           {glm::vec3(-1.7f,  3.0f, -7.5f),glm::vec3(-1.6f, -1.0f, 1.4f)},
+           {glm::vec3(1.3f, -2.0f, -2.5f), glm::vec3(0.2f, 1.9f, -0.1f)},
+           {glm::vec3(1.5f,  2.0f, -2.5f), glm::vec3(1.5f, -2.0f, 0.6f)},
+           {glm::vec3(1.5f,  0.2f, -1.5f), glm::vec3(-0.9f, 0.0f, 1.7f)},
+           {glm::vec3(-1.3f,  1.0f, -1.5f), glm::vec3(1.2f, -1.4f, -0.5f)}
+        };
+
         //Prevent application from closing when window shouldn't be closed
         while (!glfwWindowShouldClose(currentWindow))
         {
@@ -178,6 +199,18 @@ int main()
 
                 //Draw triangle using previous data
                 glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (void*)0);
+
+                //Draw other 1 cubes
+                for (int i = 0; i < (sizeof(cubeTransforms) / sizeof(PosOrientPair)); i++)
+                {
+                    model = glm::identity<glm::mat4>();
+                    float angle = (i + 1) * 10 * glfwGetTime();
+                    model = glm::translate(model, cubeTransforms[i].pos);
+                    model = glm::rotate(model, glm::radians(angle), cubeTransforms[i].orient);
+                    shader.SetMat44("model", model);
+
+                    glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (void*)0);
+                }
 
                 glBindVertexArray(0);
             }
