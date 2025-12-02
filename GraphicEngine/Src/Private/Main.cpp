@@ -13,6 +13,8 @@ bool bDrawingInWireframe = false;
 
 float texturesMixAlpha = 0.f;
 
+float objectXRotation = 0.0f;
+
 void framebuffer_resize_callback(GLFWwindow* targetWindow, int newWidth, int newHeight);
 void processInput(GLFWwindow* window);
 unsigned int LoadImageIntoTexture(const char* imagePath, GLenum textureUnit, GLenum dataFormat);
@@ -134,7 +136,7 @@ int main()
                 //Create Transform matrix to transform the drawn image
                 //First, create the model matrix to rotate the object in world space
                 glm::mat4 model = glm::identity<glm::mat4>();
-                model = glm::rotate(model, glm::radians(-50.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+                model = glm::rotate(model, glm::radians(objectXRotation), glm::vec3(1.0f, 0.0f, 0.0f));
                 shader.SetMat44("model", model);
 
                 //Second, create the view matrix to move the object relative to camera position
@@ -199,6 +201,20 @@ void processInput(GLFWwindow* window)
     {
         texturesMixAlpha = std::clamp(texturesMixAlpha - 0.01f, 0.0f, 1.0f);
     }
+
+    //Change the object rotation around the x axis with increments or decrements when W, S are pressed
+    if ((glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS))
+    {
+        objectXRotation = objectXRotation - 0.5f;
+    }
+    else if ((glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS))
+    {
+        objectXRotation = objectXRotation + 0.5f;
+    }
+    if (objectXRotation >= 180.0f)
+        objectXRotation -= 360.0f;
+    else if (objectXRotation < -180.0f)
+        objectXRotation += 360.0f;
 }
 
 unsigned int LoadImageIntoTexture(const char* imagePath, GLenum textureUnit, GLenum dataFormat)
