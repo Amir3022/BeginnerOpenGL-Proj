@@ -16,9 +16,21 @@ float texturesMixAlpha = 0.5f;
 float objectXRotation = 0.0f;
 float objectYRotation = 0.0f;
 
+//Camera Movement variables
+glm::vec3 currentCamPos;
+glm::vec3 currentCamDir;
+glm::vec3 currentCamUp;
+float cameraSpeed = 1.0f;
+
+//Time variables
+float currentFrameTime = 0.0f;
+float lastFrameTime = 0.0f;
+float deltaTime;
+
 void framebuffer_resize_callback(GLFWwindow* targetWindow, int newWidth, int newHeight);
 void processInput(GLFWwindow* window);
 unsigned int LoadImageIntoTexture(const char* imagePath, GLenum textureUnit, GLenum dataFormat);
+void calculateDeltaTime();
 
 struct PosOrientPair
 {
@@ -156,6 +168,11 @@ int main()
            {glm::vec3(-1.3f,  1.0f, -1.5f), glm::vec3(1.2f, -1.4f, -0.5f)}
         };
 
+        //Set camera initial position and Dir
+        currentCamPos = glm::vec3(0.0f, 0.0f, 5.0f);
+        currentCamDir = glm::vec3(0.0f, 0.0f, -1.0f);
+        currentCamUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
         //Prevent application from closing when window shouldn't be closed
         while (!glfwWindowShouldClose(currentWindow))
         {
@@ -170,6 +187,9 @@ int main()
 
             //Draw triangle from vertices
             {
+                //Update DeltaTime
+                calculateDeltaTime();
+
                 //Use the Shader Program to draw Vertices using the defined vertex and fragment shaders
                 shader.Use();
 
@@ -185,11 +205,10 @@ int main()
                 model = glm::rotate(model, glm::radians(objectYRotation), glm::vec3(0.0f, 1.0f, 0.0f));
                 shader.SetMat44("model", model);
 
-                //Second, create the view matrix to move the object relative to camera position
-                glm::mat4 view = glm::identity<glm::mat4>();
-                view = glm::translate(view, glm::vec3(0.0f, 0.0f, -5.0f));
+                //Second, create the view matrix using camera lookAt target point
+                glm::mat4 view = glm::lookAt(currentCamPos, currentCamPos + currentCamDir,currentCamUp);
                 shader.SetMat44("view", view);
-
+                
                 //Third, create the projection matrix to project the view space to NDC
                 glm::mat4 projection = glm::perspective(glm::radians(45.0f), float(WINDOW_WIDTH  / WINDOW_HEIGHT), 0.1f, 100.0f);
                 shader.SetMat44("projection", projection);
@@ -260,12 +279,12 @@ void processInput(GLFWwindow* window)
         texturesMixAlpha = std::clamp(texturesMixAlpha - 0.01f, 0.0f, 1.0f);
     }
 
-    //Change the object rotation around the x axis with increments or decrements when W, S are pressed
-    if ((glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS))
+    //Change the object rotation around the x axis with increments or decrements when U,J are pressed
+    if ((glfwGetKey(window, GLFW_KEY_U) == GLFW_PRESS))
     {
         objectXRotation = objectXRotation - 0.5f;
     }
-    else if ((glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS))
+    else if ((glfwGetKey(window, GLFW_KEY_J) == GLFW_PRESS))
     {
         objectXRotation = objectXRotation + 0.5f;
     }
@@ -274,12 +293,12 @@ void processInput(GLFWwindow* window)
     else if (objectXRotation < -180.0f)
         objectXRotation += 360.0f;
 
-    //Change the object rotation around the y axis with increments or decrements when A, D are pressed
-    if ((glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS))
+    //Change the object rotation around the y axis with increments or decrements when H,K are pressed
+    if ((glfwGetKey(window, GLFW_KEY_H) == GLFW_PRESS))
     {
         objectYRotation = objectYRotation - 0.5f;
     }
-    else if ((glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS))
+    else if ((glfwGetKey(window, GLFW_KEY_K) == GLFW_PRESS))
     {
         objectYRotation = objectYRotation + 0.5f;
     }
@@ -287,6 +306,32 @@ void processInput(GLFWwindow* window)
         objectYRotation -= 360.0f;
     else if (objectYRotation < -180.0f)
         objectYRotation += 360.0f;
+
+    //Move Camera Position using WASD
+    glm::vec2 inputVec = glm::vec2(0.0f);
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    {
+        inputVec.y = 1.0f;
+    }
+    else if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    {
+        inputVec.y = -1.0f;
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    {
+        inputVec.x = 1.0f;
+    }
+    else if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    {
+        inputVec.x= -1.0f;
+    }
+
+    if (inputVec.x > 0 || inputVec.y > 0)
+        inputVec = glm::normalize(inputVec);
+
+    glm::vec3 moveVec = glm::vec3(inputVec.x, 0.0f, -inputVec.y) * cameraSpeed * deltaTime;
+    
+    currentCamPos += moveVec;
 }
 
 unsigned int LoadImageIntoTexture(const char* imagePath, GLenum textureUnit, GLenum dataFormat)
@@ -324,4 +369,11 @@ unsigned int LoadImageIntoTexture(const char* imagePath, GLenum textureUnit, GLe
     stbi_image_free(data);
 
     return outTexture;
+}
+
+void calculateDeltaTime()
+{
+    currentFrameTime = glfwGetTime();
+    deltaTime = currentFrameTime - lastFrameTime;
+    lastFrameTime = currentFrameTime;
 }
