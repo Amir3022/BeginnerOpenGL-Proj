@@ -11,9 +11,10 @@
 
 bool bDrawingInWireframe = false;
 
-float texturesMixAlpha = 0.f;
+float texturesMixAlpha = 0.5f;
 
 float objectXRotation = 0.0f;
+float objectYRotation = 0.0f;
 
 void framebuffer_resize_callback(GLFWwindow* targetWindow, int newWidth, int newHeight);
 void processInput(GLFWwindow* window);
@@ -64,20 +65,40 @@ int main()
         //Bind the Vertex Array Object to be the one used to hold the VBO info
         glBindVertexArray(VAO);
 
-        //Draw a triangle
+        //Draw a Cube (Cube consists of 6 faces each consisting of 2 triangles, 8 vertices with 36 index)
         //Create a vertices array   (Vertex Location, Vertex Color, Texture Coordinate)
         float vertices[] =
         {
-           -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
-           0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
-           -0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
-           0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f
+           -0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 0.0f,
+           0.5f, -0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,
+           -0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+           0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+
+           -0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+           0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f,
+           -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,
+           0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 1.0f, 0.0f, 1.0f,
+
+           - 0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+           0.5f, -0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+           -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+           0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f
         };
 
-        unsigned int indices[] =
+        unsigned int indices[] 
         {
             0, 1, 2,
-            2, 3, 1
+            2, 1, 3,
+            4, 6, 5, 
+            6, 7, 5,
+            2, 4, 0,
+            2, 6, 4,
+            1, 7, 3, 
+            1, 5, 7,
+            2, 11, 10,
+            2, 11, 3,
+            0, 8, 9,
+            0, 9, 1
         };
 
         //Create Vertex Buffer Object (VBO)
@@ -111,6 +132,9 @@ int main()
 
         glBindVertexArray(0);
 
+        //Enable Depth Test to allow usage of Z-Buffer
+        glEnable(GL_DEPTH_TEST);
+
         //Prevent application from closing when window shouldn't be closed
         while (!glfwWindowShouldClose(currentWindow))
         {
@@ -118,10 +142,10 @@ int main()
             processInput(currentWindow);
 
             //Render Logic
-
             //Clear previous buffer
             glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
-            glClear(GL_COLOR_BUFFER_BIT);
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
 
             //Draw triangle from vertices
             {
@@ -137,6 +161,7 @@ int main()
                 //First, create the model matrix to rotate the object in world space
                 glm::mat4 model = glm::identity<glm::mat4>();
                 model = glm::rotate(model, glm::radians(objectXRotation), glm::vec3(1.0f, 0.0f, 0.0f));
+                model = glm::rotate(model, glm::radians(objectYRotation), glm::vec3(0.0f, 1.0f, 0.0f));
                 shader.SetMat44("model", model);
 
                 //Second, create the view matrix to move the object relative to camera position
@@ -152,7 +177,7 @@ int main()
                 glBindVertexArray(VAO);
 
                 //Draw triangle using previous data
-                glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0);
+                glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (void*)0);
 
                 glBindVertexArray(0);
             }
@@ -215,6 +240,20 @@ void processInput(GLFWwindow* window)
         objectXRotation -= 360.0f;
     else if (objectXRotation < -180.0f)
         objectXRotation += 360.0f;
+
+    //Change the object rotation around the y axis with increments or decrements when A, D are pressed
+    if ((glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS))
+    {
+        objectYRotation = objectYRotation - 0.5f;
+    }
+    else if ((glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS))
+    {
+        objectYRotation = objectYRotation + 0.5f;
+    }
+    if (objectYRotation >= 180.0f)
+        objectYRotation -= 360.0f;
+    else if (objectYRotation < -180.0f)
+        objectYRotation += 360.0f;
 }
 
 unsigned int LoadImageIntoTexture(const char* imagePath, GLenum textureUnit, GLenum dataFormat)
