@@ -179,6 +179,8 @@ bool Game::Init()
            {glm::vec3(1.5f,  0.2f, -1.5f), glm::vec3(-0.9f, 0.0f, 1.7f)},
            {glm::vec3(-1.3f,  1.0f, -1.5f), glm::vec3(1.2f, -1.4f, -0.5f)}
         };
+
+        return true;
     }
     catch (std::exception e)
     {
