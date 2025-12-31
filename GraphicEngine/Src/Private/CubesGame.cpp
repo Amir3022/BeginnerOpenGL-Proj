@@ -165,12 +165,6 @@ void CubesGame::ProcessInput(GLFWwindow* window)
 {
     Game::ProcessInput(window);
 
-    //Change between wireframe and filled drawing mode when TAB is pressed
-    if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS)
-    {
-        bDrawingInWireframe = !bDrawingInWireframe;
-        glPolygonMode(GL_FRONT_AND_BACK, bDrawingInWireframe ? GL_LINE : GL_FILL);
-    }
     //Change the texture mix Alpha by 0.1f increments or decrements when arrow keys are pressed
     if ((glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS))
     {

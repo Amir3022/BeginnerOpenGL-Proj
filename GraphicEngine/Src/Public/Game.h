@@ -32,6 +32,8 @@ public:
 		currentFrameTime = 0.0f;
 		lastFrameTime = 0.0f;
 
+		bDrawingInWireframe = false;
+
 		camera = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(-90.0f, 0.0f, 0.0f));
 
 		currentWindow = nullptr;
@@ -54,8 +56,8 @@ public:
 	void SetCursorFirstUpdate(bool bValue) { bFirstCursorUpdate = bValue; }
 	glm::vec2 GetLastCursorPos() { return lastCursorPos; }
 	void SetLastCursorPos(const glm::vec2& in_val) { lastCursorPos = in_val; }
-	float GetWidth() { return width; }
-	float GetHeight() { return height; }
+	int GetWidth() { return width; }
+	int GetHeight() { return height; }
 
 //Internal Functions
 public:
@@ -82,6 +84,9 @@ private:
 	float deltaTime;
 	float currentFrameTime;
 	float lastFrameTime;
+
+	//Render Drawing Variables
+	bool bDrawingInWireframe;
 
 protected:
 	//Camera Instance

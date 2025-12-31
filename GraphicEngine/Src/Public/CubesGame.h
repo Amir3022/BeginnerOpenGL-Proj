@@ -10,7 +10,6 @@ public:
 		fragmentShaderPath = "Shaders/FragmentShader.glsl";
 		vertexShaderPath = "Shaders/VertexShader.glsl";
 
-		bDrawingInWireframe = false;
 		texturesMixAlpha = 0.5f;
 
 		objectXRotation = 0.0f;
@@ -33,7 +32,6 @@ private:
 	std::vector<PosOrientPair> cubeTransforms;
 
 	//Rendering mode and texture variables
-	bool bDrawingInWireframe;
 	float texturesMixAlpha;
 
 	//Cached Current cube rotation
