@@ -41,7 +41,6 @@ public:
 		camera = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(-90.0f, 0.0f, 0.0f));
 
 		currentWindow = nullptr;
-		VAO = -1;
 		cubeTransforms.clear();
 	}
 
@@ -109,7 +108,4 @@ private:
 
 	//Game Instance Specific variables
 	std::vector<PosOrientPair> cubeTransforms;
-
-	/// GL Array Variables ///
-	unsigned int VAO;
 };

@@ -22,6 +22,7 @@ int Game::Process()
                 glfwSwapBuffers(currentWindow);
                 glfwPollEvents();
             }
+            glBindVertexArray(0);
 
             glfwTerminate();
             return 0;
@@ -90,6 +91,7 @@ bool Game::Init()
         shader = std::make_unique<Shader>(vertexShaderPath.c_str(), fragmentShaderPath.c_str());
 
         //Generate Vertex Array Object (VAO)
+        unsigned int VAO;
         glGenVertexArrays(1, &VAO);
 
         //Bind the Vertex Array Object to be the one used to hold the VBO info
@@ -159,9 +161,6 @@ bool Game::Init()
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
         glEnableVertexAttribArray(2);
 
-
-        glBindVertexArray(0);
-
         //Enable Depth Test to allow usage of Z-Buffer
         glEnable(GL_DEPTH_TEST);
 
@@ -229,9 +228,6 @@ void Game::DrawFrame()
         glm::mat4 projection = glm::perspective(glm::radians(camera->GetCameraFOV()), float(width / height), 0.1f, 100.0f);
         shader->SetMat44("projection", projection);
 
-        //Bind the VAO
-        glBindVertexArray(VAO);
-
         //Draw triangle using previous data
         glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (void*)0);
 
@@ -246,8 +242,6 @@ void Game::DrawFrame()
 
             glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (void*)0);
         }
-
-        glBindVertexArray(0);
     }
 }
 
