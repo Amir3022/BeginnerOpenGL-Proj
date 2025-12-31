@@ -153,6 +153,7 @@
   <ItemGroup>
     <ClCompile Include="..\Src\glad\glad.c" />
     <ClCompile Include="Src\Private\Camera.cpp" />
+    <ClCompile Include="Src\Private\CubesGame.cpp" />
     <ClCompile Include="Src\Private\Game.cpp" />
     <ClCompile Include="Src\Private\Main.cpp" />
     <ClCompile Include="Src\Private\Shader.cpp" />
@@ -164,6 +165,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\Public\Camera.h" />
+    <ClInclude Include="Src\Public\CubesGame.h" />
     <ClInclude Include="Src\Public\Game.h" />
     <ClInclude Include="Src\Public\Shader.h" />
     <ClInclude Include="Src\Public\stb_image.h" />

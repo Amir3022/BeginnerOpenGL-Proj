@@ -1,8 +1,8 @@
-#include "Game.h"
+#include "CubesGame.h"
 
 int main()
 {
-    std::unique_ptr<Game> game = std::make_unique<Game>(1024, 768);
+    std::unique_ptr<CubesGame> game = std::make_unique<CubesGame>(1024, 768);
     if (game)
     {
         return game->Process();
