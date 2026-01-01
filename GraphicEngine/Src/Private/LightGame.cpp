@@ -170,13 +170,19 @@ void LightGame::DrawFrame()
 		shader->SetMat33("normalModelMatrix", normalModelMatrix);
 
 		//Set the Object and the Light color in the Fragment Shader
-		shader->SetVec3("objectColor", 1.0f, 1.0f, 0.0f);
+		shader->SetVec3("objectColor", 0.7f, 0.4f, 0.0f);
 		shader->SetVec3("lightColor", 1.0f, 1.0f, 1.0f);
 
 		//Set the light source Object location
 		shader->SetVec3("lightSourcePos", lightCubePos);
 
-		//Change the ambient scaler
+		//Set the viewer (Camera) world position
+		shader->SetVec3("cameraPos", camera->GetCameraLocation());
+		//Set specular effect strength
+		float specularStrength = 0.5f;
+		shader->SetFloat("specularStrength", specularStrength);
+
+		//Set the ambient scaler
 		float ambientScaler = 0.1f;
 		shader->SetFloat("ambient", ambientScaler);
 
