@@ -23,8 +23,11 @@ private:
 	std::string lightVertexShaderPath;
 	std::string lightFragmentShaderPath;
 
+	//Light source variables
 	glm::vec3 lightCubePos;
 	float lightMoveDir = 1;
+	bool moveLightSource;
+	bool changeLightColor;
 	
 	//Colors Variables
 	glm::vec3 objectColor;

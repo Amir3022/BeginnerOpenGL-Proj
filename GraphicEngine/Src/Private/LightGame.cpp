@@ -11,6 +11,8 @@ LightGame::LightGame(int in_width, int in_height)
 	lightVertexShaderPath = "Shaders/LightScene/LightVertexShader.glsl";
 
 	lightCubePos = glm::vec3(0.5f, 0.5f, 2.0f);
+	moveLightSource = false;
+	changeLightColor = true;
 
 	objectColor = glm::vec3(1.0f, 0.5f, 0.31f);
 	lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -143,6 +145,22 @@ bool LightGame::Init()
 void LightGame::UpdateGame(float deltaTime)
 {
 	Game::UpdateGame(deltaTime);
+
+	//Update Light Source properties
+	if (moveLightSource)
+	{
+		lightCubePos += glm::vec3(0.0f, 1.0f, 0.0f) * lightMoveDir * 1.0f * GetDeltaTime();
+		if (lightCubePos.y > 2.5f)
+			lightMoveDir = -1;
+		else if (lightCubePos.y < -2.5f)
+			lightMoveDir = 1;
+	}
+	if (changeLightColor)
+	{
+		lightColor.x = abs(sin(glfwGetTime() * 0.7f));
+		lightColor.y = abs(sin(glfwGetTime() * 1.0f));
+		lightColor.z = abs(sin(glfwGetTime() * 3.1f));
+	}
 }
 
 void LightGame::DrawFrame()
@@ -160,12 +178,6 @@ void LightGame::DrawFrame()
 		glm::mat3 normalModelMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
 
 		//Create the model matrix for the light cube
-		/*lightCubePos += glm::vec3(0.0f, 1.0f, 0.0f) * lightMoveDir * 1.0f * GetDeltaTime();
-		if (lightCubePos.y > 2.5f)
-			lightMoveDir = -1;
-		else if (lightCubePos.y < -2.5f)
-			lightMoveDir = 1;*/
-
 		glm::vec3 lightCubeScale = glm::vec3(0.2f);
 		glm::mat4 lightModel = glm::identity<glm::mat4>();
 		lightModel = glm::translate(lightModel, lightCubePos);
