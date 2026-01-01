@@ -4,17 +4,7 @@
 class LightGame : public Game
 {
 public:
-	LightGame(int in_width, int in_height)
-		: Game(in_width, in_height)
-	{
-		fragmentShaderPath = "Shaders/LightScene/FragmentShader.glsl";
-		vertexShaderPath = "Shaders/LightScene/VertexShader.glsl";
-
-		lightFragmentShaderPath = "Shaders/LightScene/LightFragmentShader.glsl";
-		lightVertexShaderPath = "Shaders/LightScene/LightVertexShader.glsl";
-
-		lightCubePos = glm::vec3(0.5f, 1.0f, 2.0f);
-	}
+	LightGame(int in_width, int in_height);
 
 	virtual bool Init() override;
 
@@ -35,4 +25,8 @@ private:
 
 	glm::vec3 lightCubePos;
 	float lightMoveDir = 1;
+	
+	//Colors Variables
+	glm::vec3 objectColor;
+	glm::vec3 lightColor;
 };

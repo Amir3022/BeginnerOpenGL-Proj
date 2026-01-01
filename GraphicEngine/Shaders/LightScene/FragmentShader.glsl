@@ -1,5 +1,21 @@
 #version 330 core
 
+struct Material
+{
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+	float shininess;
+};
+
+struct Light
+{
+	vec3 sourcePos;
+	vec3 ambient;
+	vec3 diffuse;
+	vec3 specular;
+};
+
 out vec4 FragColor;
 
 in vec3 FragPos;
@@ -7,24 +23,27 @@ in vec3 outNormal;
 
 uniform vec3 lightSourcePos;
 uniform vec3 cameraPos;
-uniform vec3 objectColor;
-uniform vec3 lightColor;
-uniform float ambient;
-uniform float specularStrength;
+uniform Material material;
+uniform Light light;
 
 void main()
 {
+	// Calculating Ambient light
+	vec3 ambientColor = light.ambient * material.ambient;
+
 	//Calculating Diffuse
 	vec3 norm = normalize(outNormal);
-	vec3 lightDir = normalize(lightSourcePos - FragPos);
+	vec3 lightDir = normalize(light.sourcePos - FragPos);
 	float diffuse = max(dot(norm, lightDir), 0.0f);
+	vec3 diffuseColor = light.diffuse * (diffuse * material.diffuse);
 
 	//Calculating Specular
 	vec3 viewDir = normalize(cameraPos - FragPos);
 	vec3 reflectedLightDir = normalize(reflect(-lightDir, norm));
-	float specular = specularStrength * pow(max(dot(reflectedLightDir, viewDir), 0.0f), 64); //64 is shininnes value
+	float specular = pow(max(dot(reflectedLightDir, viewDir), 0.0f), material.shininess);
+	vec3 specularColor = light.specular * (specular * material.specular);
 
-	//Combining Ambient, Diffuse, Specular for complete Phong Lighting Model
-	vec3 combined = (ambient + diffuse + specular) * lightColor;
-	FragColor = vec4(combined * objectColor, 1.0f);
+	//Combining Ambient, Diffuse, Specular for complete Phong Shading Model
+	vec3 combined = ambientColor + diffuseColor + specularColor;
+	FragColor = vec4(combined, 1.0f);
 }

@@ -1,5 +1,21 @@
 #include "LightGame.h"
 
+
+LightGame::LightGame(int in_width, int in_height)
+	: Game(in_width, in_height)
+{
+	fragmentShaderPath = "Shaders/LightScene/FragmentShader.glsl";
+	vertexShaderPath = "Shaders/LightScene/VertexShader.glsl";
+
+	lightFragmentShaderPath = "Shaders/LightScene/LightFragmentShader.glsl";
+	lightVertexShaderPath = "Shaders/LightScene/LightVertexShader.glsl";
+
+	lightCubePos = glm::vec3(0.5f, 0.5f, 2.0f);
+
+	objectColor = glm::vec3(1.0f, 0.5f, 0.31f);
+	lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+}
+
 bool LightGame::Init()
 {
 	if (!Game::Init())
@@ -144,11 +160,11 @@ void LightGame::DrawFrame()
 		glm::mat3 normalModelMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
 
 		//Create the model matrix for the light cube
-		lightCubePos += glm::vec3(0.0f, 1.0f, 0.0f) * lightMoveDir * 1.0f * GetDeltaTime();
+		/*lightCubePos += glm::vec3(0.0f, 1.0f, 0.0f) * lightMoveDir * 1.0f * GetDeltaTime();
 		if (lightCubePos.y > 2.5f)
 			lightMoveDir = -1;
 		else if (lightCubePos.y < -2.5f)
-			lightMoveDir = 1;
+			lightMoveDir = 1;*/
 
 		glm::vec3 lightCubeScale = glm::vec3(0.2f);
 		glm::mat4 lightModel = glm::identity<glm::mat4>();
@@ -169,22 +185,20 @@ void LightGame::DrawFrame()
 		shader->SetMat44("projection", projection);
 		shader->SetMat33("normalModelMatrix", normalModelMatrix);
 
-		//Set the Object and the Light color in the Fragment Shader
-		shader->SetVec3("objectColor", 0.7f, 0.4f, 0.0f);
-		shader->SetVec3("lightColor", 1.0f, 1.0f, 1.0f);
+		//Setting Object Material properties
+		shader->SetVec3("material.ambient", objectColor);
+		shader->SetVec3("material.diffuse", objectColor);
+		shader->SetVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+		shader->SetFloat("material.shininess", 32.0f);
 
-		//Set the light source Object location
-		shader->SetVec3("lightSourcePos", lightCubePos);
+		//Setting Light struct properties
+		shader->SetVec3("light.sourcePos", lightCubePos);
+		shader->SetVec3("light.ambient", 0.2f * lightColor);
+		shader->SetVec3("light.diffuse", 0.5f * lightColor);
+		shader->SetVec3("light.specular", 1.0f * lightColor);
 
 		//Set the viewer (Camera) world position
 		shader->SetVec3("cameraPos", camera->GetCameraLocation());
-		//Set specular effect strength
-		float specularStrength = 0.5f;
-		shader->SetFloat("specularStrength", specularStrength);
-
-		//Set the ambient scaler
-		float ambientScaler = 0.1f;
-		shader->SetFloat("ambient", ambientScaler);
 
 		//Bind the Object VAO
 		glBindVertexArray(VAO);
@@ -197,6 +211,7 @@ void LightGame::DrawFrame()
 		lightShader->SetMat44("model", lightModel);
 		lightShader->SetMat44("view", view);
 		lightShader->SetMat44("projection", projection);
+		lightShader->SetVec3("lightColor", lightColor);
 
 		//Bind the Object VAO
 		glBindVertexArray(lightVAO);
