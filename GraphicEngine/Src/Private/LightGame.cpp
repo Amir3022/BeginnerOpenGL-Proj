@@ -140,6 +140,9 @@ void LightGame::DrawFrame()
 		//Create the model matrix to rotate the object in world space
 		glm::mat4 model = glm::identity<glm::mat4>();
 
+		//Create the Normal Model Matrix to convert normal from local space to World coordinates while respecting scale
+		glm::mat3 normalModelMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+
 		//Create the model matrix for the light cube
 		lightCubePos += glm::vec3(0.0f, 1.0f, 0.0f) * lightMoveDir * 1.0f * GetDeltaTime();
 		if (lightCubePos.y > 2.5f)
@@ -154,9 +157,6 @@ void LightGame::DrawFrame()
 
 		//Create the view matrix using camera lookAt target point
 		glm::mat4 view = camera->GetLookAtMat(camera->GetCameraLocation() + camera->GetCameraForwardDir());
-
-		//Create the Normal Matrix to convert normal from local space to World coordinates while respecting scale
-		glm::mat3 normalModelMatrix = glm::mat3(glm::transpose(glm::inverse(model * view)));
 
 		//Create the projection matrix to project the view space to NDC
 		glm::mat4 projection = glm::perspective(glm::radians(camera->GetCameraFOV()), float(GetWidth() / GetHeight()), 0.1f, 100.0f);

@@ -4,8 +4,8 @@ out vec4 FragColor;
 
 in vec3 FragPos;
 in vec3 outNormal;
-in vec3 outLightSourcePos;
 
+uniform vec3 lightSourcePos;
 uniform vec3 cameraPos;
 uniform vec3 objectColor;
 uniform vec3 lightColor;
@@ -16,11 +16,11 @@ void main()
 {
 	//Calculating Diffuse
 	vec3 norm = normalize(outNormal);
-	vec3 lightDir = normalize(outLightSourcePos - FragPos);
+	vec3 lightDir = normalize(lightSourcePos - FragPos);
 	float diffuse = max(dot(norm, lightDir), 0.0f);
 
 	//Calculating Specular
-	vec3 viewDir = normalize(-FragPos);
+	vec3 viewDir = normalize(cameraPos - FragPos);
 	vec3 reflectedLightDir = normalize(reflect(-lightDir, norm));
 	float specular = specularStrength * pow(max(dot(reflectedLightDir, viewDir), 0.0f), 64); //64 is shininnes value
 
