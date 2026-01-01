@@ -12,7 +12,7 @@ LightGame::LightGame(int in_width, int in_height)
 
 	lightCubePos = glm::vec3(0.5f, 0.5f, 2.0f);
 	moveLightSource = false;
-	changeLightColor = true;
+	changeLightColor = false;
 
 	objectColor = glm::vec3(1.0f, 0.5f, 0.31f);
 	lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
@@ -157,9 +157,9 @@ void LightGame::UpdateGame(float deltaTime)
 	}
 	if (changeLightColor)
 	{
-		lightColor.x = abs(sin(glfwGetTime() * 0.7f));
-		lightColor.y = abs(sin(glfwGetTime() * 1.0f));
-		lightColor.z = abs(sin(glfwGetTime() * 3.1f));
+		lightColor.x = glm::abs(sin(glfwGetTime() * 0.7f));
+		lightColor.y = glm::abs(sin(glfwGetTime() * 1.0f));
+		lightColor.z = glm::abs(sin(glfwGetTime() * 3.1f));
 	}
 }
 
