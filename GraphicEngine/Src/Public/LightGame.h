@@ -12,6 +12,8 @@ public:
 
 		lightFragmentShaderPath = "Shaders/LightScene/LightFragmentShader.glsl";
 		lightVertexShaderPath = "Shaders/LightScene/LightVertexShader.glsl";
+
+		lightCubePos = glm::vec3(1.2f, 1.0f, 2.0f);
 	}
 
 	virtual bool Init() override;
@@ -30,4 +32,7 @@ private:
 
 	std::string lightVertexShaderPath;
 	std::string lightFragmentShaderPath;
+
+	glm::vec3 lightCubePos;
+	float lightMoveDir = 1;
 };
