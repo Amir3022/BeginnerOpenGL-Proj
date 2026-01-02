@@ -118,8 +118,9 @@ bool LightGame::Init()
 		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
 		glEnableVertexAttribArray(2);
 
-		//Loading the Crate textrue and Bind to Texture Buffer
+		//Loading the Crate diffuse and specular textrue and Bind to Texture Buffer
 		LoadImageIntoTexture("Assets/Textures/container2.png", GL_TEXTURE0, GL_RGBA);
+		LoadImageIntoTexture("Assets/Textures/container2_specular.png", GL_TEXTURE1, GL_RGBA);
 
 		//Create a new Vertex Array Object for the Light Cube
 		glGenVertexArrays(1, &lightVAO);
@@ -203,9 +204,8 @@ void LightGame::DrawFrame()
 		shader->SetMat33("normalModelMatrix", normalModelMatrix);
 
 		//Setting Object Material properties
-		shader->SetVec3("material.ambient", objectColor);
-		shader->SetVec3("material.diffuse", objectColor);
-		shader->SetVec3("material.specular", glm::vec3(0.5f, 0.5f, 0.5f));
+		shader->SetInt("material.diffuse", 0);
+		shader->SetInt("material.specular", 1);
 		shader->SetFloat("material.shininess", 32.0f);
 
 		//Setting Light struct properties

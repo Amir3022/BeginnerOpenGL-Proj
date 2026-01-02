@@ -3,7 +3,7 @@
 struct Material
 {
 	sampler2D diffuse;
-	vec3 specular;
+	sampler2D specular;
 	float shininess;
 };
 
@@ -41,7 +41,7 @@ void main()
 	vec3 viewDir = normalize(cameraPos - FragPos);
 	vec3 reflectedLightDir = normalize(reflect(-lightDir, norm));
 	float specular = pow(max(dot(reflectedLightDir, viewDir), 0.0f), material.shininess);
-	vec3 specularColor = light.specular * (specular * material.specular);
+	vec3 specularColor = light.specular * (specular * vec3(texture(material.specular, TexCoord)));
 
 	//Combining Ambient, Diffuse, Specular for complete Phong Shading Model
 	vec3 combined = ambientColor + diffuseColor + specularColor;
