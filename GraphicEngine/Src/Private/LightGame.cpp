@@ -10,8 +10,8 @@ LightGame::LightGame(int in_width, int in_height)
 	lightFragmentShaderPath = "Shaders/LightScene/LightFragmentShader.glsl";
 	lightVertexShaderPath = "Shaders/LightScene/LightVertexShader.glsl";
 
-	lightCubePos = glm::vec3(0.5f, 0.5f, 2.0f);
-	moveLightSource = false;
+	lightCubePos = glm::vec3(0.5f, 1.5f, 2.0f);
+	moveLightSource = true;
 	changeLightColor = false;
 
 	objectColor = glm::vec3(1.0f, 0.5f, 0.31f);
@@ -38,40 +38,40 @@ bool LightGame::Init()
 		glBindVertexArray(VAO);
 
 		//Draw a Cube (Cube consists of 6 faces each consisting of 2 triangles, 8 vertices with 36 index)
-	   //Create a vertices array   (Vertex Location, normal direction)
+	   //Create a vertices array   (Vertex Location, normal direction, texture coordinates)
 		float vertices[] =
 		{
-		   -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f,	//0		//0
-		   -0.5f, -0.5f, 0.5f, -1.0f, 0.0f, 0.0f,	//1
-		   -0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f,	//2
+		   -0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f,	//0		//0
+		   -0.5f, -0.5f, 0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 0.0f,	//1
+		   -0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f, 0.0f, 1.0f,	//2
 
-		   0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f,		//3		//1
-		   0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f,		//4
-		   0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f,	//5
+		   0.5f, -0.5f, 0.5f, 0.0f, 0.0f, 1.0f,	1.0f, 0.0f,		//3		//1
+		   0.5f, -0.5f, 0.5f, 1.0f, 0.0f, 0.0f,	0.0f, 0.0f,		//4
+		   0.5f, -0.5f, 0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 1.0f,	//5
 
-		   -0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f,		//6		//2
-		   -0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f,	//7
-		   -0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f,		//8
+		   -0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f,	0.0f, 1.0f,		//6		//2
+		   -0.5f, 0.5f, 0.5f, -1.0f, 0.0f, 0.0f, 1.0f, 1.0f,	//7
+		   -0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f,	0.0f, 0.0f,		//8
 
-		   0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f,		//9		//3
-		   0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f,		//10
-		   0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f,		//11
+		   0.5f, 0.5f, 0.5f, 0.0f, 0.0f, 1.0f, 1.0f, 1.0f,		//9		//3
+		   0.5f, 0.5f, 0.5f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,		//10
+		   0.5f, 0.5f, 0.5f, 0.0f, 1.0f, 0.0f, 1.0f, 0.0f,		//11
 
-		   -0.5f, -0.5f, -0.5, 0.0f, 0.0f, -1.0f,	//12	//4
-		   -0.5f, -0.5f, -0.5, -1.0f, 0.0f, 0.0f,	//13
-		   -0.5f, -0.5f, -0.5, 0.0f, -1.0f, 0.0f,	//14
+		   -0.5f, -0.5f, -0.5, 0.0f, 0.0f, -1.0f, 0.0f, 0.0f,	//12	//4
+		   -0.5f, -0.5f, -0.5, -1.0f, 0.0f, 0.0f, 0.0f, 0.0f,	//13
+		   -0.5f, -0.5f, -0.5, 0.0f, -1.0f, 0.0f, 0.0f, 0.0f,	//14
 
-		   0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f,	//15	//5
-		   0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f,	//16
-		   0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f,	//17
+		   0.5f, -0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 0.0f,	//15	//5
+		   0.5f, -0.5f, -0.5f, 1.0f, 0.0f, 0.0f, 1.0f, 0.0f,	//16
+		   0.5f, -0.5f, -0.5f, 0.0f, -1.0f, 0.0f, 1.0f, 0.0f,	//17
 
-		   -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f,	//18	//6
-		   -0.5f, 0.5f, -0.5f, -1.0f, 0.0f, 0.0f,	//19
-		   -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,	//20
+		   -0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 0.0f, 1.0f,	//18	//6
+		   -0.5f, 0.5f, -0.5f, -1.0f, 0.0f, 0.0f, 0.0f, 1.0f,	//19
+		   -0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f, 1.0f,	//20
 
-		   0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f,	//21	//7
-		   0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 0.0f,		//22
-		   0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,		//23
+		   0.5f, 0.5f, -0.5f, 0.0f, 0.0f, -1.0f, 1.0f, 1.0f,	//21	//7
+		   0.5f, 0.5f, -0.5f, 1.0f, 0.0f, 0.0f,	1.0f, 1.0f,		//22
+		   0.5f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f,	1.0f, 1.0f,		//23
 
 		};
 		unsigned int indices[]
@@ -111,10 +111,15 @@ bool LightGame::Init()
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
 		//Set Vertex Attribute Data
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0); //0 Attribute in the vertex shader, 3 vec3 has 3 float values, GL_FLOAT each input is a float value, GL_FALSE no normalization to be used, size of each stride to move to the next vertex, pointer to the first element in the Vertex Buffer
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0); //0 Attribute in the vertex shader, 3 vec3 has 3 float values, GL_FLOAT each input is a float value, GL_FALSE no normalization to be used, size of each stride to move to the next vertex, pointer to the first element in the Vertex Buffer
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
 		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+		glEnableVertexAttribArray(2);
+
+		//Loading the Crate textrue and Bind to Texture Buffer
+		LoadImageIntoTexture("Assets/Textures/container2.png", GL_TEXTURE0, GL_RGBA);
 
 		//Create a new Vertex Array Object for the Light Cube
 		glGenVertexArrays(1, &lightVAO);
@@ -125,7 +130,7 @@ bool LightGame::Init()
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 
 		//Set Vertex Attribute Data
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0); //0 Attribute in the vertex shader, 3 vec3 has 3 float values, GL_FLOAT each input is a float value, GL_FALSE no normalization to be used, size of each stride to move to the next vertex, pointer to the first element in the Vertex Buffer
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0); //0 Attribute in the vertex shader, 3 vec3 has 3 float values, GL_FLOAT each input is a float value, GL_FALSE no normalization to be used, size of each stride to move to the next vertex, pointer to the first element in the Vertex Buffer
 		glEnableVertexAttribArray(0);
 
 		//Enable Depth Test to allow usage of Z-Buffer
@@ -157,9 +162,9 @@ void LightGame::UpdateGame(float deltaTime)
 	}
 	if (changeLightColor)
 	{
-		lightColor.x = glm::abs(sin(glfwGetTime() * 0.7f));
-		lightColor.y = glm::abs(sin(glfwGetTime() * 1.0f));
-		lightColor.z = glm::abs(sin(glfwGetTime() * 3.1f));
+		lightColor.x = (float)glm::abs(sin(glfwGetTime() * 0.7f));
+		lightColor.y = (float)glm::abs(sin(glfwGetTime() * 1.0f));
+		lightColor.z = (float)glm::abs(sin(glfwGetTime() * 3.1f));
 	}
 }
 
