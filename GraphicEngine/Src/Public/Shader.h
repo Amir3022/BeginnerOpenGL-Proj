@@ -24,6 +24,8 @@ public:
 	void SetColor(const std::string& paramName, float red, float green, float blue, float alpha);
 	void SetVec3(const std::string& paramName, float x, float y, float z);
 	void SetVec3(const std::string& paramName, const glm::vec3& vec);
+	void SetVec4(const std::string& paramName, float x, float y, float z, float w);
+	void SetVec4(const std::string& paramName, const glm::vec4 vec);
 	void SetMat44(const std::string& paramName, const glm::mat4& mat);
 	void SetMat33(const std::string& paramName, const glm::mat3& mat);
 };
