@@ -11,7 +11,7 @@ LightGame::LightGame(int in_width, int in_height)
 	lightVertexShaderPath = "Shaders/LightScene/LightVertexShader.glsl";
 
 	lightCubePos = glm::vec3(0.0f, 1.5f, 2.0f);
-	moveLightSource = false;
+	moveLightSource = true;
 	changeLightColor = false;
 
 	objectColor = glm::vec3(1.0f, 0.5f, 0.31f);
@@ -235,7 +235,7 @@ void LightGame::DrawFrame()
 		//Setting Light struct properties
 		shader->SetVec4("light.sourceVec", glm::vec4(lightCubePos, 1.0f));
 		shader->SetVec3("light.ambient", 0.1f * lightColor);
-		shader->SetVec3("light.diffuse", 0.5f * lightColor);
+		shader->SetVec3("light.diffuse", 0.75f * lightColor);
 		shader->SetVec3("light.specular", 1.0f * lightColor);
 		shader->SetFloat("light.constant", 1.0f);	//Attenuation constants for a light source that covers and outer radius on 50 units
 		shader->SetFloat("light.linear", 0.09f);
