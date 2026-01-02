@@ -4,6 +4,8 @@ struct Material
 {
 	sampler2D diffuse;
 	sampler2D specular;
+	sampler2D emissive;
+	float emissiveAmount;
 	float shininess;
 };
 
@@ -43,7 +45,10 @@ void main()
 	float specular = pow(max(dot(reflectedLightDir, viewDir), 0.0f), material.shininess);
 	vec3 specularColor = light.specular * (specular * vec3(texture(material.specular, TexCoord)));
 
+	//Applying Emissive Colors
+	vec3 emissiveColor = floor((vec3(1.0f) - vec3(texture(material.specular, TexCoord)))) * vec3(texture(material.emissive, TexCoord)) * material.emissiveAmount;
+
 	//Combining Ambient, Diffuse, Specular for complete Phong Shading Model
-	vec3 combined = ambientColor + diffuseColor + specularColor;
+	vec3 combined = ambientColor + diffuseColor + specularColor + emissiveColor;
 	FragColor = vec4(combined, 1.0f);
 }

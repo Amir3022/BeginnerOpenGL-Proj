@@ -44,6 +44,8 @@ public:
 
 	virtual bool Init();
 
+	virtual void Terminate();
+
 	virtual void UpdateGame(float deltaTime);
 
 	virtual void DrawFrame();

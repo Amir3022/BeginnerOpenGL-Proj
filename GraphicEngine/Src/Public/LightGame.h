@@ -8,6 +8,8 @@ public:
 
 	virtual bool Init() override;
 
+	virtual void Terminate() override;
+
 	virtual void UpdateGame(float deltaTime) override;
 
 	virtual void DrawFrame() override;
@@ -19,6 +21,7 @@ private:
 	//Vertex Array Objects for object and light
 	unsigned int VAO;
 	unsigned int lightVAO;
+	unsigned int VBO;
 
 	std::string lightVertexShaderPath;
 	std::string lightFragmentShaderPath;

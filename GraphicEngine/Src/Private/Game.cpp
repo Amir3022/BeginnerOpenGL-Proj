@@ -23,7 +23,8 @@ int Game::Process()
                 glfwSwapBuffers(currentWindow);
                 glfwPollEvents();
             }
-            glBindVertexArray(0);
+            //Terminate the game processes
+            Terminate();
 
             glfwTerminate();
             return 0;
@@ -87,6 +88,12 @@ bool Game::Init()
     glfwSetScrollCallback(currentWindow, mouseScroll_change_callback);
     
     return true;
+}
+
+void Game::Terminate()
+{
+    //Set the bound vertex array to 0
+    glBindVertexArray(0);
 }
 
 void Game::UpdateGame(float deltaTime)

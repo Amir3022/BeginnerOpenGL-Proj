@@ -96,7 +96,6 @@ bool LightGame::Init()
 		};
 
 		//Create Vertex Buffer Object (VBO)
-		unsigned int VBO;
 		glGenBuffers(1, &VBO);
 		//Bind the created VBO to the Array Buffer
 		glBindBuffer(GL_ARRAY_BUFFER, VBO);
@@ -121,6 +120,7 @@ bool LightGame::Init()
 		//Loading the Crate diffuse and specular textrue and Bind to Texture Buffer
 		LoadImageIntoTexture("Assets/Textures/container2.png", GL_TEXTURE0, GL_RGBA);
 		LoadImageIntoTexture("Assets/Textures/container2_specular.png", GL_TEXTURE1, GL_RGBA);
+		LoadImageIntoTexture("Assets/Textures/matrix.jpg", GL_TEXTURE2, GL_RGB);
 
 		//Create a new Vertex Array Object for the Light Cube
 		glGenVertexArrays(1, &lightVAO);
@@ -146,6 +146,14 @@ bool LightGame::Init()
 		glfwTerminate();
 		return false;
 	}
+}
+
+void LightGame::Terminate()
+{
+	//De-allocate all used resources by vertex arrays and buffers
+	glDeleteBuffers(1, &VBO);
+	glDeleteVertexArrays(1, &lightVAO);
+	glDeleteVertexArrays(1, &VAO);
 }
 
 void LightGame::UpdateGame(float deltaTime)
@@ -206,6 +214,8 @@ void LightGame::DrawFrame()
 		//Setting Object Material properties
 		shader->SetInt("material.diffuse", 0);
 		shader->SetInt("material.specular", 1);
+		shader->SetInt("material.emissive", 2);
+		shader->SetFloat("material.emissiveAmount", 1.0f);
 		shader->SetFloat("material.shininess", 32.0f);
 
 		//Setting Light struct properties
