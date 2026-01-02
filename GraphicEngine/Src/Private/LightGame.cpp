@@ -234,9 +234,12 @@ void LightGame::DrawFrame()
 
 		//Setting Light struct properties
 		shader->SetVec4("light.sourceVec", glm::vec4(lightCubePos, 1.0f));
-		shader->SetVec3("light.ambient", 0.2f * lightColor);
+		shader->SetVec3("light.ambient", 0.1f * lightColor);
 		shader->SetVec3("light.diffuse", 0.5f * lightColor);
 		shader->SetVec3("light.specular", 1.0f * lightColor);
+		shader->SetFloat("light.constant", 1.0f);
+		shader->SetFloat("light.linear", 0.09f);
+		shader->SetFloat("light.quad", 0.032f);
 
 		//Set the viewer (Camera) world position
 		shader->SetVec3("cameraPos", camera->GetCameraLocation());
@@ -250,7 +253,7 @@ void LightGame::DrawFrame()
 		for (int i = 1; i < cubeTransforms.size(); i++)
 		{
 			model = glm::identity<glm::mat4>();
-			float angle = (i + 1) * 20.0f /** glfwGetTime()*/;
+			float angle = (i + 1) * 20.0f * glfwGetTime();
 			model = glm::translate(model, cubeTransforms[i].pos);
 			model = glm::rotate(model, glm::radians(angle), cubeTransforms[i].orient);
 			normalModelMatrix = glm::mat3(glm::transpose(glm::inverse(model)));

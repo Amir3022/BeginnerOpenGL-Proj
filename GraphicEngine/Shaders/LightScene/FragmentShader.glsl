@@ -12,9 +12,14 @@ struct Material
 struct Light
 {
 	vec4 sourceVec; //use a vec4 with the w component used to determine whether we are using point or directional light, 1.0f positional light, 0.0f directional light
+	
 	vec3 ambient;
 	vec3 diffuse;
 	vec3 specular;
+
+	float constant;	//Constanst for the attenuation formula
+	float linear;
+	float quad;
 };
 
 out vec4 FragColor;
@@ -30,26 +35,36 @@ uniform Light light;
 
 void main()
 {
+	//Calculating light direction and attenuation if any
+	vec3 lightDir;
+	float attenuation;
+
+	if(light.sourceVec.w < 0.001f) //Directional light
+	{
+		lightDir = normalize(-vec3(light.sourceVec));
+		attenuation = 1.0f;
+	}
+	else if(light.sourceVec.w > 0.999f)	//Positional light
+	{
+		lightDir = normalize(vec3(light.sourceVec) - FragPos);
+		float distanceToLight = length(vec3(light.sourceVec) - FragPos);
+		attenuation = 1.0f / (light.constant + light.linear * distanceToLight + light.quad * (distanceToLight * distanceToLight));
+	}
+
 	// Calculating Ambient light
-	vec3 ambientColor = light.ambient * vec3(texture(material.diffuse, TexCoord));
+	vec3 ambientColor = light.ambient * attenuation * vec3(texture(material.diffuse, TexCoord));
 
 	//Calculating Diffuse
 	vec3 norm = normalize(outNormal);
 
-	vec3 lightDir;
-	if(light.sourceVec.w < 0.001f) //Directional light
-		lightDir = normalize(-vec3(light.sourceVec));
-	else if(light.sourceVec.w > 0.999f)	//Positional light
-		lightDir = normalize(vec3(light.sourceVec) - FragPos);
-
 	float diffuse = max(dot(norm, lightDir), 0.0f);
-	vec3 diffuseColor = light.diffuse * diffuse * vec3(texture(material.diffuse, TexCoord));
+	vec3 diffuseColor = light.diffuse * diffuse * attenuation * vec3(texture(material.diffuse, TexCoord));
 
 	//Calculating Specular
 	vec3 viewDir = normalize(cameraPos - FragPos);
 	vec3 reflectedLightDir = normalize(reflect(-lightDir, norm));
 	float specular = pow(max(dot(reflectedLightDir, viewDir), 0.0f), material.shininess);
-	vec3 specularColor = light.specular * (specular * vec3(texture(material.specular, TexCoord)));
+	vec3 specularColor = light.specular * specular * attenuation * vec3(texture(material.specular, TexCoord));
 
 	//Applying Emissive Colors
 	vec3 emissiveColor = floor((vec3(1.0f) - vec3(texture(material.specular, TexCoord)))) * vec3(texture(material.emissive, TexCoord)) * material.emissiveAmount;
