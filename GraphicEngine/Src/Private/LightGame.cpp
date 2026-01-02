@@ -10,7 +10,7 @@ LightGame::LightGame(int in_width, int in_height)
 	lightFragmentShaderPath = "Shaders/LightScene/LightFragmentShader.glsl";
 	lightVertexShaderPath = "Shaders/LightScene/LightVertexShader.glsl";
 
-	lightCubePos = glm::vec3(0.5f, 1.5f, 2.0f);
+	lightCubePos = glm::vec3(0.0f, 1.5f, 2.0f);
 	moveLightSource = true;
 	changeLightColor = false;
 

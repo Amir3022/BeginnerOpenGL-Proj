@@ -34,6 +34,15 @@ void Camera::ProcessKeyboardInput(glm::vec2 inputVec, float deltaTime)
     position += moveDir * camMoveSpeed * deltaTime;
 }
 
+void Camera::ProcessKeyboardHeightInput(float inputVal, float deltaTime)
+{
+    glm::vec3 localUpVector = glm::vec3(0.0f, 1.0f, 0.0f);
+
+    glm::vec3 moveDir = localUpVector * inputVal;
+
+    position += moveDir * camMoveSpeed * deltaTime;
+}
+
 void Camera::ProcessMouseMovementInput(glm::vec2 deltaMove)
 {
     deltaMove.y = -1 * deltaMove.y;

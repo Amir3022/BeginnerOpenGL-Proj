@@ -168,10 +168,20 @@ void Game::ProcessInput(GLFWwindow* window)
         inputVec.x = -1.0f;
     }
 
+    //Move Camera Upwards and Downwards using Space, CTRL inputs
+    if (glfwGetKey(window, GLFW_KEY_SPACE) == GLFW_PRESS)
+    {
+        camera->ProcessKeyboardHeightInput(1.0f, GetDeltaTime());
+    }
+    else if (glfwGetKey(window, GLFW_KEY_LEFT_CONTROL) == GLFW_PRESS)
+    {
+        camera->ProcessKeyboardHeightInput(-1.0f, GetDeltaTime());
+    }
+
     if (inputVec.x > 0 || inputVec.y > 0)
         inputVec = glm::normalize(inputVec);
 
-    camera->ProcessKeyboardInput(inputVec, deltaTime);
+    camera->ProcessKeyboardInput(inputVec, GetDeltaTime());
 }
 
 unsigned int Game::LoadImageIntoTexture(const char* imagePath, GLenum textureUnit, GLenum dataFormat)

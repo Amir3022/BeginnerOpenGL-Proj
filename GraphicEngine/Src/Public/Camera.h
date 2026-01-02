@@ -51,6 +51,7 @@ public:
 
 	//Input Handling
 	void ProcessKeyboardInput(glm::vec2 inputVec, float deltaTime);
+	void ProcessKeyboardHeightInput(float inputVal, float deltaTime);
 	void ProcessMouseMovementInput(glm::vec2 deltaMove);
 	void ProcessMouseScrollInput(float yValue);
 
