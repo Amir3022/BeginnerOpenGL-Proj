@@ -35,4 +35,7 @@ private:
 	//Colors Variables
 	glm::vec3 objectColor;
 	glm::vec3 lightColor;
+
+	//Game Instance Specific variables
+	std::vector<PosOrientPair> cubeTransforms;
 };

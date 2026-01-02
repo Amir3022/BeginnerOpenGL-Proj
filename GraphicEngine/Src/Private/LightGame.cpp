@@ -11,7 +11,7 @@ LightGame::LightGame(int in_width, int in_height)
 	lightVertexShaderPath = "Shaders/LightScene/LightVertexShader.glsl";
 
 	lightCubePos = glm::vec3(0.0f, 1.5f, 2.0f);
-	moveLightSource = true;
+	moveLightSource = false;
 	changeLightColor = false;
 
 	objectColor = glm::vec3(1.0f, 0.5f, 0.31f);
@@ -137,8 +137,22 @@ bool LightGame::Init()
 		//Enable Depth Test to allow usage of Z-Buffer
 		glEnable(GL_DEPTH_TEST);
 
-		return true;
-		
+		//Array for locations, rotations for 10 random cubes(x, y, z, rot orientation)
+		cubeTransforms =
+		{
+		   {glm::vec3(-4.0f,  -0.8f,  -9.0f), glm::vec3(1.7f, -0.4f, 0.9f)},
+		   {glm::vec3(2.0f,  5.0f, -15.0f), glm::vec3(-1.3f, 1.8f, -2.0f)},
+		   {glm::vec3(-1.5f, -2.2f, -2.5f), glm::vec3(0.5f, -1.9f, 1.2f)},
+		   {glm::vec3(-3.8f, -2.0f, -12.3), glm::vec3(-0.8f, 0.3f, -1.5f)},
+		   {glm::vec3(2.4f, -0.4f, -3.5f), glm::vec3(2.0f, 1.1f, -0.7f)},
+		   {glm::vec3(-1.7f,  3.0f, -7.5f),glm::vec3(-1.6f, -1.0f, 1.4f)},
+		   {glm::vec3(1.3f, -2.0f, -2.5f), glm::vec3(0.2f, 1.9f, -0.1f)},
+		   {glm::vec3(1.5f,  2.0f, -2.5f), glm::vec3(1.5f, -2.0f, 0.6f)},
+		   {glm::vec3(1.5f,  0.2f, -1.5f), glm::vec3(-0.9f, 0.0f, 1.7f)},
+		   {glm::vec3(-1.3f,  1.0f, -1.5f), glm::vec3(1.2f, -1.4f, -0.5f)}
+		};
+
+		return true;	
 	}
 	catch (std::exception e)
 	{
@@ -214,12 +228,12 @@ void LightGame::DrawFrame()
 		//Setting Object Material properties
 		shader->SetInt("material.diffuse", 0);
 		shader->SetInt("material.specular", 1);
-		shader->SetInt("material.emissive", 2);
-		shader->SetFloat("material.emissiveAmount", 1.0f);
+		//shader->SetInt("material.emissive", 2);
+		//shader->SetFloat("material.emissiveAmount", 1.0f);
 		shader->SetFloat("material.shininess", 32.0f);
 
 		//Setting Light struct properties
-		shader->SetVec3("light.sourcePos", lightCubePos);
+		shader->SetVec4("light.sourceVec", glm::vec4(lightCubePos, 1.0f));
 		shader->SetVec3("light.ambient", 0.2f * lightColor);
 		shader->SetVec3("light.diffuse", 0.5f * lightColor);
 		shader->SetVec3("light.specular", 1.0f * lightColor);
@@ -231,6 +245,20 @@ void LightGame::DrawFrame()
 		glBindVertexArray(VAO);
 		//Draw triangle using previous data
 		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (void*)0);
+
+		//Draw other 9 cubes
+		for (int i = 1; i < cubeTransforms.size(); i++)
+		{
+			model = glm::identity<glm::mat4>();
+			float angle = (i + 1) * 20.0f /** glfwGetTime()*/;
+			model = glm::translate(model, cubeTransforms[i].pos);
+			model = glm::rotate(model, glm::radians(angle), cubeTransforms[i].orient);
+			normalModelMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+			shader->SetMat44("model", model);
+			shader->SetMat33("normalModelMatrix", normalModelMatrix);
+
+			glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (void*)0);
+		}
 
 
 		//Use the Light Shader Program ID to draw the light Cube, and apply model, view, projection matrices
