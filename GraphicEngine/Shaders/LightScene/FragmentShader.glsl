@@ -11,7 +11,7 @@ struct Material
 
 struct Light
 {
-	vec3 sourcePos;
+	vec4 sourceVec; //use a vec4 with the w component used to determine whether we are using point or directional light, 1.0f positional light, 0.0f directional light
 	vec3 ambient;
 	vec3 diffuse;
 	vec3 specular;
@@ -35,7 +35,13 @@ void main()
 
 	//Calculating Diffuse
 	vec3 norm = normalize(outNormal);
-	vec3 lightDir = normalize(light.sourcePos - FragPos);
+
+	vec3 lightDir;
+	if(light.sourceVec.w < 0.001f) //Directional light
+		lightDir = normalize(-vec3(light.sourceVec));
+	else if(light.sourceVec.w > 0.999f)	//Positional light
+		lightDir = normalize(vec3(light.sourceVec) - FragPos);
+
 	float diffuse = max(dot(norm, lightDir), 0.0f);
 	vec3 diffuseColor = light.diffuse * diffuse * vec3(texture(material.diffuse, TexCoord));
 
