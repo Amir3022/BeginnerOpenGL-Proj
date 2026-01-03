@@ -215,7 +215,7 @@ void LightGame::DrawFrame()
 		glm::mat4 view = camera->GetLookAtMat(camera->GetCameraLocation() + camera->GetCameraForwardDir());
 
 		//Create the projection matrix to project the view space to NDC
-		glm::mat4 projection = glm::perspective(glm::radians(camera->GetCameraFOV()), float(GetWidth() / GetHeight()), 0.1f, 100.0f);
+		glm::mat4 projection = glm::perspective(glm::radians(camera->GetCameraFOV()), (float)GetWidth() / (float)GetHeight(), 0.1f, 100.0f);
 
 
 		//Use the Shader Program to draw Vertices using the defined vertex and fragment shaders, and apply model, view, projection matrices
