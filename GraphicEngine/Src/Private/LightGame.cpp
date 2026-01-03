@@ -4,7 +4,7 @@
 LightGame::LightGame(int in_width, int in_height)
 	: Game(in_width, in_height)
 {
-	fragmentShaderPath = "Shaders/LightScene/FragmentShader.glsl";
+	fragmentShaderPath = "Shaders/LightScene/SpotlightFragmentShader.glsl";
 	vertexShaderPath = "Shaders/LightScene/VertexShader.glsl";
 
 	lightFragmentShaderPath = "Shaders/LightScene/LightFragmentShader.glsl";
@@ -232,8 +232,11 @@ void LightGame::DrawFrame()
 		//shader->SetFloat("material.emissiveAmount", 1.0f);
 		shader->SetFloat("material.shininess", 32.0f);
 
-		//Setting Light struct properties
-		shader->SetVec4("light.sourceVec", glm::vec4(lightCubePos, 1.0f));
+		//Setting Light struct properties (Setup the light Source as a flashlight, a spotlight originating from camera position)
+		shader->SetVec3("light.sourceVec", camera->GetCameraLocation());
+		shader->SetVec3("light.sourceDir", camera->GetCameraForwardDir());
+		shader->SetFloat("light.innerRadiusCos", glm::cos(glm::radians(12.5f)));
+		shader->SetFloat("light.outerRadiusCos", glm::cos(glm::radians(15.0f)));
 		shader->SetVec3("light.ambient", 0.1f * lightColor);
 		shader->SetVec3("light.diffuse", 0.75f * lightColor);
 		shader->SetVec3("light.specular", 1.0f * lightColor);
