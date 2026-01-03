@@ -27,14 +27,18 @@ private:
 	std::string lightFragmentShaderPath;
 
 	//Light source variables
-	glm::vec3 lightCubePos;
-	float lightMoveDir = 1;
+	std::vector<glm::vec3> lightCubesPos;
+	std::vector<float> lightMoveDirs;
+	std::vector<float> lightMoveSpeeds;
 	bool moveLightSource;
 	bool changeLightColor;
+	glm::vec3 dirLightOrient;
 	
 	//Colors Variables
 	glm::vec3 objectColor;
-	glm::vec3 lightColor;
+	std::vector<glm::vec3> pointLightColors;
+	glm::vec3 spotLightColor;
+	glm::vec3 dirLightColor;
 
 	//Game Instance Specific variables
 	std::vector<PosOrientPair> cubeTransforms;

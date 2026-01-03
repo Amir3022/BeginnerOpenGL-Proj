@@ -4,18 +4,19 @@
 LightGame::LightGame(int in_width, int in_height)
 	: Game(in_width, in_height)
 {
-	fragmentShaderPath = "Shaders/LightScene/SpotlightFragmentShader.glsl";
+	fragmentShaderPath = "Shaders/LightScene/FragmentShader.glsl";
 	vertexShaderPath = "Shaders/LightScene/VertexShader.glsl";
 
 	lightFragmentShaderPath = "Shaders/LightScene/LightFragmentShader.glsl";
 	lightVertexShaderPath = "Shaders/LightScene/LightVertexShader.glsl";
 
-	lightCubePos = glm::vec3(0.0f, 1.5f, 2.0f);
 	moveLightSource = true;
 	changeLightColor = false;
 
 	objectColor = glm::vec3(1.0f, 0.5f, 0.31f);
-	lightColor = glm::vec3(1.0f, 1.0f, 1.0f);
+	spotLightColor = glm::vec3(2.0f, 2.0f, 2.0f);
+	dirLightColor = glm::vec3(0.98f, 0.98f, 0.5f) * 0.4f;
+	dirLightOrient = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
 }
 
 bool LightGame::Init()
@@ -141,15 +142,42 @@ bool LightGame::Init()
 		cubeTransforms =
 		{
 		   {glm::vec3(-4.0f,  -0.8f,  -9.0f), glm::vec3(1.7f, -0.4f, 0.9f)},
-		   {glm::vec3(2.0f,  5.0f, -15.0f), glm::vec3(-1.3f, 1.8f, -2.0f)},
+		   {glm::vec3(2.0f,  5.0f, -6.0f), glm::vec3(-1.3f, 1.8f, -2.0f)},
 		   {glm::vec3(-1.5f, -2.2f, -2.5f), glm::vec3(0.5f, -1.9f, 1.2f)},
-		   {glm::vec3(-3.8f, -2.0f, -12.3), glm::vec3(-0.8f, 0.3f, -1.5f)},
+		   {glm::vec3(-3.8f, -2.0f, -5.3), glm::vec3(-0.8f, 0.3f, -1.5f)},
 		   {glm::vec3(2.4f, -0.4f, -3.5f), glm::vec3(2.0f, 1.1f, -0.7f)},
 		   {glm::vec3(-1.7f,  3.0f, -7.5f),glm::vec3(-1.6f, -1.0f, 1.4f)},
 		   {glm::vec3(1.3f, -2.0f, -2.5f), glm::vec3(0.2f, 1.9f, -0.1f)},
 		   {glm::vec3(1.5f,  2.0f, -2.5f), glm::vec3(1.5f, -2.0f, 0.6f)},
 		   {glm::vec3(1.5f,  0.2f, -1.5f), glm::vec3(-0.9f, 0.0f, 1.7f)},
 		   {glm::vec3(-1.3f,  1.0f, -1.5f), glm::vec3(1.2f, -1.4f, -0.5f)}
+		};
+
+		//Array of Locations for Point lights, movement directions, colors
+		lightCubesPos =
+		{
+			glm::vec3(0.0f, 1.5f, 2.0f),
+			glm::vec3(0.0f, 1.5f, -7.0f),
+			glm::vec3(3.5f, 1.5f, -3.0f),
+			glm::vec3(-3.5f, 1.5f, -3.0f),
+		};
+
+		lightMoveDirs =
+		{
+			1.0f, -1.0f, -1.0f, 1.0f,
+		};
+
+		lightMoveSpeeds =
+		{
+			1.0f, 5.0f, 0.5f, 2.0f
+		};
+
+		pointLightColors =
+		{
+			glm::vec3(1.0f, 1.0f, 1.0f),
+			glm::vec3(1.5f, 0.0f, 0.0f),
+			glm::vec3(0.0f, 1.5f, 0.0f),
+			glm::vec3(0.0f, 0.0f, 1.5f),
 		};
 
 		return true;	
@@ -177,23 +205,32 @@ void LightGame::UpdateGame(float deltaTime)
 	//Update Light Source properties
 	if (moveLightSource)
 	{
-		lightCubePos += glm::vec3(0.0f, 1.0f, 0.0f) * lightMoveDir * 1.0f * GetDeltaTime();
-		if (lightCubePos.y > 2.5f)
-			lightMoveDir = -1;
-		else if (lightCubePos.y < -2.5f)
-			lightMoveDir = 1;
+		for (int i = 0; i < lightCubesPos.size(); i++)
+		{
+			glm::vec3& lightCubePos = lightCubesPos[i];
+			float& lightMoveDir = lightMoveDirs[i];
+
+			lightCubePos += glm::vec3(0.0f, 1.0f, 0.0f) * lightMoveDir * GetDeltaTime() * lightMoveSpeeds[i];
+			if (lightCubePos.y > 2.5f)
+				lightMoveDir = -1;
+			else if (lightCubePos.y < -2.5f)
+				lightMoveDir = 1;
+		}
 	}
-	if (changeLightColor)
+	/*if (changeLightColor)
 	{
-		lightColor.x = (float)glm::abs(sin(glfwGetTime() * 0.7f));
-		lightColor.y = (float)glm::abs(sin(glfwGetTime() * 1.0f));
-		lightColor.z = (float)glm::abs(sin(glfwGetTime() * 3.1f));
-	}
+		pointLightColor.x = (float)glm::abs(sin(glfwGetTime() * 0.7f));
+		pointLightColor.y = (float)glm::abs(sin(glfwGetTime() * 1.0f));
+		pointLightColor.z = (float)glm::abs(sin(glfwGetTime() * 3.1f));
+	}*/
 }
 
 void LightGame::DrawFrame()
 {
 	Game::DrawFrame();
+
+	glClearColor(0.03f, 0.03f, 0.03f, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 	//Draw triangle from vertices
 	if (shader && lightShader && camera)
@@ -204,12 +241,6 @@ void LightGame::DrawFrame()
 
 		//Create the Normal Model Matrix to convert normal from local space to World coordinates while respecting scale
 		glm::mat3 normalModelMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
-
-		//Create the model matrix for the light cube
-		glm::vec3 lightCubeScale = glm::vec3(0.2f);
-		glm::mat4 lightModel = glm::identity<glm::mat4>();
-		lightModel = glm::translate(lightModel, lightCubePos);
-		lightModel = glm::scale(lightModel, lightCubeScale);
 
 		//Create the view matrix using camera lookAt target point
 		glm::mat4 view = camera->GetLookAtMat(camera->GetCameraLocation() + camera->GetCameraForwardDir());
@@ -232,20 +263,38 @@ void LightGame::DrawFrame()
 		//shader->SetFloat("material.emissiveAmount", 1.0f);
 		shader->SetFloat("material.shininess", 32.0f);
 
-		//Setting Light struct properties (Setup the light Source as a flashlight, a spotlight originating from camera position)
-		shader->SetVec3("light.sourceVec", camera->GetCameraLocation());
-		shader->SetVec3("light.sourceDir", camera->GetCameraForwardDir());
-		shader->SetFloat("light.innerRadiusCos", glm::cos(glm::radians(12.5f)));
-		shader->SetFloat("light.outerRadiusCos", glm::cos(glm::radians(15.0f)));
-		shader->SetVec3("light.ambient", 0.1f * lightColor);
-		shader->SetVec3("light.diffuse", 0.75f * lightColor);
-		shader->SetVec3("light.specular", 1.0f * lightColor);
-		shader->SetFloat("light.constant", 1.0f);	//Attenuation constants for a light source that covers and outer radius on 50 units
-		shader->SetFloat("light.linear", 0.09f);
-		shader->SetFloat("light.quad", 0.032f);
-
 		//Set the viewer (Camera) world position
 		shader->SetVec3("cameraPos", camera->GetCameraLocation());
+
+		//Setting Light struct properties (Setup the light Source as a flashlight, a spotlight originating from camera position)
+		shader->SetVec3("spotLight.sourcePos", camera->GetCameraLocation());
+		shader->SetVec3("spotLight.sourceDir", camera->GetCameraForwardDir());
+		shader->SetFloat("spotLight.innerRadiusCos", glm::cos(glm::radians(12.5f)));
+		shader->SetFloat("spotLight.outerRadiusCos", glm::cos(glm::radians(15.0f)));
+		shader->SetVec3("spotLight.light.ambient", 0.1f * spotLightColor);
+		shader->SetVec3("spotLight.light.diffuse", 0.75f * spotLightColor);
+		shader->SetVec3("spotLight.light.specular", 1.0f * spotLightColor);
+		shader->SetFloat("spotLight.constant", 1.0f);	//Attenuation constants for a light source that covers and outer radius on 50 units
+		shader->SetFloat("spotLight.linear", 0.09f);
+		shader->SetFloat("spotLight.quad", 0.032f);
+
+		//Rendering point lights
+		for (int i = 0; i < lightCubesPos.size(); i++)
+		{
+			shader->SetVec3("pointLights[" + std::to_string(i) + "].sourcePos", lightCubesPos[i]);
+			shader->SetVec3("pointLights[" + std::to_string(i) + "].light.ambient", 0.1f * glm::normalize(pointLightColors[i]));
+			shader->SetVec3("pointLights[" + std::to_string(i) + "].light.diffuse", 0.75f * pointLightColors[i]);
+			shader->SetVec3("pointLights[" + std::to_string(i) + "].light.specular", 1.0f * pointLightColors[i]);
+			shader->SetFloat("pointLights[" + std::to_string(i) + "].constant", 1.0f);	//Attenuation constants for a light source that covers and outer radius on 50 units
+			shader->SetFloat("pointLights[" + std::to_string(i) + "].linear", 0.09f);
+			shader->SetFloat("pointLights[" + std::to_string(i) + "].quad", 0.032f);
+		}
+
+		//Rendering directional Light
+		shader->SetVec3("dirLight.sourceDir", dirLightOrient);
+		shader->SetVec3("dirLight.light.ambient", 0.1f * dirLightColor);
+		shader->SetVec3("dirLight.light.diffuse", 0.75f * dirLightColor);
+		shader->SetVec3("dirLight.light.specular", 1.0f * dirLightColor);
 
 		//Bind the Object VAO
 		glBindVertexArray(VAO);
@@ -268,15 +317,25 @@ void LightGame::DrawFrame()
 
 
 		//Use the Light Shader Program ID to draw the light Cube, and apply model, view, projection matrices
-		lightShader->Use();
-		lightShader->SetMat44("model", lightModel);
-		lightShader->SetMat44("view", view);
-		lightShader->SetMat44("projection", projection);
-		lightShader->SetVec3("lightColor", lightColor);
-
 		//Bind the Object VAO
 		glBindVertexArray(lightVAO);
-		//Draw triangle using previous data
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (void*)0);
+		lightShader->Use();
+		for (int i = 0; i < lightCubesPos.size(); i++)
+		{
+			glm::vec3 lightCubePos = lightCubesPos[i];
+			//Create the model matrix for the light cube
+			glm::vec3 lightCubeScale = glm::vec3(0.2f);
+			glm::mat4 lightModel = glm::identity<glm::mat4>();
+			lightModel = glm::translate(lightModel, lightCubePos);
+			lightModel = glm::scale(lightModel, lightCubeScale);
+
+			lightShader->SetMat44("model", lightModel);
+			lightShader->SetMat44("view", view);
+			lightShader->SetMat44("projection", projection);
+			lightShader->SetVec3("lightColor", pointLightColors[i]);
+
+			//Draw triangle using previous data
+			glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (void*)0);
+		}
 	}
 }
