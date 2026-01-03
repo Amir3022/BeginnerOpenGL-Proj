@@ -1,5 +1,7 @@
 #version 330 core
 
+#define NR_POINT_LIGHTS 4
+//Object material struct
 struct Material
 {
 	sampler2D diffuse;
@@ -9,18 +11,51 @@ struct Material
 	float shininess;
 };
 
+//Light sources Structs
 struct Light
 {
-	vec4 sourceVec; //use a vec4 with the w component used to determine whether we are using point or directional light, 1.0f positional light, 0.0f directional light
-	
 	vec3 ambient;
 	vec3 diffuse;
 	vec3 specular;
+};
+
+struct PointLight
+{
+	Light light;
+
+	vec3 sourcePos;
+	
+	float constant;	//Constanst for the attenuation formula
+	float linear;
+	float quad;
+};
+
+struct DirLight
+{
+	Light light;
+
+	vec3 sourceDir;
+};
+
+struct SpotLight
+{
+	Light light;
+
+	vec3 sourcePos;
+	vec3 sourceDir;
+	float innerRadiusCos;
+	float outerRadiusCos;
 
 	float constant;	//Constanst for the attenuation formula
 	float linear;
 	float quad;
 };
+
+//Calculating effects of Different light casters
+vec3 CalculateDirectionalLightEffect(vec3 norm, DirLight localDirLight);
+vec3 CalculatePointLightEffect(vec3 norm, PointLight localPointLight);
+vec3 CalculateSpotLightEffect(vec3 norm, SpotLight localSpotLight);
+vec3 PerformLightCalculations(vec3 norm, vec3 lightDir, vec3 viewDir, Light light, float attenuation, float Intensity);
 
 out vec4 FragColor;
 
@@ -28,48 +63,100 @@ in vec3 FragPos;
 in vec3 outNormal;
 in vec2 TexCoord;
 
-uniform vec3 lightSourcePos;
 uniform vec3 cameraPos;
 uniform Material material;
-uniform Light light;
+uniform DirLight dirLight;
+uniform SpotLight spotLight;
+uniform PointLight[NR_POINT_LIGHTS] pointLights;
 
 void main()
 {
-	//Calculating light direction and attenuation if any
-	vec3 lightDir;
-	float attenuation;
+	//Calculate normalized normal vector
+	vec3 norm = normalize(outNormal);
 
-	if(light.sourceVec.w < 0.001f) //Directional light
+	vec3 combinedColor = vec3(0.0f);
+
+	//Calculate Directional Light Effect on fragment
+	combinedColor += CalculateDirectionalLightEffect(norm, dirLight);
+
+	//Calculate each point Light effect on fragment
+	for(int i = 0; i < NR_POINT_LIGHTS; i++)
 	{
-		lightDir = normalize(-vec3(light.sourceVec));
-		attenuation = 1.0f;
-	}
-	else if(light.sourceVec.w > 0.999f)	//Positional light
-	{
-		lightDir = normalize(vec3(light.sourceVec) - FragPos);
-		float distanceToLight = length(vec3(light.sourceVec) - FragPos);
-		attenuation = 1.0f / (light.constant + light.linear * distanceToLight + light.quad * (distanceToLight * distanceToLight));
+		combinedColor += CalculatePointLightEffect(norm, pointLights[i]);
 	}
 
+	//Calculate Spot Light effect on Fragment
+	combinedColor += CalculateSpotLightEffect(norm, spotLight);
+
+	//Add the Emissive color effect
+	combinedColor += floor((vec3(1.0f) - vec3(texture(material.specular, TexCoord)))) * vec3(texture(material.emissive, TexCoord)) * material.emissiveAmount;
+
+	//FragColor = vec4(combinedColor, 1.0f);
+	FragColor = vec4(combinedColor, 1.0f);
+}
+
+
+vec3 CalculateDirectionalLightEffect(vec3 norm, DirLight localDirLight)
+{
+	//Calculating light direction
+	vec3 lightDir = normalize(-vec3(localDirLight.sourceDir));
+
+	//Calculate the View Direction from camera to Fragment
+	vec3 viewDir = normalize(cameraPos - FragPos);
+
+	//Use Light Calculation function to return the DirLight effect
+	return PerformLightCalculations(norm, lightDir, viewDir, localDirLight.light, 1.0f, 1.0f);
+}
+
+vec3 CalculatePointLightEffect(vec3 norm, PointLight localPointLight)
+{
+	//Calculating light direction and attenuation
+	vec3 lightDir = normalize(vec3(localPointLight.sourcePos) - FragPos);
+	float distanceToLight = length(vec3(localPointLight.sourcePos) - FragPos);
+	float attenuation = clamp(1.0f / (localPointLight.constant + localPointLight.linear * distanceToLight + localPointLight.quad * (distanceToLight * distanceToLight)), 0.0f, 1.0f);
+
+	//Calculate the View Direction from camera to Fragment
+	vec3 viewDir = normalize(cameraPos - FragPos);
+
+	//Use Light Calculation function to return the PointLight effect
+	return PerformLightCalculations(norm, lightDir, viewDir, localPointLight.light, attenuation, 1.0f);
+}
+
+vec3 CalculateSpotLightEffect(vec3 norm, SpotLight localSpotLight)
+{
+	//Calculating light direction and attenuation
+	vec3 lightDir = normalize(vec3(localSpotLight.sourcePos) - FragPos);
+	float distanceToLight = length(vec3(localSpotLight.sourcePos) - FragPos);
+	float attenuation = clamp(1.0f / (localSpotLight.constant + localSpotLight.linear * distanceToLight + localSpotLight.quad * (distanceToLight * distanceToLight)), 0.0f, 1.0f);
+
+	//Calculate spotlight area of influence
+	float cosAngle = dot(-lightDir, normalize(localSpotLight.sourceDir));
+
+	//Calculate light fall off between inner and outer radi, use light intensity to influence diffuse and specular lights on the lit object
+	float lightIntensity = clamp((cosAngle - localSpotLight.outerRadiusCos) / (localSpotLight.innerRadiusCos - localSpotLight.outerRadiusCos), 0.0f, 1.0f);
+
+	//Calculate the View Direction from camera to Fragment
+	vec3 viewDir = normalize(cameraPos - FragPos);
+
+	//Use Light Calculation function to return the spotLight effect
+	return PerformLightCalculations(norm, lightDir, viewDir, localSpotLight.light, attenuation, lightIntensity);
+}
+
+vec3 PerformLightCalculations(vec3 norm, vec3 lightDir, vec3 viewDir, Light light, float attenuation, float intensity)
+{
 	// Calculating Ambient light
 	vec3 ambientColor = light.ambient * attenuation * vec3(texture(material.diffuse, TexCoord));
 
 	//Calculating Diffuse
-	vec3 norm = normalize(outNormal);
-
-	float diffuse = max(dot(norm, lightDir), 0.0f);
+	float diffuse = max(dot(norm, lightDir), 0.0f) * intensity;
 	vec3 diffuseColor = light.diffuse * diffuse * attenuation * vec3(texture(material.diffuse, TexCoord));
 
 	//Calculating Specular
-	vec3 viewDir = normalize(cameraPos - FragPos);
 	vec3 reflectedLightDir = normalize(reflect(-lightDir, norm));
-	float specular = pow(max(dot(reflectedLightDir, viewDir), 0.0f), material.shininess);
+	float specular = pow(max(dot(reflectedLightDir, viewDir), 0.0f), material.shininess) * intensity;
 	vec3 specularColor = light.specular * specular * attenuation * vec3(texture(material.specular, TexCoord));
 
-	//Applying Emissive Colors
-	vec3 emissiveColor = floor((vec3(1.0f) - vec3(texture(material.specular, TexCoord)))) * vec3(texture(material.emissive, TexCoord)) * material.emissiveAmount;
-
 	//Combining Ambient, Diffuse, Specular for complete Phong Shading Model
-	vec3 combined = ambientColor + diffuseColor + specularColor + emissiveColor;
-	FragColor = vec4(combined, 1.0f);
+	return ambientColor + diffuseColor + specularColor;
 }
+
