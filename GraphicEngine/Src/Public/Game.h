@@ -8,6 +8,8 @@
 #include "Shader.h"
 #include "Camera.h"
 #include "stb_image.h"
+#include "assimp/config.h"
+#include "assimp/revision.h"
 
 struct PosOrientPair
 {
