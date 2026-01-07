@@ -69,9 +69,12 @@ bool CubesGame::Init()
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
         //Load two Images into 2 different textures
-        unsigned int texture1 = LoadImageIntoTexture("Assets/Textures/container.jpg", GL_TEXTURE0, GL_RGB);
-        unsigned int texture2 = LoadImageIntoTexture("Assets/Textures/awesomeface.png", GL_TEXTURE1, GL_RGBA);
-
+        unsigned int texture1 = LoadImageIntoTexture("Assets/Textures/container.jpg");
+        unsigned int texture2 = LoadImageIntoTexture("Assets/Textures/awesomeface.png");
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, texture1);
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, texture2);
 
         //Set Vertex Attribute Data
         glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0); //0 Attribute in the vertex shader, 3 vec3 has 3 float values, GL_FLOAT each input is a float value, GL_FALSE no normalization to be used, size of each stride to move to the next vertex, pointer to the first element in the Vertex Buffer

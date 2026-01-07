@@ -191,7 +191,7 @@ void Game::ProcessInput(GLFWwindow* window)
     camera->ProcessKeyboardInput(inputVec, GetDeltaTime());
 }
 
-unsigned int Game::LoadImageIntoTexture(const char* imagePath, GLenum textureUnit, GLenum dataFormat)
+unsigned int Game::LoadImageIntoTexture(const char* imagePath)
 {
     unsigned int outTexture = -1;
     //Load Texture Data from image path
@@ -200,11 +200,31 @@ unsigned int Game::LoadImageIntoTexture(const char* imagePath, GLenum textureUni
     unsigned char* data = stbi_load(imagePath, &width, &height, &nChannels, 0);
     if (data)
     {
+        //Get the Data format based on image number on channels
+        GLenum dataFormat = GL_RED;
+        switch (nChannels)
+        {
+        case 1:
+        {
+            dataFormat = GL_RED;
+            break;
+        }
+        case 3:
+        {
+            dataFormat = GL_RGB;
+            break;
+        }
+        case 4:
+        {
+            dataFormat = GL_RGBA;
+            break;
+        }
+        }
+
         //Generate Texture Object
         glGenTextures(1, &outTexture);
 
-        //Activate Texture Unit and Texture to object
-        glActiveTexture(textureUnit);
+        //Bind Texture to texture object
         glBindTexture(GL_TEXTURE_2D, outTexture);
 
         //Set Texture Parameters
@@ -221,7 +241,8 @@ unsigned int Game::LoadImageIntoTexture(const char* imagePath, GLenum textureUni
     {
         std::cout << "Failed to load texture with path: " << imagePath << std::endl;
     }
-
+    //Set the Default Texture as active
+    glActiveTexture(0);
     //Free loaded Image
     stbi_image_free(data);
 

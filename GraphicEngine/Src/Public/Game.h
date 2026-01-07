@@ -71,7 +71,7 @@ public:
 
 protected:
 	virtual void ProcessInput(GLFWwindow* window);
-	unsigned int LoadImageIntoTexture(const char* imagePath, GLenum textureUnit, GLenum dataFormat);
+	unsigned int LoadImageIntoTexture(const char* imagePath);
 	void calculateDeltaTime();
 
 private:

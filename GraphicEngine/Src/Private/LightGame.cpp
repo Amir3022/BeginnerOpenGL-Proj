@@ -1,6 +1,5 @@
 #include "LightGame.h"
 
-
 LightGame::LightGame(int in_width, int in_height)
 	: Game(in_width, in_height)
 {
@@ -119,9 +118,15 @@ bool LightGame::Init()
 		glEnableVertexAttribArray(2);
 
 		//Loading the Crate diffuse and specular textrue and Bind to Texture Buffer
-		LoadImageIntoTexture("Assets/Textures/container2.png", GL_TEXTURE0, GL_RGBA);
-		LoadImageIntoTexture("Assets/Textures/container2_specular.png", GL_TEXTURE1, GL_RGBA);
-		LoadImageIntoTexture("Assets/Textures/matrix.jpg", GL_TEXTURE2, GL_RGB);
+		unsigned int diffuseMapTex = LoadImageIntoTexture("Assets/Textures/container2.png");
+		unsigned int specularMapTex = LoadImageIntoTexture("Assets/Textures/container2_specular.png");
+		unsigned int emissiveMapTex = LoadImageIntoTexture("Assets/Textures/matrix.jpg");
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, diffuseMapTex);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, specularMapTex);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, emissiveMapTex);
 
 		//Create a new Vertex Array Object for the Light Cube
 		glGenVertexArrays(1, &lightVAO);
@@ -179,7 +184,6 @@ bool LightGame::Init()
 			glm::vec3(0.0f, 1.5f, 0.0f),
 			glm::vec3(0.0f, 0.0f, 1.5f),
 		};
-
 		return true;	
 	}
 	catch (std::exception e)
