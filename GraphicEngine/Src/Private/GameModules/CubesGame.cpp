@@ -1,4 +1,4 @@
-#include "CubesGame.h"
+#include "GameModules/CubesGame.h"
 
 bool CubesGame::Init()
 {

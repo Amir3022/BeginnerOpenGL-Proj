@@ -152,14 +152,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\Src\glad\glad.c" />
-    <ClCompile Include="Src\Private\Camera.cpp" />
-    <ClCompile Include="Src\Private\CubesGame.cpp" />
-    <ClCompile Include="Src\Private\Game.cpp" />
-    <ClCompile Include="Src\Private\LightGame.cpp" />
+    <ClCompile Include="Src\Private\Components\Camera.cpp" />
+    <ClCompile Include="Src\Private\GameModules\CubesGame.cpp" />
+    <ClCompile Include="Src\Private\GameModules\Game.cpp" />
+    <ClCompile Include="Src\Private\GameModules\LightGame.cpp" />
     <ClCompile Include="Src\Private\Main.cpp" />
-    <ClCompile Include="Src\Private\Shader.cpp" />
-    <ClCompile Include="Src\Private\stb_image.cpp" />
-    <ClCompile Include="Src\Public\LightGame.h" />
+    <ClCompile Include="Src\Private\Components\Shader.cpp" />
+    <ClCompile Include="Src\Private\Utilties\stb_image.cpp" />
+    <ClCompile Include="Src\Public\GameModules\LightGame.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\FragmentShader.glsl" />
@@ -170,11 +170,11 @@
     <None Include="Shaders\VertexShader.glsl" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Src\Public\Camera.h" />
-    <ClInclude Include="Src\Public\CubesGame.h" />
-    <ClInclude Include="Src\Public\Game.h" />
-    <ClInclude Include="Src\Public\Shader.h" />
-    <ClInclude Include="Src\Public\stb_image.h" />
+    <ClInclude Include="Src\Public\Components\Camera.h" />
+    <ClInclude Include="Src\Public\GameModules\CubesGame.h" />
+    <ClInclude Include="Src\Public\GameModules\Game.h" />
+    <ClInclude Include="Src\Public\Components\Shader.h" />
+    <ClInclude Include="Src\Public\Utilities\stb_image.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

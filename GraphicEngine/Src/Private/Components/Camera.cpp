@@ -1,4 +1,4 @@
-#include "Camera.h"
+#include "Components/Camera.h"
 
 glm::vec3 Camera::GetCameraForwardDir()
 {

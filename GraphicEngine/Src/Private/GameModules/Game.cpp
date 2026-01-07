@@ -1,5 +1,4 @@
-#include "Game.h"
-#include "CubesGame.h"
+#include "GameModules/Game.h"
 
 int Game::Process()
 {

@@ -1,5 +1,4 @@
-#include "CubesGame.h"
-#include "LightGame.h"
+#include "GameModules/LightGame.h"
 
 int main()
 {

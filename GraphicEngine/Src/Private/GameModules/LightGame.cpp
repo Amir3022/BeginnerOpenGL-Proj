@@ -1,4 +1,4 @@
-#include "LightGame.h"
+#include "GameModules/LightGame.h"
 
 LightGame::LightGame(int in_width, int in_height)
 	: Game(in_width, in_height)

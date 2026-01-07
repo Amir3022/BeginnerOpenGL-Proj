@@ -5,9 +5,9 @@
 #include <algorithm>
 #include <memory>
 #include <vector>
-#include "Shader.h"
-#include "Camera.h"
-#include "stb_image.h"
+#include "Components/Shader.h"
+#include "Components/Camera.h"
+#include "Utilities/stb_image.h"
 #include "assimp/config.h"
 #include "assimp/revision.h"
 
