@@ -160,6 +160,7 @@
     <ClCompile Include="Src\Private\Components\Shader.cpp" />
     <ClCompile Include="Src\Private\Utilties\stb_image.cpp" />
     <ClCompile Include="Src\Public\GameModules\LightGame.h" />
+    <ClCompile Include="Src\Public\Utilities\EngineTypes.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\FragmentShader.glsl" />
@@ -171,6 +172,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\Public\Components\Camera.h" />
+    <ClInclude Include="Src\Public\Components\Mesh.h" />
     <ClInclude Include="Src\Public\GameModules\CubesGame.h" />
     <ClInclude Include="Src\Public\GameModules\Game.h" />
     <ClInclude Include="Src\Public\Components\Shader.h" />
