@@ -1,4 +1,5 @@
 #include "GameModules/CubesGame.h"
+#include "Utilities/EngineUtilities.h"
 
 bool CubesGame::Init()
 {
@@ -8,7 +9,7 @@ bool CubesGame::Init()
     try
     {
         //Create Shader Program from Class
-        shader = std::make_unique<Shader>(vertexShaderPath.c_str(), fragmentShaderPath.c_str());
+        shader = std::make_shared<Shader>(vertexShaderPath.c_str(), fragmentShaderPath.c_str());
 
         //Generate Vertex Array Object (VAO)
         unsigned int VAO;
@@ -69,8 +70,8 @@ bool CubesGame::Init()
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
         //Load two Images into 2 different textures
-        unsigned int texture1 = LoadImageIntoTexture("Assets/Textures/container.jpg");
-        unsigned int texture2 = LoadImageIntoTexture("Assets/Textures/awesomeface.png");
+        unsigned int texture1 = EngineUtilities::LoadImageIntoTexture("Assets/Textures/container.jpg");
+        unsigned int texture2 = EngineUtilities::LoadImageIntoTexture("Assets/Textures/awesomeface.png");
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, texture1);
         glActiveTexture(GL_TEXTURE1);

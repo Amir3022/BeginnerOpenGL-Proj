@@ -1,4 +1,5 @@
 #include "GameModules/LightGame.h"
+#include "Utilities/EngineUtilities.h"
 
 LightGame::LightGame(int in_width, int in_height)
 	: Game(in_width, in_height)
@@ -26,7 +27,7 @@ bool LightGame::Init()
 	try
 	{
 		//Create Shader Program from Class
-		shader = std::make_unique<Shader>(vertexShaderPath.c_str(), fragmentShaderPath.c_str());
+		shader = std::make_shared<Shader>(vertexShaderPath.c_str(), fragmentShaderPath.c_str());
 
 		//Create Light Shader to render the Light Cube
 		lightShader = std::make_unique<Shader>(lightVertexShaderPath.c_str(), lightFragmentShaderPath.c_str());
@@ -118,9 +119,9 @@ bool LightGame::Init()
 		glEnableVertexAttribArray(2);
 
 		//Loading the Crate diffuse and specular textrue and Bind to Texture Buffer
-		unsigned int diffuseMapTex = LoadImageIntoTexture("Assets/Textures/container2.png");
-		unsigned int specularMapTex = LoadImageIntoTexture("Assets/Textures/container2_specular.png");
-		unsigned int emissiveMapTex = LoadImageIntoTexture("Assets/Textures/matrix.jpg");
+		unsigned int diffuseMapTex = EngineUtilities::LoadImageIntoTexture("Assets/Textures/container2.png");
+		unsigned int specularMapTex = EngineUtilities::LoadImageIntoTexture("Assets/Textures/container2_specular.png");
+		unsigned int emissiveMapTex = EngineUtilities::LoadImageIntoTexture("Assets/Textures/matrix.jpg");
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, diffuseMapTex);
 		glActiveTexture(GL_TEXTURE1);
