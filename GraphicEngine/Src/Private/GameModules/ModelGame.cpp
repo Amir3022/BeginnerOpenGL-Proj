@@ -13,7 +13,7 @@ ModelGame::ModelGame(int in_width, int in_height)
 	changeLightColor = false;
 
 	spotLightColor = glm::vec3(2.0f, 2.0f, 2.0f);
-	dirLightColor = glm::vec3(0.98f, 0.98f, 0.5f) * 0.4f;
+	dirLightColor = glm::vec3(0.98f, 0.98f, 0.5f) * 0.75f;
 	dirLightOrient = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
 
 	bSceneLit = true;
@@ -82,6 +82,27 @@ void ModelGame::DrawFrame()
 		shader->SetMat44("view", view);
 		shader->SetMat44("projection", projection);
 		shader->SetMat33("normalModelMatrix", normalModelMatrix);
+
+		//Set the viewer (Camera) world position
+		shader->SetVec3("cameraPos", camera->GetCameraLocation());
+
+		//Setting Light struct properties (Setup the light Source as a flashlight, a spotlight originating from camera position)
+		shader->SetVec3("spotLight.sourcePos", camera->GetCameraLocation());
+		shader->SetVec3("spotLight.sourceDir", camera->GetCameraForwardDir());
+		shader->SetFloat("spotLight.innerRadiusCos", glm::cos(glm::radians(12.5f)));
+		shader->SetFloat("spotLight.outerRadiusCos", glm::cos(glm::radians(15.0f)));
+		shader->SetVec3("spotLight.light.ambient", 0.1f * spotLightColor);
+		shader->SetVec3("spotLight.light.diffuse", 0.75f * spotLightColor);
+		shader->SetVec3("spotLight.light.specular", 1.0f * spotLightColor);
+		shader->SetFloat("spotLight.constant", 1.0f);	//Attenuation constants for a light source that covers and outer radius on 50 units
+		shader->SetFloat("spotLight.linear", 0.09f);
+		shader->SetFloat("spotLight.quad", 0.032f);
+
+		//Rendering directional Light
+		shader->SetVec3("dirLight.sourceDir", dirLightOrient);
+		shader->SetVec3("dirLight.light.ambient", 0.1f * dirLightColor);
+		shader->SetVec3("dirLight.light.diffuse", 0.75f * dirLightColor);
+		shader->SetVec3("dirLight.light.specular", 1.0f * dirLightColor);
 
 		//Set the Lit Mode variable
 		shader->SetBool("bLit", bSceneLit);

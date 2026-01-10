@@ -164,7 +164,7 @@ vec3 PerformLightCalculations(vec3 norm, vec3 lightDir, vec3 viewDir, Light ligh
 
 	//Calculating Specular
 	vec3 reflectedLightDir = normalize(reflect(-lightDir, norm));
-	float specular = pow(max(dot(reflectedLightDir, viewDir), 0.0f), material.shininess) * intensity;
+	float specular = pow(max(dot(reflectedLightDir, viewDir), 0.0f), /*material.shininess*/32) * intensity;
 	vec3 specularColor = light.specular * specular * attenuation * vec3(texture(material.texture_specular_1, TexCoord));
 
 	//Combining Ambient, Diffuse, Specular for complete Phong Shading Model
