@@ -15,18 +15,27 @@ struct Texture
 {
 	unsigned int texIndex;
 	ETextureType texType;
+	std::string path;
 };
 
 class Mesh
 {
 public:
+	Mesh()
+	{
+		bIsValid = false;
+	}
+
 	Mesh(const std::vector<Vertex>& in_vertices, const std::vector<unsigned int>& in_indices, const std::vector<Texture>& in_textures)
 		:vertices(in_vertices), indices(in_indices), textures(in_textures)
 	{
 		SetupMesh();
+		bIsValid = true;
 	}
 
 	void Draw(std::weak_ptr<Shader> shaderRef);
+
+	bool IsValid() { return bIsValid; }
 
 private:
 	void SetupMesh();
@@ -39,4 +48,7 @@ private:
 
 	//GL Containers
 	unsigned int VAO, VBO, EBO;
+
+	//Validation Variables
+	bool bIsValid;
 };

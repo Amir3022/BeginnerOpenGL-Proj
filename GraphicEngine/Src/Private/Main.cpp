@@ -1,8 +1,8 @@
-#include "GameModules/LightGame.h"
+#include "GameModules/ModelGame.h"
 
 int main()
 {
-    std::unique_ptr<LightGame> game = std::make_unique<LightGame>(1024, 768);
+    std::unique_ptr<ModelGame> game = std::make_unique<ModelGame>(1024, 768);
     if (game)
     {
         return game->Process();

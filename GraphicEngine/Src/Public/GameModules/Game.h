@@ -69,7 +69,6 @@ public:
 
 protected:
 	virtual void ProcessInput(GLFWwindow* window);
-	unsigned int LoadImageIntoTexture(const char* imagePath);
 	void calculateDeltaTime();
 
 private:
@@ -95,7 +94,7 @@ protected:
 	std::unique_ptr<Camera> camera;
 
 	//Shader Program ID Instance
-	std::unique_ptr<Shader> shader;
+	std::shared_ptr<Shader> shader;
 
 	//Shader Variables
 	std::string fragmentShaderPath;
