@@ -2,7 +2,7 @@
 
 int main()
 {
-    std::unique_ptr<ModelGame> game = std::make_unique<ModelGame>(1024, 768);
+    std::unique_ptr<ModelGame> game = std::make_unique<ModelGame>(1280, 720);
     if (game)
     {
         return game->Process();
