@@ -45,6 +45,12 @@
     <ClCompile Include="Src\Public\Utilities\EngineTypes.h">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Src\Private\Components\Mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Src\Private\Components\Model.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\VertexShader.glsl" />
@@ -53,6 +59,8 @@
     <None Include="Shaders\LightScene\FragmentShader.glsl" />
     <None Include="Shaders\LightScene\LightFragmentShader.glsl" />
     <None Include="Shaders\LightScene\LightVertexShader.glsl" />
+    <None Include="Shaders\MeshScene\FragmentShader.glsl" />
+    <None Include="Shaders\MeshScene\VertexShader.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\Public\Components\Shader.h">
@@ -71,6 +79,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Src\Public\Components\Mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Public\Components\Model.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -93,7 +93,7 @@ void main()
 	combinedColor += CalculateSpotLightEffect(norm, spotLight);
 
 	//Add the Emissive color effect
-	combinedColor += floor((vec3(1.0f) - vec3(texture(material.specular, TexCoord)))) * vec3(texture(material.emissive, TexCoord)) * material.emissiveAmount;
+	combinedColor += floor((vec3(1.0f) - vec3(texture(material.texture_specular_1, TexCoord)))) * vec3(texture(material.texture_emissive, TexCoord)) * material.emissiveAmount;
 
 	//FragColor = vec4(combinedColor, 1.0f);
 	FragColor = vec4(combinedColor, 1.0f);
@@ -149,16 +149,16 @@ vec3 CalculateSpotLightEffect(vec3 norm, SpotLight localSpotLight)
 vec3 PerformLightCalculations(vec3 norm, vec3 lightDir, vec3 viewDir, Light light, float attenuation, float intensity)
 {
 	// Calculating Ambient light
-	vec3 ambientColor = light.ambient * attenuation * vec3(texture(material.diffuse, TexCoord));
+	vec3 ambientColor = light.ambient * attenuation * vec3(texture(material.texture_diffuse_1, TexCoord));
 
 	//Calculating Diffuse
 	float diffuse = max(dot(norm, lightDir), 0.0f) * intensity;
-	vec3 diffuseColor = light.diffuse * diffuse * attenuation * vec3(texture(material.diffuse, TexCoord));
+	vec3 diffuseColor = light.diffuse * diffuse * attenuation * vec3(texture(material.texture_diffuse_1, TexCoord));
 
 	//Calculating Specular
 	vec3 reflectedLightDir = normalize(reflect(-lightDir, norm));
 	float specular = pow(max(dot(reflectedLightDir, viewDir), 0.0f), material.shininess) * intensity;
-	vec3 specularColor = light.specular * specular * attenuation * vec3(texture(material.specular, TexCoord));
+	vec3 specularColor = light.specular * specular * attenuation * vec3(texture(material.texture_specular_1, TexCoord));
 
 	//Combining Ambient, Diffuse, Specular for complete Phong Shading Model
 	return ambientColor + diffuseColor + specularColor;

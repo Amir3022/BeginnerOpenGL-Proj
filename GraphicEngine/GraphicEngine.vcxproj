@@ -153,6 +153,8 @@
   <ItemGroup>
     <ClCompile Include="..\Src\glad\glad.c" />
     <ClCompile Include="Src\Private\Components\Camera.cpp" />
+    <ClCompile Include="Src\Private\Components\Mesh.cpp" />
+    <ClCompile Include="Src\Private\Components\Model.cpp" />
     <ClCompile Include="Src\Private\GameModules\CubesGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\Game.cpp" />
     <ClCompile Include="Src\Private\GameModules\LightGame.cpp" />
@@ -168,11 +170,14 @@
     <None Include="Shaders\LightScene\LightFragmentShader.glsl" />
     <None Include="Shaders\LightScene\LightVertexShader.glsl" />
     <None Include="Shaders\LightScene\VertexShader.glsl" />
+    <None Include="Shaders\MeshScene\FragmentShader.glsl" />
+    <None Include="Shaders\MeshScene\VertexShader.glsl" />
     <None Include="Shaders\VertexShader.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\Public\Components\Camera.h" />
     <ClInclude Include="Src\Public\Components\Mesh.h" />
+    <ClInclude Include="Src\Public\Components\Model.h" />
     <ClInclude Include="Src\Public\GameModules\CubesGame.h" />
     <ClInclude Include="Src\Public\GameModules\Game.h" />
     <ClInclude Include="Src\Public\Components\Shader.h" />
