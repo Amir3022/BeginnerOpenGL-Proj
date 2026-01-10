@@ -417,3 +417,6 @@ FodyWeavers.xsd
 !Libs/[Dd]ebugPublic/
 !Libs/[Rr]elease/
 !Libs/[Rr]eleases/
+x64/Debug/GraphicEngine.exe
+x64/Release/GraphicEngine.exe
+x64/Release/GraphicEngine.exe
