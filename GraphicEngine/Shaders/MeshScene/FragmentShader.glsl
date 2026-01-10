@@ -67,6 +67,7 @@ in vec3 FragPos;
 in vec3 outNormal;
 in vec2 TexCoord;
 
+uniform bool bLit;
 uniform vec3 cameraPos;
 uniform Material material;
 uniform DirLight dirLight;
@@ -75,28 +76,34 @@ uniform PointLight[NR_POINT_LIGHTS] pointLights;
 
 void main()
 {
-	//Calculate normalized normal vector
-	vec3 norm = normalize(outNormal);
-
-	vec3 combinedColor = vec3(0.0f);
-
-	//Calculate Directional Light Effect on fragment
-	combinedColor += CalculateDirectionalLightEffect(norm, dirLight);
-
-	//Calculate each point Light effect on fragment
-	for(int i = 0; i < NR_POINT_LIGHTS; i++)
+	if(bLit)
 	{
-		combinedColor += CalculatePointLightEffect(norm, pointLights[i]);
+		//Calculate normalized normal vector
+		vec3 norm = normalize(outNormal);
+
+		vec3 combinedColor = vec3(0.0f);
+
+		//Calculate Directional Light Effect on fragment
+		combinedColor += CalculateDirectionalLightEffect(norm, dirLight);
+
+		//Calculate each point Light effect on fragment
+		for(int i = 0; i < NR_POINT_LIGHTS; i++)
+		{
+			combinedColor += CalculatePointLightEffect(norm, pointLights[i]);
+		}
+
+		//Calculate Spot Light effect on Fragment
+		combinedColor += CalculateSpotLightEffect(norm, spotLight);
+
+		//Add the Emissive color effect
+		combinedColor += floor((vec3(1.0f) - vec3(texture(material.texture_specular_1, TexCoord)))) * vec3(texture(material.texture_emissive, TexCoord)) * material.emissiveAmount;
+
+		FragColor = vec4(combinedColor, 1.0f);
 	}
-
-	//Calculate Spot Light effect on Fragment
-	combinedColor += CalculateSpotLightEffect(norm, spotLight);
-
-	//Add the Emissive color effect
-	combinedColor += floor((vec3(1.0f) - vec3(texture(material.texture_specular_1, TexCoord)))) * vec3(texture(material.texture_emissive, TexCoord)) * material.emissiveAmount;
-
-	//FragColor = vec4(combinedColor, 1.0f);
-	FragColor = vec4(combinedColor, 1.0f);
+	else
+	{
+		FragColor = texture(material.texture_diffuse_1, TexCoord);
+	}
 }
 
 
