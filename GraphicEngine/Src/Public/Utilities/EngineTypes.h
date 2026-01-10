@@ -1,6 +1,6 @@
 #pragma once
 
-enum TextureType : unsigned char
+enum ETextureType : unsigned char
 {
 	diffuse = 0,
 	specular,

@@ -2,6 +2,7 @@
 #include "glm/vec4.hpp"
 #include "glm/mat4x4.hpp"
 #include "Utilities/EngineTypes.h"
+#include "Components/Shader.h"
 
 struct Vertex
 {
@@ -13,10 +14,29 @@ struct Vertex
 struct Texture
 {
 	unsigned int texIndex;
-	TextureType texType;
+	ETextureType texType;
 };
 
 class Mesh
 {
+public:
+	Mesh(const std::vector<Vertex>& in_vertices, const std::vector<unsigned int>& in_indices, const std::vector<Texture>& in_textures)
+		:vertices(in_vertices), indices(in_indices), textures(in_textures)
+	{
+		SetupMesh();
+	}
 
+	void Draw(std::weak_ptr<Shader> shaderRef);
+
+private:
+	void SetupMesh();
+
+private:
+	//Main Mesh Data
+	std::vector<Vertex> vertices;
+	std::vector<unsigned int> indices;
+	std::vector<Texture> textures;
+
+	//GL Containers
+	unsigned int VAO, VBO, EBO;
 };
