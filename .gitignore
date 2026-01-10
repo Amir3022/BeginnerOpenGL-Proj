@@ -399,3 +399,21 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# But keep x64 directories structure
+!x64/
+
+# Keep x64 Debug/Release directories
+!x64/[Dd]ebug/
+!x64/[Rr]elease/
+
+# Keep specific DLLs in those directories
+!x64/[Dd]ebug/assimp-vc143-mtd.dll
+!x64/[Dd]ebug/assimp-vc143-mtd.pdb
+!x64/[Rr]elease/assimp-vc143-mt.dll
+
+# Exclude Release and Debug in Libs folder
+!Libs/[Dd]ebug/
+!Libs/[Dd]ebugPublic/
+!Libs/[Rr]elease/
+!Libs/[Rr]eleases/
