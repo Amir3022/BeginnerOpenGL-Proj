@@ -74,6 +74,7 @@
     <IncludePath>$(SolutionDir)Includes;$(ProjectDir)Src\Public;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Libs\Debug;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SolutionDir)Src;$(SourcePath)</SourcePath>
+    <OutDir>..\x64\Debug</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <IncludePath>$(SolutionDir)Includes;$(ProjectDir)Src\Public;$(IncludePath)</IncludePath>
@@ -84,7 +85,7 @@
     <IncludePath>$(SolutionDir)Includes;$(ProjectDir)Src\Public;$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Libs\Debug;$(LibraryPath)</LibraryPath>
     <SourcePath>$(SolutionDir)Src;$(SourcePath)</SourcePath>
-    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <OutDir>..\x64\Debug</OutDir>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <IncludePath>$(SolutionDir)Includes;$(ProjectDir)Src\Public;$(IncludePath)</IncludePath>
@@ -163,8 +164,10 @@
     <ClCompile Include="Src\Private\GameModules\CubesGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\Game.cpp" />
     <ClCompile Include="Src\Private\GameModules\LightGame.cpp" />
+    <ClCompile Include="Src\Private\GameModules\ModelGame.cpp" />
     <ClCompile Include="Src\Private\Main.cpp" />
     <ClCompile Include="Src\Private\Components\Shader.cpp" />
+    <ClCompile Include="Src\Private\Utilties\EngineUtilities.cpp" />
     <ClCompile Include="Src\Private\Utilties\stb_image.cpp" />
     <ClCompile Include="Src\Public\GameModules\LightGame.h" />
     <ClCompile Include="Src\Public\Utilities\EngineTypes.h" />
@@ -186,6 +189,8 @@
     <ClInclude Include="Src\Public\GameModules\CubesGame.h" />
     <ClInclude Include="Src\Public\GameModules\Game.h" />
     <ClInclude Include="Src\Public\Components\Shader.h" />
+    <ClInclude Include="Src\Public\GameModules\ModelGame.h" />
+    <ClInclude Include="Src\Public\Utilities\EngineUtilities.h" />
     <ClInclude Include="Src\Public\Utilities\stb_image.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
