@@ -15,6 +15,9 @@ ModelGame::ModelGame(int in_width, int in_height)
 	spotLightColor = glm::vec3(2.0f, 2.0f, 2.0f);
 	dirLightColor = glm::vec3(0.98f, 0.98f, 0.5f) * 0.4f;
 	dirLightOrient = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
+
+	bSceneLit = true;
+	bSwitchLightWasPressed = false;
 }
 
 bool ModelGame::Init()
@@ -80,6 +83,27 @@ void ModelGame::DrawFrame()
 		shader->SetMat44("projection", projection);
 		shader->SetMat33("normalModelMatrix", normalModelMatrix);
 
+		//Set the Lit Mode variable
+		shader->SetBool("bLit", bSceneLit);
+
 		model->Draw(shader);
+	}
+}
+
+void ModelGame::ProcessInput(GLFWwindow* window)
+{
+	Game::ProcessInput(window);
+	//Cycle between Lit and Unlit Modes in Rendering Model when pressing P
+	if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
+	{
+		if (!bSwitchLightWasPressed)
+		{
+			bSwitchLightWasPressed = true;
+			bSceneLit = !bSceneLit;
+		}
+	}
+	else
+	{
+		bSwitchLightWasPressed = false;
 	}
 }

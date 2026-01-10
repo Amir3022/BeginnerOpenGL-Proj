@@ -154,8 +154,16 @@ void Game::ProcessInput(GLFWwindow* window)
     //Change between wireframe and filled drawing mode when TAB is pressed
     if (glfwGetKey(window, GLFW_KEY_TAB) == GLFW_PRESS)
     {
-        bDrawingInWireframe = !bDrawingInWireframe;
-        glPolygonMode(GL_FRONT_AND_BACK, bDrawingInWireframe ? GL_LINE : GL_FILL);
+        if (!bSwitchPolygonDrawModePressed)
+        {
+            bSwitchPolygonDrawModePressed = true;
+            bDrawingInWireframe = !bDrawingInWireframe;
+            glPolygonMode(GL_FRONT_AND_BACK, bDrawingInWireframe ? GL_LINE : GL_FILL);
+        }
+    }
+    else
+    {
+        bSwitchPolygonDrawModePressed = false;
     }
 
     //Move Camera Position using WASD

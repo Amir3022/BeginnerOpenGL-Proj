@@ -28,6 +28,8 @@ public:
 		lastCursorPos = glm::zero<glm::vec2>();
 		bFirstCursorUpdate = true;
 
+		bSwitchPolygonDrawModePressed = false;
+
 		deltaTime = 0.0f;
 		currentFrameTime = 0.0f;
 		lastFrameTime = 0.0f;
@@ -80,6 +82,9 @@ private:
 	//Cursor movement variables
 	glm::vec2 lastCursorPos;
 	bool bFirstCursorUpdate;
+
+	//Input Handling variables
+	bool bSwitchPolygonDrawModePressed;
 
 	//Time variables
 	float deltaTime;

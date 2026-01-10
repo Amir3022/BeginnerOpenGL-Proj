@@ -15,6 +15,9 @@ public:
 
 	virtual void DrawFrame() override;
 
+protected:
+	virtual void ProcessInput(GLFWwindow* window) override;
+
 private:
 	//Model Variables
 	std::shared_ptr<Model> model;
@@ -33,9 +36,13 @@ private:
 	bool moveLightSource;
 	bool changeLightColor;
 	glm::vec3 dirLightOrient;
+	bool bSceneLit;
 
 	//Colors Variables
 	std::vector<glm::vec3> pointLightColors;
 	glm::vec3 spotLightColor;
 	glm::vec3 dirLightColor;
+
+	//Input Handling variable
+	bool bSwitchLightWasPressed;
 };
