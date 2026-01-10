@@ -73,6 +73,9 @@ bool Game::Init()
     //Set openGL viewport coordinates
     glViewport(0, 0, width, height); //Example of having GLAD get the function pointer for this specific system
 
+    //Enable Depth Test to allow usage of Z-Buffer
+    glEnable(GL_DEPTH_TEST);
+
     //Set the Window User Pointer to the game class so it can have control over the window actions
     glfwSetWindowUserPointer(currentWindow, this);
 

@@ -141,9 +141,6 @@ bool LightGame::Init()
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0); //0 Attribute in the vertex shader, 3 vec3 has 3 float values, GL_FLOAT each input is a float value, GL_FALSE no normalization to be used, size of each stride to move to the next vertex, pointer to the first element in the Vertex Buffer
 		glEnableVertexAttribArray(0);
 
-		//Enable Depth Test to allow usage of Z-Buffer
-		glEnable(GL_DEPTH_TEST);
-
 		//Array for locations, rotations for 10 random cubes(x, y, z, rot orientation)
 		cubeTransforms =
 		{

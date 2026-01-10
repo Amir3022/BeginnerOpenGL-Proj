@@ -85,9 +85,6 @@ bool CubesGame::Init()
         glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
         glEnableVertexAttribArray(2);
 
-        //Enable Depth Test to allow usage of Z-Buffer
-        glEnable(GL_DEPTH_TEST);
-
         //Array for locations, rotations for 10 random cubes(x, y, z, rot orientation)
         cubeTransforms =
         {
