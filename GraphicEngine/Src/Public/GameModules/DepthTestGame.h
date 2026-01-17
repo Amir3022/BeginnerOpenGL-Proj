@@ -24,10 +24,14 @@ private:
 
 	//Light shader
 	std::unique_ptr<Shader> lightShader;
+	std::shared_ptr<Shader> outlineShader;
 
 	//Light Shaders
 	std::string lightVertexShaderPath;
 	std::string lightFragmentShaderPath;
+
+	//Outline Shaders
+	std::string outlineFragmentShaderPath;
 
 	//Light source variables
 	glm::vec3 dirLightOrient;

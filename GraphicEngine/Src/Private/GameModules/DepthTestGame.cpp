@@ -10,6 +10,8 @@ DepthTestGame::DepthTestGame(int in_width, int in_height)
 	lightFragmentShaderPath = "Shaders/DepthScene/LightFragmentShader.glsl";
 	lightVertexShaderPath = "Shaders/DepthScene/LightVertexShader.glsl";
 
+	outlineFragmentShaderPath = "Shaders/DepthScene/OutlineFragmentShader.glsl";
+
 	dirLightColor = glm::vec3(0.98f, 0.98f, 0.98f) * 2.0f;
 	dirLightOrient = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
 
@@ -29,6 +31,9 @@ bool DepthTestGame::Init()
 
 		//Create Light Shader to render the Light Cube
 		lightShader = std::make_unique<Shader>(lightVertexShaderPath.c_str(), lightFragmentShaderPath.c_str());
+
+		//Create Outline Shader to render selected object outline
+		outlineShader = std::make_shared<Shader>(lightVertexShaderPath.c_str(), outlineFragmentShaderPath.c_str());
 
 		//Create a vertices array   (Vertex Location, Vertex Normal, Texture Coordinate)
 		std::vector<Vertex> vertices =
@@ -188,13 +193,15 @@ void DepthTestGame::DrawFrame()
 {
 	Game::DrawFrame();
 
+	glEnable(GL_STENCIL_TEST);
 	glClearColor(0.03f, 0.03f, 0.03f, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	
 	//If model is valid, draw it
 	if (meshes.size() > 0)
 	{
-		for (int i = 0; i < meshes.size(); i++)
+		//For first cube with index 0, draw an white outline
+		for (int i = meshes.size() - 1 ; i >= 0; i--)
 		{
 			//Get reference to the current mesh
 			std::shared_ptr<Mesh> mesh = meshes[i];
@@ -235,7 +242,56 @@ void DepthTestGame::DrawFrame()
 			//Set the Lit Mode variable
 			shader->SetBool("bLit", bSceneLit);
 
-			mesh->Draw(shader);
+			//If the first cube enable stencil writing
+			if (i == 0)
+			{
+				//Change the stencil operation to set the stencil buffer values to 1 for object fragments
+				glStencilFunc(GL_ALWAYS, 1, 0xFF);
+				glStencilOp(GL_KEEP, GL_REPLACE, GL_REPLACE);
+				mesh->Draw(shader);
+				//Reset the Stencil operation to keep the stencil values
+				glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+			}
+			else
+			{
+				mesh->Draw(shader);
+			}
+		}
+
+		//If first cube disable both stencil and depth writing
+		if (std::shared_ptr<Mesh> mesh = meshes[0])
+		{
+			//Disable the Depth test to draw the outline over all other meshes
+			glDisable(GL_DEPTH_TEST);
+			//Set the Stencil Pass function to pass fragment if the value of the stencil is 1
+			glStencilFunc(GL_NOTEQUAL, 1, 0xFF);
+			//Reset the Stencil OP to keep on all cases and prevent writing in stencil buffer
+			glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
+			//Activate the outline shader
+			outlineShader->Use();
+			//Set the outline Color
+			outlineShader->SetVec3("outlineColor", glm::vec3(1.0f, 1.0f, 1.0f));
+			//Scale the cube by 5 percent
+			glm::mat4 modelMat = glm::identity<glm::mat4>();
+			modelMat = glm::translate(modelMat, mesh->GetPosition());
+			modelMat = glm::rotate(modelMat, glm::radians(mesh->GetRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
+			modelMat = glm::rotate(modelMat, glm::radians(mesh->GetRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
+			modelMat = glm::rotate(modelMat, glm::radians(mesh->GetRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
+			modelMat = glm::scale(modelMat, mesh->GetScale() * 1.05f);
+			//Create the view matrix using camera lookAt target point
+			glm::mat4 view = camera->GetLookAtMat(camera->GetCameraLocation() + camera->GetCameraForwardDir());
+			//Create the projection matrix to project the view space to NDC
+			glm::mat4 projection = glm::perspective(glm::radians(camera->GetCameraFOV()), (float)GetWidth() / (float)GetHeight(), 0.1f, 100.0f);
+			outlineShader->SetMat44("model", modelMat);
+			outlineShader->SetMat44("view", view);
+			outlineShader->SetMat44("projection", projection);
+			//Draw Outline
+			mesh->Draw(outlineShader);
+
+			//Reset the Stencil and Depth Values
+			glEnable(GL_DEPTH_TEST);
+			glStencilMask(0xFF);
+			glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 		}
 	}
 }
