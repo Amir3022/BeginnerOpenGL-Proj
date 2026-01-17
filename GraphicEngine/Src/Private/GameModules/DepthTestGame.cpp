@@ -4,11 +4,11 @@
 DepthTestGame::DepthTestGame(int in_width, int in_height)
 : Game(in_width, in_height)
 {
-	fragmentShaderPath = "Shaders/MeshScene/FragmentShader.glsl";
-	vertexShaderPath = "Shaders/MeshScene/VertexShader.glsl";
+	fragmentShaderPath = "Shaders/DepthScene/FragmentShader.glsl";
+	vertexShaderPath = "Shaders/DepthScene/VertexShader.glsl";
 
-	lightFragmentShaderPath = "Shaders/MeshScene/LightFragmentShader.glsl";
-	lightVertexShaderPath = "Shaders/MeshScene/LightVertexShader.glsl";
+	lightFragmentShaderPath = "Shaders/DepthScene/LightFragmentShader.glsl";
+	lightVertexShaderPath = "Shaders/DepthScene/LightVertexShader.glsl";
 
 	dirLightColor = glm::vec3(0.98f, 0.98f, 0.98f) * 2.0f;
 	dirLightOrient = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
@@ -190,10 +190,7 @@ void DepthTestGame::DrawFrame()
 
 	glClearColor(0.03f, 0.03f, 0.03f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LESS);
-
+	
 	//If model is valid, draw it
 	if (meshes.size() > 0)
 	{
