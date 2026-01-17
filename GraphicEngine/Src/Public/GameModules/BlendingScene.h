@@ -22,7 +22,8 @@ private:
 	//Meshes Variables
 	std::vector<std::shared_ptr<Mesh>> meshes;
 
-	//Vegetation Variables
+	//Alpha Planes Variables
+	std::vector<std::shared_ptr<Mesh>> vegetationPlanes;
 	std::vector<std::shared_ptr<Mesh>> alphaPlanes;
 
 	//Light shader

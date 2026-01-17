@@ -165,10 +165,38 @@ bool BlendingGame::Init()
 
 		//Create Vegetation planes
 		//Positions for vegetation plane
+		std::vector<glm::vec3> vegetationPositions;
+		vegetationPositions.push_back(glm::vec3(1.5f, 0.5f, 0.48f));
+		vegetationPositions.push_back(glm::vec3(-1.5f, 0.5f, -0.51f));
+		vegetationPositions.push_back(glm::vec3(-1.0f, 0.5f, 2.5f));
+		vegetationPositions.push_back(glm::vec3(-0.75f, 0.5f, 1.9f));
+		vegetationPositions.push_back(glm::vec3(-0.3f, 0.5f, -0.7f));
+		vegetationPositions.push_back(glm::vec3(0.3f, 0.5f, 2.3f));
+		vegetationPositions.push_back(glm::vec3(-0.5f, 0.5f, 0.6f));
+		//Loading the grass texture
+		unsigned int grass_texture = EngineUtilities::LoadImageIntoTexture("Assets/Textures/grass.png", true);
+		//Creating grass texture instance
+		Texture grass_texture_diffuse;
+		grass_texture_diffuse.texIndex = grass_texture;
+		grass_texture_diffuse.texType = ETextureType::diffuse;
+		grass_texture_diffuse.path = "Assets/Textures/grass.png";
+		std::vector<Texture> grass_textures{ grass_texture_diffuse };
+		for (glm::vec3 vegetationPosition : vegetationPositions)
+		{
+			//Create Plane Mesh
+			std::shared_ptr<Mesh> grassPlaneMesh = std::make_shared<Mesh>(planeVertices, planeIndices, grass_textures);
+			//Set Grass plane transform
+			grassPlaneMesh->SetTransform(vegetationPosition);
+			//Add Plane to meshes vector
+			vegetationPlanes.push_back(grassPlaneMesh);
+		}
+		
+		//Create Window planes
+		//Positions for vegetation plane
 		std::vector<glm::vec3> windowPositions;
-		windowPositions.push_back(glm::vec3(-1.5f, 0.5f, -0.48f));
+		windowPositions.push_back(glm::vec3(-1.5f, 0.5f, -0.25f));
 		windowPositions.push_back(glm::vec3(1.5f, 0.5f, 0.51f));
-		windowPositions.push_back(glm::vec3(0.3f, 0.5f, 0.7f));
+		windowPositions.push_back(glm::vec3(0.3f, 0.5f, 1.2f));
 		windowPositions.push_back(glm::vec3(-0.3f, 0.5f, -2.3f));
 		windowPositions.push_back(glm::vec3(0.5f, 0.5f, -0.6f));
 		//Loading the grass texture
@@ -275,6 +303,54 @@ void BlendingGame::DrawFrame()
 			mesh->Draw(shader);
 		}
 	}
+	//Draw the vegetation planes
+	if ((int)vegetationPlanes.size() > 0)
+	{
+		for (int i = 0; i < (int)vegetationPlanes.size(); i++)
+		{
+			//Get reference to the current mesh
+			std::shared_ptr<Mesh> vegetationPlane = vegetationPlanes[i];
+
+			// Create Transform matrix to transform the drawn image
+			//Create the model matrix to transform the object in world space
+			glm::mat4 modelMat = glm::identity<glm::mat4>();
+			modelMat = glm::translate(modelMat, vegetationPlane->GetPosition());
+			modelMat = glm::rotate(modelMat, glm::radians(vegetationPlane->GetRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
+			modelMat = glm::rotate(modelMat, glm::radians(vegetationPlane->GetRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
+			modelMat = glm::rotate(modelMat, glm::radians(vegetationPlane->GetRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
+			modelMat = glm::scale(modelMat, vegetationPlane->GetScale());
+			//Create the Normal Model Matrix to convert normal from local space to World coordinates while respecting scale
+			glm::mat3 normalModelMatrix = glm::mat3(glm::transpose(glm::inverse(modelMat)));
+
+			//Create the view matrix using camera lookAt target point
+			glm::mat4 view = camera->GetLookAtMat(camera->GetCameraLocation() + camera->GetCameraForwardDir());
+
+			//Create the projection matrix to project the view space to NDC
+			glm::mat4 projection = glm::perspective(glm::radians(camera->GetCameraFOV()), (float)GetWidth() / (float)GetHeight(), 0.1f, 100.0f);
+
+			//Use the Shader Program to draw Vertices using the defined vertex and fragment shaders, and apply model, view, projection matrices
+			shader->Use();
+			shader->SetMat44("model", modelMat);
+			shader->SetMat44("view", view);
+			shader->SetMat44("projection", projection);
+			shader->SetMat33("normalModelMatrix", normalModelMatrix);
+
+			//Set the viewer (Camera) world position
+			shader->SetVec3("cameraPos", camera->GetCameraLocation());
+
+			//Rendering directional Light
+			shader->SetVec3("dirLight.sourceDir", dirLightOrient);
+			shader->SetVec3("dirLight.light.ambient", 0.1f * dirLightColor);
+			shader->SetVec3("dirLight.light.diffuse", 0.75f * dirLightColor);
+			shader->SetVec3("dirLight.light.specular", 1.0f * dirLightColor);
+
+			//Set the Lit Mode variable
+			shader->SetBool("bLit", bSceneLit);
+
+			vegetationPlane->Draw(shader);
+		}
+	}
+
 	//Draw all windows with alpha afterwards
 	if ((int)alphaPlanes.size() > 0)
 	{
