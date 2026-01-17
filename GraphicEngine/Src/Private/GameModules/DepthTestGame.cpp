@@ -290,7 +290,6 @@ void DepthTestGame::DrawFrame()
 
 			//Reset the Stencil and Depth Values
 			glEnable(GL_DEPTH_TEST);
-			glStencilMask(0xFF);
 			glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
 		}
 	}
