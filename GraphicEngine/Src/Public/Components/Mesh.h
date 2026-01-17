@@ -31,11 +31,27 @@ public:
 	{
 		SetupMesh();
 		bIsValid = true;
+
+		position = glm::vec3(0.0f);
+		rotation = glm::vec3(0.0f);
+		scale = glm::vec3(0.0f);
 	}
 
 	void Draw(std::weak_ptr<Shader> shaderRef);
 
 	bool IsValid() { return bIsValid; }
+
+	//Transform Methods
+	void SetTransform(const glm::vec3& in_pos, const glm::vec3& in_rot, const glm::vec3& in_scale)
+	{
+		position = in_pos;
+		rotation = in_rot;
+		scale = in_scale;
+	}
+
+	glm::vec3 GetPosition() const { return position; }
+	glm::vec3 GetRotation() const { return rotation; }
+	glm::vec3 GetScale() const { return scale; }
 
 private:
 	void SetupMesh();
@@ -51,4 +67,9 @@ private:
 
 	//Validation Variables
 	bool bIsValid;
+
+	//Mesh Transform data
+	glm::vec3 position;
+	glm::vec3 rotation;
+	glm::vec3 scale;
 };
