@@ -4,11 +4,11 @@
 BlendingGame::BlendingGame(int in_width, int in_height)
 	: Game(in_width, in_height)
 {
-	fragmentShaderPath = "Shaders/DepthScene/FragmentShader.glsl";
-	vertexShaderPath = "Shaders/DepthScene/VertexShader.glsl";
+	fragmentShaderPath = "Shaders/BlendingScene/FragmentShader.glsl";
+	vertexShaderPath = "Shaders/BlendingScene/VertexShader.glsl";
 
-	lightFragmentShaderPath = "Shaders/DepthScene/LightFragmentShader.glsl";
-	lightVertexShaderPath = "Shaders/DepthScene/LightVertexShader.glsl";
+	lightFragmentShaderPath = "Shaders/BlendingScene/LightFragmentShader.glsl";
+	lightVertexShaderPath = "Shaders/BlendingScene/LightVertexShader.glsl";
 
 	dirLightColor = glm::vec3(0.98f, 0.98f, 0.98f) * 2.0f;
 	dirLightOrient = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
@@ -161,6 +161,32 @@ bool BlendingGame::Init()
 		planeMesh->SetTransform(glm::vec3(0.0f), glm::vec3(90.0, 0.0f, 0.0f), glm::vec3(6.0f));
 		//Add Plane to meshes vector
 		meshes.push_back(planeMesh);
+
+		//Create Vegetation planes
+		//Positions for vegetation plane
+		std::vector<glm::vec3> vegetationPositions;
+		vegetationPositions.push_back(glm::vec3(-1.5f, 0.5f, -0.48f));
+		vegetationPositions.push_back(glm::vec3(1.5f, 0.5f, 0.51f));
+		vegetationPositions.push_back(glm::vec3(0.0f, 0.5f, 0.7f));
+		vegetationPositions.push_back(glm::vec3(-0.3f, 0.5f, -2.3f));
+		vegetationPositions.push_back(glm::vec3(0.5f, 0.5f, -0.6f));
+		//Loading the grass texture
+		unsigned int grass_texture = EngineUtilities::LoadImageIntoTexture("Assets/Textures/grass.png", true);
+		//Creating grass texture instance
+		Texture grass_texture_diffuse;
+		grass_texture_diffuse.texIndex = grass_texture;
+		grass_texture_diffuse.texType = ETextureType::diffuse;
+		grass_texture_diffuse.path = "Assets/Textures/grass.png";
+		std::vector<Texture> grass_textures{ grass_texture_diffuse };
+		for (glm::vec3 vegetationPosition : vegetationPositions)
+		{
+			//Create Plane Mesh
+			std::shared_ptr<Mesh> grassPlaneMesh = std::make_shared<Mesh>(planeVertices, planeIndices, grass_textures);
+			//Set Grass plane transform
+			grassPlaneMesh->SetTransform(vegetationPosition);
+			//Add Plane to meshes vector
+			meshes.push_back(grassPlaneMesh);
+		}
 
 		return true;
 	}

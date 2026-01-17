@@ -56,10 +56,10 @@ struct SpotLight
 };
 
 //Calculating effects of Different light casters
-vec3 CalculateDirectionalLightEffect(vec3 norm, DirLight localDirLight);
-vec3 CalculatePointLightEffect(vec3 norm, PointLight localPointLight);
-vec3 CalculateSpotLightEffect(vec3 norm, SpotLight localSpotLight);
-vec3 PerformLightCalculations(vec3 norm, vec3 lightDir, vec3 viewDir, Light light, float attenuation, float Intensity);
+vec4 CalculateDirectionalLightEffect(vec3 norm, DirLight localDirLight);
+vec4 CalculatePointLightEffect(vec3 norm, PointLight localPointLight);
+vec4 CalculateSpotLightEffect(vec3 norm, SpotLight localSpotLight);
+vec4 PerformLightCalculations(vec3 norm, vec3 lightDir, vec3 viewDir, Light light, float attenuation, float Intensity);
 
 out vec4 FragColor;
 
@@ -81,7 +81,7 @@ void main()
 		//Calculate normalized normal vector
 		vec3 norm = normalize(outNormal);
 
-		vec3 combinedColor = vec3(0.0f);
+		vec4 combinedColor = vec4(0.0f);
 
 		//Calculate Directional Light Effect on fragment
 		combinedColor += CalculateDirectionalLightEffect(norm, dirLight);
@@ -96,18 +96,24 @@ void main()
 		combinedColor += CalculateSpotLightEffect(norm, spotLight);
 
 		//Add the Emissive color effect
-		combinedColor += floor((vec3(1.0f) - vec3(texture(material.texture_specular_1, TexCoord)))) * vec3(texture(material.texture_emissive, TexCoord)) * material.emissiveAmount;
+		combinedColor += floor((vec4(1.0f) - texture(material.texture_specular_1, TexCoord))) * texture(material.texture_emissive, TexCoord) * material.emissiveAmount;
 
-		FragColor = vec4(combinedColor, 1.0f);
+		if(texture(material.texture_diffuse_1, TexCoord).a < 0.1f)
+			discard;
+
+		FragColor = combinedColor;
 	}
 	else
 	{
-		FragColor = texture(material.texture_diffuse_1, TexCoord);
+		vec4 combinedColor = texture(material.texture_diffuse_1, TexCoord);
+		if(combinedColor.a < 0.1f)
+			discard;
+		FragColor = combinedColor;
 	}
 }
 
 
-vec3 CalculateDirectionalLightEffect(vec3 norm, DirLight localDirLight)
+vec4 CalculateDirectionalLightEffect(vec3 norm, DirLight localDirLight)
 {
 	//Calculating light direction
 	vec3 lightDir = normalize(-vec3(localDirLight.sourceDir));
@@ -119,7 +125,7 @@ vec3 CalculateDirectionalLightEffect(vec3 norm, DirLight localDirLight)
 	return PerformLightCalculations(norm, lightDir, viewDir, localDirLight.light, 1.0f, 1.0f);
 }
 
-vec3 CalculatePointLightEffect(vec3 norm, PointLight localPointLight)
+vec4 CalculatePointLightEffect(vec3 norm, PointLight localPointLight)
 {
 	//Calculating light direction and attenuation
 	vec3 lightDir = normalize(vec3(localPointLight.sourcePos) - FragPos);
@@ -133,7 +139,7 @@ vec3 CalculatePointLightEffect(vec3 norm, PointLight localPointLight)
 	return PerformLightCalculations(norm, lightDir, viewDir, localPointLight.light, attenuation, 1.0f);
 }
 
-vec3 CalculateSpotLightEffect(vec3 norm, SpotLight localSpotLight)
+vec4 CalculateSpotLightEffect(vec3 norm, SpotLight localSpotLight)
 {
 	//Calculating light direction and attenuation
 	vec3 lightDir = normalize(vec3(localSpotLight.sourcePos) - FragPos);
@@ -153,19 +159,19 @@ vec3 CalculateSpotLightEffect(vec3 norm, SpotLight localSpotLight)
 	return PerformLightCalculations(norm, lightDir, viewDir, localSpotLight.light, attenuation, lightIntensity);
 }
 
-vec3 PerformLightCalculations(vec3 norm, vec3 lightDir, vec3 viewDir, Light light, float attenuation, float intensity)
+vec4 PerformLightCalculations(vec3 norm, vec3 lightDir, vec3 viewDir, Light light, float attenuation, float intensity)
 {
 	// Calculating Ambient light
-	vec3 ambientColor = light.ambient * attenuation * vec3(texture(material.texture_diffuse_1, TexCoord));
+	vec4 ambientColor = vec4(light.ambient, 1.0f)  * attenuation * texture(material.texture_diffuse_1, TexCoord);
 
 	//Calculating Diffuse
 	float diffuse = max(dot(norm, lightDir), 0.0f) * intensity;
-	vec3 diffuseColor = light.diffuse * diffuse * attenuation * vec3(texture(material.texture_diffuse_1, TexCoord));
+	vec4 diffuseColor = vec4(light.diffuse, 1.0f) * diffuse * attenuation * texture(material.texture_diffuse_1, TexCoord);
 
 	//Calculating Specular
 	vec3 reflectedLightDir = normalize(reflect(-lightDir, norm));
 	float specular = pow(max(dot(reflectedLightDir, viewDir), 0.0f), /*material.shininess*/32) * intensity;
-	vec3 specularColor = light.specular * specular * attenuation * vec3(texture(material.texture_specular_1, TexCoord));
+	vec4 specularColor = vec4(light.specular, 1.0f) * specular * attenuation * texture(material.texture_specular_1, TexCoord);
 
 	//Combining Ambient, Diffuse, Specular for complete Phong Shading Model
 	return ambientColor + diffuseColor + specularColor;

@@ -22,6 +22,9 @@ private:
 	//Meshes Variables
 	std::vector<std::shared_ptr<Mesh>> meshes;
 
+	//Vegetation Variables
+	std::vector<std::shared_ptr<Mesh>> vegetationPlanes;
+
 	//Light shader
 	std::unique_ptr<Shader> lightShader;
 	std::shared_ptr<Shader> outlineShader;
