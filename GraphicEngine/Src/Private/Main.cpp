@@ -1,8 +1,8 @@
-#include "GameModules/ModelGame.h"
+#include "GameModules/DepthTestGame.h"
 
 int main()
 {
-    std::unique_ptr<ModelGame> game = std::make_unique<ModelGame>(1280, 720);
+    std::unique_ptr<DepthTestGame> game = std::make_unique<DepthTestGame>(1280, 720);
     if (game)
     {
         return game->Process();

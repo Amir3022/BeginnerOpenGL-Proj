@@ -42,7 +42,7 @@ public:
 	bool IsValid() { return bIsValid; }
 
 	//Transform Methods
-	void SetTransform(const glm::vec3& in_pos, const glm::vec3& in_rot, const glm::vec3& in_scale)
+	void SetTransform(const glm::vec3& in_pos, const glm::vec3& in_rot = glm::vec3(0.0f), const glm::vec3& in_scale = glm::vec3(1.0f))
 	{
 		position = in_pos;
 		rotation = in_rot;

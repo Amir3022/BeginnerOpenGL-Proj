@@ -59,11 +59,19 @@ void Mesh::Draw(std::weak_ptr<Shader> shaderRef)
 				textureName += "specular_" + std::to_string(nr_specular++);
 			shader->SetInt(textureName, i);
 		}
-		//Deactivate the last used Texture
-		glActiveTexture(0);
-
 		//Draw mesh Triangles using all bound Data
 		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, (void*)0);
+
+		//Unbind all bound textures
+		for (int i = 0; i < textures.size(); i++)
+		{
+			//Set Active Texture Unit
+			glActiveTexture(GL_TEXTURE0 + i);
+			//Unbind texture in the Active Texture Unit
+			glBindTexture(GL_TEXTURE_2D, 0);
+		}
+		//Deactivate the last used Texture
+		glActiveTexture(0);
 
 		//Unbind the VAO
 		glBindVertexArray(0);
