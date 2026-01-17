@@ -1,5 +1,6 @@
 #include "GameModules/BlendingScene.h"
 #include "Utilities/EngineUtilities.h"
+#include <algorithm>
 
 BlendingGame::BlendingGame(int in_width, int in_height)
 	: Game(in_width, in_height)
@@ -164,28 +165,28 @@ bool BlendingGame::Init()
 
 		//Create Vegetation planes
 		//Positions for vegetation plane
-		std::vector<glm::vec3> vegetationPositions;
-		vegetationPositions.push_back(glm::vec3(-1.5f, 0.5f, -0.48f));
-		vegetationPositions.push_back(glm::vec3(1.5f, 0.5f, 0.51f));
-		vegetationPositions.push_back(glm::vec3(0.0f, 0.5f, 0.7f));
-		vegetationPositions.push_back(glm::vec3(-0.3f, 0.5f, -2.3f));
-		vegetationPositions.push_back(glm::vec3(0.5f, 0.5f, -0.6f));
+		std::vector<glm::vec3> windowPositions;
+		windowPositions.push_back(glm::vec3(-1.5f, 0.5f, -0.48f));
+		windowPositions.push_back(glm::vec3(1.5f, 0.5f, 0.51f));
+		windowPositions.push_back(glm::vec3(0.3f, 0.5f, 0.7f));
+		windowPositions.push_back(glm::vec3(-0.3f, 0.5f, -2.3f));
+		windowPositions.push_back(glm::vec3(0.5f, 0.5f, -0.6f));
 		//Loading the grass texture
-		unsigned int grass_texture = EngineUtilities::LoadImageIntoTexture("Assets/Textures/grass.png", true);
+		unsigned int window_texture = EngineUtilities::LoadImageIntoTexture("Assets/Textures/blending_transparent_window.png", true);
 		//Creating grass texture instance
-		Texture grass_texture_diffuse;
-		grass_texture_diffuse.texIndex = grass_texture;
-		grass_texture_diffuse.texType = ETextureType::diffuse;
-		grass_texture_diffuse.path = "Assets/Textures/grass.png";
-		std::vector<Texture> grass_textures{ grass_texture_diffuse };
-		for (glm::vec3 vegetationPosition : vegetationPositions)
+		Texture window_texture_diffuse;
+		window_texture_diffuse.texIndex = window_texture;
+		window_texture_diffuse.texType = ETextureType::diffuse;
+		window_texture_diffuse.path = "Assets/Textures/grass.png";
+		std::vector<Texture> window_textures{ window_texture_diffuse };
+		for (glm::vec3 windowPosition : windowPositions)
 		{
 			//Create Plane Mesh
-			std::shared_ptr<Mesh> grassPlaneMesh = std::make_shared<Mesh>(planeVertices, planeIndices, grass_textures);
+			std::shared_ptr<Mesh> windowPlaneMesh = std::make_shared<Mesh>(planeVertices, planeIndices, window_textures);
 			//Set Grass plane transform
-			grassPlaneMesh->SetTransform(vegetationPosition);
+			windowPlaneMesh->SetTransform(windowPosition);
 			//Add Plane to meshes vector
-			meshes.push_back(grassPlaneMesh);
+			alphaPlanes.push_back(windowPlaneMesh);
 		}
 
 		return true;
@@ -207,7 +208,14 @@ void BlendingGame::UpdateGame(float deltaTime)
 {
 	Game::UpdateGame(deltaTime);
 
-	//Update the meshes location if needed
+	//Update the Transparent alpha planes sorting to draw the furthest plane from camera position first
+	std::sort(alphaPlanes.begin(), alphaPlanes.end(),
+		[this](std::shared_ptr<Mesh> first, std::shared_ptr<Mesh> second)
+		{
+			float distanceToFirst = glm::distance(camera->GetCameraLocation(), first->GetPosition());
+			float distanceToSecond = glm::distance(camera->GetCameraLocation(), second->GetPosition());
+			return distanceToFirst > distanceToSecond;
+		});
 }
 
 void BlendingGame::DrawFrame()
@@ -216,12 +224,14 @@ void BlendingGame::DrawFrame()
 
 	glClearColor(0.03f, 0.03f, 0.03f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+	//Enable Blending
+	glEnable(GL_BLEND);
+	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
 
-	//If model is valid, draw it
-	if (meshes.size() > 0)
+	//Draw first all Opaque meshes
+	if ((int)meshes.size() > 0)
 	{
-		//For first cube with index 0, draw an white outline
-		for (int i = meshes.size() - 1; i >= 0; i--)
+		for (int i = 0; i < (int)meshes.size(); i++)
 		{
 			//Get reference to the current mesh
 			std::shared_ptr<Mesh> mesh = meshes[i];
@@ -263,6 +273,53 @@ void BlendingGame::DrawFrame()
 			shader->SetBool("bLit", bSceneLit);
 			
 			mesh->Draw(shader);
+		}
+	}
+	//Draw all windows with alpha afterwards
+	if ((int)alphaPlanes.size() > 0)
+	{
+		for (int i = 0; i < (int)alphaPlanes.size(); i++)
+		{
+			//Get reference to the current mesh
+			std::shared_ptr<Mesh> alphaPlane = alphaPlanes[i];
+
+			// Create Transform matrix to transform the drawn image
+			//Create the model matrix to transform the object in world space
+			glm::mat4 modelMat = glm::identity<glm::mat4>();
+			modelMat = glm::translate(modelMat, alphaPlane->GetPosition());
+			modelMat = glm::rotate(modelMat, glm::radians(alphaPlane->GetRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
+			modelMat = glm::rotate(modelMat, glm::radians(alphaPlane->GetRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
+			modelMat = glm::rotate(modelMat, glm::radians(alphaPlane->GetRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
+			modelMat = glm::scale(modelMat, alphaPlane->GetScale());
+			//Create the Normal Model Matrix to convert normal from local space to World coordinates while respecting scale
+			glm::mat3 normalModelMatrix = glm::mat3(glm::transpose(glm::inverse(modelMat)));
+
+			//Create the view matrix using camera lookAt target point
+			glm::mat4 view = camera->GetLookAtMat(camera->GetCameraLocation() + camera->GetCameraForwardDir());
+
+			//Create the projection matrix to project the view space to NDC
+			glm::mat4 projection = glm::perspective(glm::radians(camera->GetCameraFOV()), (float)GetWidth() / (float)GetHeight(), 0.1f, 100.0f);
+
+			//Use the Shader Program to draw Vertices using the defined vertex and fragment shaders, and apply model, view, projection matrices
+			shader->Use();
+			shader->SetMat44("model", modelMat);
+			shader->SetMat44("view", view);
+			shader->SetMat44("projection", projection);
+			shader->SetMat33("normalModelMatrix", normalModelMatrix);
+
+			//Set the viewer (Camera) world position
+			shader->SetVec3("cameraPos", camera->GetCameraLocation());
+
+			//Rendering directional Light
+			shader->SetVec3("dirLight.sourceDir", dirLightOrient);
+			shader->SetVec3("dirLight.light.ambient", 0.1f * dirLightColor);
+			shader->SetVec3("dirLight.light.diffuse", 0.75f * dirLightColor);
+			shader->SetVec3("dirLight.light.specular", 1.0f * dirLightColor);
+
+			//Set the Lit Mode variable
+			shader->SetBool("bLit", false);
+
+			alphaPlane->Draw(shader);
 		}
 	}
 }

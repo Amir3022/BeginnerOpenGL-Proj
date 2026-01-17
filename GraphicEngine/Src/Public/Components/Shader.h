@@ -6,6 +6,7 @@
 #include <sstream>
 #include <fstream>
 #include <iostream>
+#include "glm/glm.hpp"
 #include "glm/vec4.hpp"
 #include "glm/mat4x4.hpp"
 #include "glm/gtc/type_ptr.hpp"
