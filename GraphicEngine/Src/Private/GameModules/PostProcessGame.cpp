@@ -204,10 +204,10 @@ bool PostProcessGame::Init()
 		glBindVertexArray(ppVAO);
 		//Create Vertex Buffer and Elements Buffer and fill with a single Quad data
 		float quadVertices[] = {
-			-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
-			1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
-			-1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
-			1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+			-0.3f, 0.3f, 0.0f, 0.0f, 0.0f,
+			0.3f,  0.3f, 0.0f, 1.0f, 0.0f,
+			-0.3f, 0.95f, 0.0f, 0.0f, 1.0f,
+			0.3f, 0.95f, 0.0f, 1.0f, 1.0f,
 		};
 
 		unsigned int quadIndices[] =
@@ -263,14 +263,20 @@ void PostProcessGame::DrawFrame()
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.03f, 0.03f, 0.03f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	DrawMainScene();
+	//Draw the Scene in reverse in the custom framebuffer
+	DrawMainSceneInReverse();
 	
 	//Bind the Main framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
-	//Disable depth test
-	glDisable(GL_DEPTH_TEST);
-	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+	//Enable depth test
+	glEnable(GL_DEPTH_TEST);
+	glClearColor(0.03f, 0.03f, 0.03f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//Draw the main scene in correct orientation in default buffer
+	DrawMainScene();
+
+	//Disable Depth Test
+	glDisable(GL_DEPTH_TEST);
 	//Draw the quad from it's vertices, and use the color texture from our framebuffer as a texture sampled in the fragment shader
 	glBindVertexArray(ppVAO);
 	ppShader->Use();
@@ -310,6 +316,59 @@ void PostProcessGame::DrawMainScene()
 
 			//Create the view matrix using camera lookAt target point
 			glm::mat4 view = camera->GetLookAtMat(camera->GetCameraLocation() + camera->GetCameraForwardDir());
+
+			//Create the projection matrix to project the view space to NDC
+			glm::mat4 projection = glm::perspective(glm::radians(camera->GetCameraFOV()), (float)GetWidth() / (float)GetHeight(), 0.1f, 100.0f);
+
+			//Use the Shader Program to draw Vertices using the defined vertex and fragment shaders, and apply model, view, projection matrices
+			shader->Use();
+			shader->SetMat44("model", modelMat);
+			shader->SetMat44("view", view);
+			shader->SetMat44("projection", projection);
+			shader->SetMat33("normalModelMatrix", normalModelMatrix);
+
+			//Set the viewer (Camera) world position
+			shader->SetVec3("cameraPos", camera->GetCameraLocation());
+
+			//Rendering directional Light
+			shader->SetVec3("dirLight.sourceDir", dirLightOrient);
+			shader->SetVec3("dirLight.light.ambient", 0.1f * dirLightColor);
+			shader->SetVec3("dirLight.light.diffuse", 0.75f * dirLightColor);
+			shader->SetVec3("dirLight.light.specular", 1.0f * dirLightColor);
+
+			//Set the Lit Mode variable
+			shader->SetBool("bLit", bSceneLit);
+
+			//Draw the Mesh
+			mesh->Draw(shader);
+		}
+	}
+}
+
+void PostProcessGame::DrawMainSceneInReverse()
+{
+	//If meshes isn't empty, iterate through them and draw each mesh
+	if (meshes.size() > 0)
+	{
+		//For first cube with index 0, draw an white outline
+		for (int i = meshes.size() - 1; i >= 0; i--)
+		{
+			//Get reference to the current mesh
+			std::shared_ptr<Mesh> mesh = meshes[i];
+
+			// Create Transform matrix to transform the drawn image
+			//Create the model matrix to transform the object in world space
+			glm::mat4 modelMat = glm::identity<glm::mat4>();
+			modelMat = glm::translate(modelMat, mesh->GetPosition());
+			modelMat = glm::rotate(modelMat, glm::radians(mesh->GetRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
+			modelMat = glm::rotate(modelMat, glm::radians(mesh->GetRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
+			modelMat = glm::rotate(modelMat, glm::radians(mesh->GetRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
+			modelMat = glm::scale(modelMat, mesh->GetScale());
+			//Create the Normal Model Matrix to convert normal from local space to World coordinates while respecting scale
+			glm::mat3 normalModelMatrix = glm::mat3(glm::transpose(glm::inverse(modelMat)));
+
+			//Create the view matrix using camera lookAt target point
+			glm::mat4 view = camera->GetLookAtMat(camera->GetCameraLocation() + -1.0f * camera->GetCameraForwardDir());
 
 			//Create the projection matrix to project the view space to NDC
 			glm::mat4 projection = glm::perspective(glm::radians(camera->GetCameraFOV()), (float)GetWidth() / (float)GetHeight(), 0.1f, 100.0f);

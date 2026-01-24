@@ -20,6 +20,7 @@ protected:
 
 private:
 	void DrawMainScene();
+	void DrawMainSceneInReverse();
 
 private:
 	//FrameBuffer variables
