@@ -1,8 +1,8 @@
-#include "GameModules/PostProcessGame.h"
+#include "GameModules/CubemapGame.h"
 
 int main()
 {
-    std::unique_ptr<PostProcessGame> game = std::make_unique<PostProcessGame>(1280, 720);
+    std::unique_ptr<CubemapGame> game = std::make_unique<CubemapGame>(1280, 720);
     if (game)
     {
         return game->Process();

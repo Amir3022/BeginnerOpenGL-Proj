@@ -162,6 +162,7 @@
     <ClCompile Include="Src\Private\Components\Mesh.cpp" />
     <ClCompile Include="Src\Private\Components\Model.cpp" />
     <ClCompile Include="Src\Private\GameModules\BlendingScene.cpp" />
+    <ClCompile Include="Src\Private\GameModules\CubemapGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\CubesGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\DepthTestGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\Game.cpp" />
@@ -190,6 +191,7 @@
     <ClInclude Include="Src\Public\Components\Mesh.h" />
     <ClInclude Include="Src\Public\Components\Model.h" />
     <ClInclude Include="Src\Public\GameModules\BlendingScene.h" />
+    <ClInclude Include="Src\Public\GameModules\CubemapGame.h" />
     <ClInclude Include="Src\Public\GameModules\CubesGame.h" />
     <ClInclude Include="Src\Public\GameModules\DepthTestGame.h" />
     <ClInclude Include="Src\Public\GameModules\Game.h" />
