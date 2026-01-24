@@ -27,11 +27,12 @@ private:
 	unsigned int RBO;
 	unsigned int colorTexture;
 
-	//Screen Quad render variables
+	//Post Process render variables
 	unsigned int ppVAO;
 	std::shared_ptr<Shader> ppShader;
 	std::string ppVertexShaderPath;
 	std::string ppFragmentShaderPath;
+	int ppRenderMode;
 
 	//Meshes Variables
 	std::vector<std::shared_ptr<Mesh>> meshes;

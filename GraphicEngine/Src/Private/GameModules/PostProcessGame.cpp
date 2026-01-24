@@ -15,6 +15,7 @@ PostProcessGame::PostProcessGame(int in_width, int in_height)
 
 	bSceneLit = true;
 	bSwitchLightWasPressed = false;
+	ppRenderMode = 1;
 }
 
 bool PostProcessGame::Init()
@@ -277,6 +278,7 @@ void PostProcessGame::DrawFrame()
 	glActiveTexture(GL_TEXTURE0);
 	glBindTexture(GL_TEXTURE_2D, colorTexture);
 	ppShader->SetInt("screenTexture", 0);
+	ppShader->SetInt("ppMode", ppRenderMode);
 	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0);
 	//Unbind the texture and the VAO
 	glActiveTexture(0);
@@ -353,4 +355,18 @@ void PostProcessGame::ProcessInput(GLFWwindow* window)
 	{
 		bSwitchLightWasPressed = false;
 	}
+
+	//Change post process render mode
+	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+		ppRenderMode = 1;
+	else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+		ppRenderMode = 2;
+	else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+		ppRenderMode = 3;
+	else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+		ppRenderMode = 4;
+	else if (glfwGetKey(window, GLFW_KEY_5) == GLFW_PRESS)
+		ppRenderMode = 5;
+	else if (glfwGetKey(window, GLFW_KEY_6) == GLFW_PRESS)
+		ppRenderMode = 6;
 }
