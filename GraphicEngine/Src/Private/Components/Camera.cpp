@@ -21,7 +21,7 @@ glm::mat4 Camera::GetLookAtMat(glm::vec3 targetPos)
 	{
 		return internal_lookAt(targetPos);
 	}
-	return glm::lookAt(position, position + GetCameraForwardDir(), upDir);
+	return glm::lookAt(position, targetPos, upDir);
 }
 
 void Camera::ProcessKeyboardInput(glm::vec2 inputVec, float deltaTime)
