@@ -108,8 +108,8 @@ bool BlendingGame::Init()
 			0, 2, 4,
 			4, 2, 6,
 
-			1, 3, 5,
-			5, 3, 7
+			3, 1, 5,
+			5, 7, 3
 		};
 
 		//Load two Images into 2 different textures
@@ -255,6 +255,9 @@ void BlendingGame::DrawFrame()
 	//Enable Blending
 	glEnable(GL_BLEND);
 	glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+
+	//Enable Face Culling
+	glEnable(GL_CULL_FACE);
 
 	//Draw first all Opaque meshes
 	if ((int)meshes.size() > 0)
