@@ -1,8 +1,8 @@
-#include "GameModules/BlendingScene.h"
+#include "GameModules/PostProcessGame.h"
 
 int main()
 {
-    std::unique_ptr<BlendingGame> game = std::make_unique<BlendingGame>(1280, 720);
+    std::unique_ptr<PostProcessGame> game = std::make_unique<PostProcessGame>(1280, 720);
     if (game)
     {
         return game->Process();

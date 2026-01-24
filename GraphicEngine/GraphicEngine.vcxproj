@@ -167,6 +167,7 @@
     <ClCompile Include="Src\Private\GameModules\Game.cpp" />
     <ClCompile Include="Src\Private\GameModules\LightGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\ModelGame.cpp" />
+    <ClCompile Include="Src\Private\GameModules\PostProcessGame.cpp" />
     <ClCompile Include="Src\Private\Main.cpp" />
     <ClCompile Include="Src\Private\Components\Shader.cpp" />
     <ClCompile Include="Src\Private\Utilties\EngineUtilities.cpp" />
@@ -194,6 +195,7 @@
     <ClInclude Include="Src\Public\GameModules\Game.h" />
     <ClInclude Include="Src\Public\Components\Shader.h" />
     <ClInclude Include="Src\Public\GameModules\ModelGame.h" />
+    <ClInclude Include="Src\Public\GameModules\PostProcessGame.h" />
     <ClInclude Include="Src\Public\Utilities\EngineUtilities.h" />
     <ClInclude Include="Src\Public\Utilities\stb_image.h" />
   </ItemGroup>
