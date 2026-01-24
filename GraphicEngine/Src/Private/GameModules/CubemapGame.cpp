@@ -194,15 +194,15 @@ void CubemapGame::DrawFrame()
 {
 	Game::DrawFrame();
 
-	//Draw the Cubemap
-	glDisable(GL_DEPTH_TEST);
-	glClearColor(0.03f, 0.03f, 0.03f, 0.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	DrawCubemap();
-
 	//Draw the cube in World
 	glEnable(GL_DEPTH_TEST);
+	glClearColor(0.03f, 0.03f, 0.03f, 0.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	DrawMainScene();
+
+	//Draw the Cubemap
+	glDepthFunc(GL_LEQUAL);	//Change the Depth Test function to less than or equal, to make sure the cube map is rendered behind all other meshes in the scene
+	DrawCubemap();
 }
 
 void CubemapGame::ProcessInput(GLFWwindow* window)
