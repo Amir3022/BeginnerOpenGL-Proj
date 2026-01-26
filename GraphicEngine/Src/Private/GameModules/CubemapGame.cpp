@@ -30,6 +30,12 @@ bool CubemapGame::Init()
 		//Create CubeMap Shader
 		cubemapShader = std::make_unique<Shader>(cubemapVertexShaderPath.c_str(), cubemapFragmentShaderPath.c_str());
 
+		//Create a model Object using the backpack obj
+		model = std::make_shared<Model>("Assets/Meshes/backpack/backpack.obj");
+
+		//Set the Model location a bit up from the origin
+		model->SetTransform(glm::vec3(0.0f, 2.0f, 0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.5f));
+
 		//Create a vertices array   (Vertex Location, Vertex Normal, Texture Coordinate)
 		std::vector<Vertex> vertices =
 		{
@@ -100,7 +106,7 @@ bool CubemapGame::Init()
 		//Create First Cube Mesh
 		std::shared_ptr<Mesh> cube_1 = std::make_shared<Mesh>(vertices, indices, textures_1);
 		//Set First Cube Transform
-		cube_1->SetTransform(glm::vec3(0.0f, 0.5f, 0.0f));
+		cube_1->SetTransform(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(2.0f));
 		//Add first cube to Meshes vector
 		meshes.push_back(cube_1);
 
@@ -273,6 +279,47 @@ void CubemapGame::DrawMainScene()
 			//Draw the Mesh
 			mesh->Draw(shader);
 		}
+	}
+	if (model)
+	{
+		// Create Transform matrix to transform the drawn Model
+		// Create the model matrix to transform the object in world space
+		glm::mat4 modelMat = glm::identity<glm::mat4>();
+		modelMat = glm::translate(modelMat, model->GetPosition());
+		modelMat = glm::rotate(modelMat, glm::radians(model->GetRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
+		modelMat = glm::rotate(modelMat, glm::radians(model->GetRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
+		modelMat = glm::rotate(modelMat, glm::radians(model->GetRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
+		modelMat = glm::scale(modelMat, model->GetScale());
+		//Create the Normal Model Matrix to convert normal from local space to World coordinates while respecting scale
+		glm::mat3 normalModelMatrix = glm::mat3(glm::transpose(glm::inverse(modelMat)));
+
+		//Create the view matrix using camera lookAt target point
+		glm::mat4 view = camera->GetLookAtMat(camera->GetCameraLocation() + camera->GetCameraForwardDir());
+
+		//Create the projection matrix to project the view space to NDC
+		glm::mat4 projection = glm::perspective(glm::radians(camera->GetCameraFOV()), (float)GetWidth() / (float)GetHeight(), 0.1f, 100.0f);
+
+		//Use the Shader Program to draw Vertices using the defined vertex and fragment shaders, and apply model, view, projection matrices
+		shader->Use();
+		shader->SetMat44("model", modelMat);
+		shader->SetMat44("view", view);
+		shader->SetMat44("projection", projection);
+		shader->SetMat33("normalModelMatrix", normalModelMatrix);
+
+		//Set the viewer (Camera) world position
+		shader->SetVec3("cameraPos", camera->GetCameraLocation());
+
+		//Rendering directional Light
+		shader->SetVec3("dirLight.sourceDir", dirLightOrient);
+		shader->SetVec3("dirLight.light.ambient", 0.1f * dirLightColor);
+		shader->SetVec3("dirLight.light.diffuse", 0.75f * dirLightColor);
+		shader->SetVec3("dirLight.light.specular", 1.0f * dirLightColor);
+
+		//Set the Lit Mode variable
+		shader->SetBool("bLit", bSceneLit);
+
+		//Draw the Model
+		model->Draw(shader);
 	}
 }
 

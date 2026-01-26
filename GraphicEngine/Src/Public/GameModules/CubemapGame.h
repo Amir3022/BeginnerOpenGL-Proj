@@ -1,6 +1,6 @@
 #pragma once
 #include "Game.h"
-#include "Components/Mesh.h"
+#include "Components/Model.h"
 
 class CubemapGame : public Game
 {
@@ -34,6 +34,9 @@ private:
 
 	//Meshes Variables
 	std::vector<std::shared_ptr<Mesh>> meshes;
+
+	//Model Variables
+	std::shared_ptr<Model> model;
 
 	//Light source variables
 	glm::vec3 dirLightOrient;
