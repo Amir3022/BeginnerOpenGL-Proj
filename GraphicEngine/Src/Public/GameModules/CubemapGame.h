@@ -45,4 +45,5 @@ private:
 
 	//Input Handling variable
 	bool bSwitchLightWasPressed;
+	int RenderingMode;
 };

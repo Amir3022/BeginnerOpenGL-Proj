@@ -68,47 +68,88 @@ in vec3 outNormal;
 in vec2 TexCoord;
 
 uniform bool bLit;
+uniform int RenderingMode;
 uniform vec3 cameraPos;
 uniform Material material;
 uniform DirLight dirLight;
 uniform SpotLight spotLight;
 uniform PointLight[NR_POINT_LIGHTS] pointLights;
+uniform samplerCube skyboxCubemap;
 
 void main()
 {
-	if(bLit)
+	switch(RenderingMode)
+	{
+	case 1:
+	{
+		if(bLit)
+		{
+			//Calculate normalized normal vector
+			vec3 norm = normalize(outNormal);
+
+			vec4 combinedColor = vec4(0.0f);
+
+			//Calculate Directional Light Effect on fragment
+			combinedColor += CalculateDirectionalLightEffect(norm, dirLight);
+
+			//Calculate each point Light effect on fragment
+			for(int i = 0; i < NR_POINT_LIGHTS; i++)
+			{
+				combinedColor += CalculatePointLightEffect(norm, pointLights[i]);
+			}
+
+			//Calculate Spot Light effect on Fragment
+			combinedColor += CalculateSpotLightEffect(norm, spotLight);
+
+			//Add the Emissive color effect
+			combinedColor += floor((vec4(1.0f) - texture(material.texture_specular_1, TexCoord))) * texture(material.texture_emissive, TexCoord) * material.emissiveAmount;
+
+			if(texture(material.texture_diffuse_1, TexCoord).a < 0.1f)
+				discard;
+
+			FragColor = combinedColor;
+		}
+		else
+		{
+			vec4 combinedColor = texture(material.texture_diffuse_1, TexCoord);
+			if(combinedColor.a < 0.1f)
+				discard;
+			FragColor = combinedColor;
+		}
+		break;
+	}
+	case 2:
 	{
 		//Calculate normalized normal vector
 		vec3 norm = normalize(outNormal);
 
-		vec4 combinedColor = vec4(0.0f);
+		//Calculate the View Direction from Fragment to Camera
+		vec3 viewDir = normalize(FragPos - cameraPos);
 
-		//Calculate Directional Light Effect on fragment
-		combinedColor += CalculateDirectionalLightEffect(norm, dirLight);
+		//Calculate the reflected view Dir on the surface normalized
+		vec3 reflected = normalize(reflect(viewDir, norm));
 
-		//Calculate each point Light effect on fragment
-		for(int i = 0; i < NR_POINT_LIGHTS; i++)
-		{
-			combinedColor += CalculatePointLightEffect(norm, pointLights[i]);
-		}
-
-		//Calculate Spot Light effect on Fragment
-		combinedColor += CalculateSpotLightEffect(norm, spotLight);
-
-		//Add the Emissive color effect
-		combinedColor += floor((vec4(1.0f) - texture(material.texture_specular_1, TexCoord))) * texture(material.texture_emissive, TexCoord) * material.emissiveAmount;
-
-		if(texture(material.texture_diffuse_1, TexCoord).a < 0.1f)
-			discard;
-
-		FragColor = combinedColor;
+		//Use the reflected view dir to sample the cubemap
+		vec4 col = vec4(texture(skyboxCubemap, reflected).rgb, 1.0f);
+		FragColor = col;
+		break;
 	}
-	else
+	case 3:
 	{
-		vec4 combinedColor = texture(material.texture_diffuse_1, TexCoord);
-		if(combinedColor.a < 0.1f)
-			discard;
-		FragColor = combinedColor;
+		//Calculate normalized normal vector
+		vec3 norm = normalize(outNormal);
+
+		//Calculate the View Direction from Fragment to Camera
+		vec3 viewDir = normalize(FragPos - cameraPos);
+
+		//Calculate the Refracted view dir on the surface normalized
+		vec3 refracted = normalize(refract(viewDir, norm, (1.0f / 1.52f)));	//Using refractive indices rations for when moving from air to glass
+
+		//Use the Refracted view dir to sample the cubemap
+		vec4 col = vec4(texture(skyboxCubemap, refracted).rgb, 1.0f);
+		FragColor = col;
+		break;
+	}
 	}
 }
 

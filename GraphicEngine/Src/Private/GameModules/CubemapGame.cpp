@@ -15,6 +15,7 @@ CubemapGame::CubemapGame(int in_width, int in_height)
 
 	bSceneLit = true;
 	bSwitchLightWasPressed = false;
+	RenderingMode = 1;
 }
 
 bool CubemapGame::Init()
@@ -227,6 +228,14 @@ void CubemapGame::ProcessInput(GLFWwindow* window)
 	{
 		bSwitchLightWasPressed = false;
 	}
+
+	//Change mesh Render mode
+	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)	//Normal diffuse color rendering mode
+		RenderingMode = 1;
+	else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)	//Reflective Rendering mode
+		RenderingMode = 2;
+	else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)	//Refractive rendering mode
+		RenderingMode = 3;
 }
 
 void CubemapGame::DrawMainScene()
@@ -276,6 +285,17 @@ void CubemapGame::DrawMainScene()
 			//Set the Lit Mode variable
 			shader->SetBool("bLit", bSceneLit);
 
+			//Set the Rendering mode
+			shader->SetInt("RenderingMode", RenderingMode);
+			if (RenderingMode != 1)
+			{
+				//Bind the Cubemap texture to the Cubemap texture unit
+				glActiveTexture(GL_TEXTURE15);
+				glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+				//Use the texture unit index as the active texture sampler in fragment shader
+				shader->SetInt("skyboxCubemap", 15);
+			}
+
 			//Draw the Mesh
 			mesh->Draw(shader);
 		}
@@ -317,6 +337,18 @@ void CubemapGame::DrawMainScene()
 
 		//Set the Lit Mode variable
 		shader->SetBool("bLit", bSceneLit);
+
+		//Set the Rendering mode
+		shader->SetInt("RenderingMode", RenderingMode);
+
+		if (RenderingMode != 1)
+		{
+			//Bind the Cubemap texture to the Cubemap texture unit
+			glActiveTexture(GL_TEXTURE15);
+			glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+			//Use the texture unit index as the active texture sampler in fragment shader
+			shader->SetInt("skyboxCubemap", 15);
+		}
 
 		//Draw the Model
 		model->Draw(shader);
