@@ -4,6 +4,9 @@
 Model::Model(const std::string& path)
 {
 	LoadModel(path);
+
+	//Set Initial Transform for the Model
+	SetTransform(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
 }
 
 void Model::LoadModel(const std::string& path)
@@ -158,5 +161,19 @@ void Model::Draw(std::weak_ptr<Shader> shaderRef)
 		{
 			mesh.Draw(shaderRef);
 		}
+	}
+}
+
+void Model::SetTransform(const glm::vec3& in_pos, const glm::vec3& in_rot, const glm::vec3& in_scale)
+{
+	//Setting internal transform values
+	position = in_pos;
+	rotation = in_rot;
+	scale = in_scale;
+
+	//Setting transform values for all meshes in Model
+	for (Mesh& mesh : meshes)
+	{
+		mesh.SetTransform(in_pos, in_rot, in_scale);
 	}
 }
