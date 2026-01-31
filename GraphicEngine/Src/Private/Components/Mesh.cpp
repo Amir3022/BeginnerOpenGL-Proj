@@ -60,7 +60,7 @@ void Mesh::Draw(std::weak_ptr<Shader> shaderRef)
 			shader->SetInt(textureName, i);
 		}
 		//Draw mesh Triangles using all bound Data
-		glDrawElements(GL_POINTS, indices.size(), GL_UNSIGNED_INT, (void*)0);
+		glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, (void*)0);
 
 		//Unbind all bound textures
 		for (int i = 0; i < textures.size(); i++)
