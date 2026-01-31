@@ -10,7 +10,7 @@ GLSLGame::GLSLGame(int in_width, int in_height)
 	dirLightColor = glm::vec3(0.98f, 0.98f, 0.98f) * 2.0f;
 	dirLightOrient = glm::normalize(glm::vec3(-1.0f, -1.0f, -1.0f));
 
-	bSceneLit = false;
+	bSceneLit = true;
 	bSwitchLightWasPressed = false;
 }
 

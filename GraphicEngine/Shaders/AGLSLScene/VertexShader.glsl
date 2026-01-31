@@ -6,7 +6,11 @@ layout (location = 2) in vec2 aTexCoord;
 
 out vec3 outNormal;
 out vec3 FragPos;
-out vec2 TexCoord;
+
+out TEX_COORD
+{
+	vec2 TexCoord;
+} outTex;
 
 uniform mat3 normalModelMatrix;
 uniform mat4 model;
@@ -17,7 +21,7 @@ void main()
 {
 	outNormal = normalModelMatrix * aNormal;
 	FragPos = vec3(model * vec4(aPos, 1.0f));
-	TexCoord = aTexCoord;
+	outTex.TexCoord = aTexCoord;
 	gl_Position = projection * view * model * vec4(aPos , 1.0f);
 	gl_PointSize = gl_Position.z;
 }
