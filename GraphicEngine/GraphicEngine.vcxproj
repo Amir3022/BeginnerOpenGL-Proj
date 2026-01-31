@@ -166,6 +166,7 @@
     <ClCompile Include="Src\Private\GameModules\CubesGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\DepthTestGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\Game.cpp" />
+    <ClCompile Include="Src\Private\GameModules\GLSLGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\LightGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\ModelGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\PostProcessGame.cpp" />
@@ -196,6 +197,7 @@
     <ClInclude Include="Src\Public\GameModules\DepthTestGame.h" />
     <ClInclude Include="Src\Public\GameModules\Game.h" />
     <ClInclude Include="Src\Public\Components\Shader.h" />
+    <ClInclude Include="Src\Public\GameModules\GLSLGame.h" />
     <ClInclude Include="Src\Public\GameModules\ModelGame.h" />
     <ClInclude Include="Src\Public\GameModules\PostProcessGame.h" />
     <ClInclude Include="Src\Public\Utilities\EngineUtilities.h" />
