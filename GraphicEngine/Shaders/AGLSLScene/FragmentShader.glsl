@@ -109,12 +109,7 @@ void main()
 	{
 		outColor = texture(material.texture_diffuse_1, inTexCoord.TexCoord);
 	}
-
-	//Split the screen to have the half left of the screen render half the value of each color
-	if(gl_FragCoord.x < 640.0f)
-		FragColor = outColor / 2.0f;
-	else
-		FragColor = outColor;
+	FragColor = outColor;
 }
 
 
