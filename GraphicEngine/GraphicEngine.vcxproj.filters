@@ -72,6 +72,9 @@
     <ClCompile Include="Src\Private\GameModules\GLSLGame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Src\Private\GameModules\GSGame.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\VertexShader.glsl" />
@@ -82,6 +85,7 @@
     <None Include="Shaders\LightScene\LightVertexShader.glsl" />
     <None Include="Shaders\MeshScene\FragmentShader.glsl" />
     <None Include="Shaders\MeshScene\VertexShader.glsl" />
+    <None Include="Shaders\GSSceneShaders\GeometryShader.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\Public\Components\Shader.h">
@@ -124,6 +128,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Src\Public\GameModules\GLSLGame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Public\GameModules\GSGame.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
