@@ -17,6 +17,9 @@ GSModelGame::GSModelGame(int in_width, int in_height)
 
 	bSceneLit = true;
 	bSwitchLightWasPressed = false;
+
+	bShowNormals = false;
+	bToggleNormalWasPressed = false;
 }
 
 bool GSModelGame::Init()
@@ -75,6 +78,18 @@ void GSModelGame::DrawFrame()
 	glClearColor(0.03f, 0.03f, 0.03f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+	//Draw the Main Model Scene
+	DrawMainScene();
+
+	//Draw the Normals on top of the previous drew scene
+	if (bShowNormals)
+	{
+		DrawNormals();
+	}
+}
+
+void GSModelGame::DrawMainScene()
+{
 	//If model is valid, draw it
 	if (model)
 	{
@@ -126,6 +141,34 @@ void GSModelGame::DrawFrame()
 	}
 }
 
+void GSModelGame::DrawNormals()
+{
+	//Check if the Normal Shader is valid
+	if (normalShader)
+	{
+		// Create Transform matrix to transform the drawn image
+		//Create the model matrix to rotate the object in world space
+		glm::mat4 modelMat = glm::identity<glm::mat4>();
+		//Create the view matrix using camera lookAt target point
+		glm::mat4 view = camera->GetLookAtMat(camera->GetCameraLocation() + camera->GetCameraForwardDir());
+		//Create the Normal Matrix to convert normal from local space to view Model space to be drawn from cameras perspective
+		glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(view * modelMat)));
+		//Create the projection matrix to project the view space to NDC
+		glm::mat4 projection = glm::perspective(glm::radians(camera->GetCameraFOV()), (float)GetWidth() / (float)GetHeight(), 0.1f, 100.0f);
+
+		//Use the Shader Program to draw Vertices using the defined vertex and fragment shaders, and apply model, view, projection matrices
+		normalShader->Use();
+		normalShader->SetMat44("model", modelMat);
+		normalShader->SetMat44("view", view);
+		normalShader->SetMat44("projection", projection);
+		normalShader->SetMat33("normalMatrix", normalMatrix);
+
+		//Draw the normal direction vectors on top of the previous scene
+		model->Draw(normalShader);
+	}
+}
+
+
 void GSModelGame::ProcessInput(GLFWwindow* window)
 {
 	Game::ProcessInput(window);
@@ -142,4 +185,19 @@ void GSModelGame::ProcessInput(GLFWwindow* window)
 	{
 		bSwitchLightWasPressed = false;
 	}
+
+	//Toggle Normals rendering when pressing N
+	if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
+	{
+		if (!bToggleNormalWasPressed)
+		{
+			bToggleNormalWasPressed = true;
+			bShowNormals = !bShowNormals;
+		}
+	}
+	else
+	{
+		bToggleNormalWasPressed = false;
+	}
+
 }

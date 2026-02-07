@@ -19,6 +19,10 @@ protected:
 	virtual void ProcessInput(GLFWwindow* window) override;
 
 private:
+	void DrawMainScene();
+	void DrawNormals();
+
+private:
 	//Model Variables
 	std::shared_ptr<Model> model;
 
@@ -41,4 +45,6 @@ private:
 
 	//Input Handling variable
 	bool bSwitchLightWasPressed;
+	bool bToggleNormalWasPressed;
+	bool bShowNormals;
 };

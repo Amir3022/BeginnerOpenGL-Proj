@@ -1,54 +1,32 @@
 #version 330 core
 
 layout (triangles) in;
-layout (triangle_strip, max_vertices = 3) out;
+layout (line_strip, max_vertices = 2) out;
+
+#define MAGNITUDE 0.1f
+
+uniform mat4 projection;
 
 in VS_OUT
 {
-	vec3 vs_outNormal;
-	vec3 vs_FragPos;
-	vec2 vs_TexCoord;
+	vec4 vs_outNormal;
 } gs_in[];
 
-out vec3 outNormal;
-out vec3 FragPos;
-out vec2 TexCoord;
-
-uniform float time;
-
-vec3 CalculateNormal()
+void GenerateLine(int index)
 {
-	vec3 Line_A = vec3(gl_in[0].gl_Position - gl_in[1].gl_Position);		
-	vec3 Line_B = vec3(gl_in[0].gl_Position - gl_in[2].gl_Position);
-	return normalize(cross(Line_A, Line_B));
-}
+	gl_Position = gl_in[index].gl_Position;
+	EmitVertex();
 
-vec4 MoveVertexPos(vec4 position, vec3 normal)
-{
-	vec4 newPosition = position + vec4(((sin(time) + 1) / 2.0f) * normal, 0.0f);
-	return newPosition;
+	gl_Position = gl_in[index].gl_Position + projection * gs_in[index].vs_outNormal * MAGNITUDE;
+	EmitVertex();
+
+	EndPrimitive();
 }
 
 void main()
 {
-	vec3 usedNormal = CalculateNormal();
-	outNormal = gs_in[0].vs_outNormal;
-	FragPos = gs_in[0].vs_FragPos;
-	TexCoord = gs_in[0].vs_TexCoord;
-	gl_Position = MoveVertexPos(gl_in[0].gl_Position, usedNormal);
-	EmitVertex();
-
-	outNormal = gs_in[1].vs_outNormal;
-	FragPos = gs_in[1].vs_FragPos;
-	TexCoord = gs_in[1].vs_TexCoord;
-	gl_Position = MoveVertexPos(gl_in[1].gl_Position, usedNormal);
-	EmitVertex();
-
-	outNormal = gs_in[2].vs_outNormal;
-	FragPos = gs_in[2].vs_FragPos;
-	TexCoord = gs_in[2].vs_TexCoord;
-	gl_Position = MoveVertexPos(gl_in[2].gl_Position, usedNormal);
-	EmitVertex();
-
-	EndPrimitive();
+	//Generate 3 Lines at each vertex of the triangle
+	GenerateLine(0);
+	GenerateLine(1);
+	GenerateLine(2);
 }
