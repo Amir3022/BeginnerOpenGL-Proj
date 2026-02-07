@@ -29,12 +29,12 @@ bool GSGame::Init()
 		glGenVertexArrays(1, &VAO);
 		glBindVertexArray(VAO);
 
-		//Declare Vertices and Elements Data (Vertex Coordinates)
+		//Declare Vertices and Elements Data (Vertex Coordinates, vertex Point Color)
 		float vertices[] = {
-			-0.5f, -0.5f, 0.0f,
-			0.5f, -0.5f, 0.0f,
-			-0.5f, 0.5f, 0.0f,
-			0.5f, 0.5f, 0.0f,
+			-0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
+			0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
+			-0.5f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f,
+			0.5f, 0.5f, 0.0f, 1.0f, 0.5f, 0.25f
 		};
 
 		unsigned int indices[] = {
@@ -49,7 +49,9 @@ bool GSGame::Init()
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 
 		//Unbind the Generated VAO
 		glBindVertexArray(0);
