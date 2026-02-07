@@ -19,7 +19,7 @@ bool GSGame::Init()
 		shader = std::make_shared<Shader>(vertexShaderPath.c_str(), fragmentShaderPath.c_str());
 
 		//Try attaching the Geometry Shader to the Created Shader Program
-		if (!shader->CreateGeometryShader(geometryShaderPath.c_str()))
+		if (!shader->AttachGeometryShader(geometryShaderPath.c_str()))
 		{
 			std::cout << "Failed to Create the Geometry Shader" << std::endl;
 			return false;

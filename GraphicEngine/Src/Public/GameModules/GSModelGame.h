@@ -23,7 +23,7 @@ private:
 	std::shared_ptr<Model> model;
 
 	//Normal Draw shader
-	std::unique_ptr<Shader> normalShader;
+	std::shared_ptr<Shader> normalShader;
 
 	//Extra Shaders
 	std::string geometryShaderPath;

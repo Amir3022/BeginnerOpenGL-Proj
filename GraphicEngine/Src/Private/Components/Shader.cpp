@@ -83,7 +83,7 @@ Shader::Shader(const char* vertexShaderPath, const char* fragmentShaderPath)
 
 }
 
-bool Shader::CreateGeometryShader(const char* geometryShaderPath)
+bool Shader::AttachGeometryShader(const char* geometryShaderPath)
 {
 	//Open the Geometry shader GLSL file and try to read the Geometry Shader source
 	std::string geometryShaderSource;

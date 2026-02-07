@@ -30,7 +30,16 @@ bool GSModelGame::Init()
 		shader = std::make_shared<Shader>(vertexShaderPath.c_str(), fragmentShaderPath.c_str());
 
 		//Try attaching Geometry Shader to the main program
-		if (!shader->CreateGeometryShader(geometryShaderPath.c_str()))
+		if (!shader->AttachGeometryShader(geometryShaderPath.c_str()))
+		{
+			std::cout << "Failed to Attach Geometry Shader" << std::endl;
+			throw std::exception();
+		}
+
+		//Create Normal Shader Program to draw normal directions
+		normalShader = std::make_shared<Shader>(normalVertexShaderPath.c_str(), normalFragmentShaderPath.c_str());
+		//Try attaching Geometry Shader to Normal Shader Program
+		if (!normalShader->AttachGeometryShader(normalGeometryShaderPath.c_str()))
 		{
 			std::cout << "Failed to Attach Geometry Shader" << std::endl;
 			throw std::exception();
