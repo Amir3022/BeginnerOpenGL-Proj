@@ -5,8 +5,6 @@ layout (line_strip, max_vertices = 2) out;
 
 #define MAGNITUDE 0.1f
 
-uniform mat4 projection;
-
 in VS_OUT
 {
 	vec4 vs_outNormal;
@@ -17,7 +15,7 @@ void GenerateLine(int index)
 	gl_Position = gl_in[index].gl_Position;
 	EmitVertex();
 
-	gl_Position = gl_in[index].gl_Position + projection * gs_in[index].vs_outNormal * MAGNITUDE;
+	gl_Position = gl_in[index].gl_Position + gs_in[index].vs_outNormal * MAGNITUDE;
 	EmitVertex();
 
 	EndPrimitive();

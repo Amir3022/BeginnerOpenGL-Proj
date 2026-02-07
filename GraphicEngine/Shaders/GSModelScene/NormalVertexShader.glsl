@@ -8,13 +8,13 @@ out VS_OUT
 	vec4 vs_outNormal;
 } vs_out;
 
-uniform mat3 normalMatrix;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
 
 void main()
 {
-	vs_out.vs_outNormal = vec4(normalize(normalMatrix * aNormal), 0.0f);	//Directions should have w = 0.0f
+	vec4 transformedNormal = projection * view * model * vec4(aNormal, 0.0f);	//Directions should have w = 0.0f
+	vs_out.vs_outNormal = normalize(transformedNormal);	
 	gl_Position = projection * view * model * vec4(aPos , 1.0f);
 }

@@ -151,8 +151,6 @@ void GSModelGame::DrawNormals()
 		glm::mat4 modelMat = glm::identity<glm::mat4>();
 		//Create the view matrix using camera lookAt target point
 		glm::mat4 view = camera->GetLookAtMat(camera->GetCameraLocation() + camera->GetCameraForwardDir());
-		//Create the Normal Matrix to convert normal from local space to view Model space to be drawn from cameras perspective
-		glm::mat3 normalMatrix = glm::mat3(glm::transpose(glm::inverse(view * modelMat)));
 		//Create the projection matrix to project the view space to NDC
 		glm::mat4 projection = glm::perspective(glm::radians(camera->GetCameraFOV()), (float)GetWidth() / (float)GetHeight(), 0.1f, 100.0f);
 
@@ -161,7 +159,6 @@ void GSModelGame::DrawNormals()
 		normalShader->SetMat44("model", modelMat);
 		normalShader->SetMat44("view", view);
 		normalShader->SetMat44("projection", projection);
-		normalShader->SetMat33("normalMatrix", normalMatrix);
 
 		//Draw the normal direction vectors on top of the previous scene
 		model->Draw(normalShader);
