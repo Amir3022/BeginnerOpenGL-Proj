@@ -22,25 +22,20 @@ private:
 	//Model Variables
 	std::shared_ptr<Model> model;
 
-	//Light shader
-	std::unique_ptr<Shader> lightShader;
+	//Normal Draw shader
+	std::unique_ptr<Shader> normalShader;
 
 	//Extra Shaders
-	std::string lightVertexShaderPath;
-	std::string lightFragmentShaderPath;
 	std::string geometryShaderPath;
+	std::string normalVertexShaderPath;
+	std::string normalFragmentShaderPath;
+	std::string normalGeometryShaderPath;
 
 	//Light source variables
-	std::vector<glm::vec3> lightCubesPos;
-	std::vector<float> lightMoveDirs;
-	std::vector<float> lightMoveSpeeds;
-	bool moveLightSource;
-	bool changeLightColor;
 	glm::vec3 dirLightOrient;
 	bool bSceneLit;
 
 	//Colors Variables
-	std::vector<glm::vec3> pointLightColors;
 	glm::vec3 spotLightColor;
 	glm::vec3 dirLightColor;
 

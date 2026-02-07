@@ -35,19 +35,19 @@ void main()
 	outNormal = gs_in[0].vs_outNormal;
 	FragPos = gs_in[0].vs_FragPos;
 	TexCoord = gs_in[0].vs_TexCoord;
-	gl_Position = gl_in[0].gl_Position;
+	gl_Position = MoveVertexPos(gl_in[0].gl_Position, usedNormal);
 	EmitVertex();
 
 	outNormal = gs_in[1].vs_outNormal;
 	FragPos = gs_in[1].vs_FragPos;
 	TexCoord = gs_in[1].vs_TexCoord;
-	gl_Position = gl_in[1].gl_Position;
+	gl_Position = MoveVertexPos(gl_in[1].gl_Position, usedNormal);
 	EmitVertex();
 
 	outNormal = gs_in[2].vs_outNormal;
 	FragPos = gs_in[2].vs_FragPos;
 	TexCoord = gs_in[2].vs_TexCoord;
-	gl_Position = gl_in[2].gl_Position;
+	gl_Position = MoveVertexPos(gl_in[2].gl_Position, usedNormal);
 	EmitVertex();
 
 	EndPrimitive();

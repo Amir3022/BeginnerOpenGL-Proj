@@ -7,11 +7,9 @@ GSModelGame::GSModelGame(int in_width, int in_height)
 	vertexShaderPath = "Shaders/GSModelScene/VertexShader.glsl";
 	geometryShaderPath = "Shaders/GSModelScene/GeometryShader.glsl";
 
-	lightFragmentShaderPath = "Shaders/GSModelScene/LightFragmentShader.glsl";
-	lightVertexShaderPath = "Shaders/GSModelScene/LightVertexShader.glsl";
-
-	moveLightSource = false;
-	changeLightColor = false;
+	normalVertexShaderPath = "Shaders/GSModelScene/NormalVertexShader.glsl";
+	normalFragmentShaderPath = "Shaders/GSModelScene/NormalFragmentShader.glsl";
+	normalGeometryShaderPath = "Shaders/GSModelScene/NormalGeometryShader.glsl";
 
 	spotLightColor = glm::vec3(2.0f, 2.0f, 2.0f);
 	dirLightColor = glm::vec3(0.98f, 0.98f, 0.5f) * 0.75f;
@@ -37,9 +35,6 @@ bool GSModelGame::Init()
 			std::cout << "Failed to Attach Geometry Shader" << std::endl;
 			throw std::exception();
 		}
-
-		//Create Light Shader to render the Light Cube
-		lightShader = std::make_unique<Shader>(lightVertexShaderPath.c_str(), lightFragmentShaderPath.c_str());
 
 		//Create a Model Instance
 		model = std::make_shared<Model>("Assets/Meshes/backpack/backpack.obj");
