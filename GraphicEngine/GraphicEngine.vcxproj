@@ -168,6 +168,7 @@
     <ClCompile Include="Src\Private\GameModules\Game.cpp" />
     <ClCompile Include="Src\Private\GameModules\GLSLGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\GSGame.cpp" />
+    <ClCompile Include="Src\Private\GameModules\GSModelGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\LightGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\ModelGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\PostProcessGame.cpp" />
@@ -201,6 +202,7 @@
     <ClInclude Include="Src\Public\Components\Shader.h" />
     <ClInclude Include="Src\Public\GameModules\GLSLGame.h" />
     <ClInclude Include="Src\Public\GameModules\GSGame.h" />
+    <ClInclude Include="Src\Public\GameModules\GSModelGame.h" />
     <ClInclude Include="Src\Public\GameModules\ModelGame.h" />
     <ClInclude Include="Src\Public\GameModules\PostProcessGame.h" />
     <ClInclude Include="Src\Public\Utilities\EngineUtilities.h" />

@@ -75,6 +75,9 @@
     <ClCompile Include="Src\Private\GameModules\GSGame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Src\Private\GameModules\GSModelGame.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\VertexShader.glsl" />
@@ -131,6 +134,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Src\Public\GameModules\GSGame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Public\GameModules\GSModelGame.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
