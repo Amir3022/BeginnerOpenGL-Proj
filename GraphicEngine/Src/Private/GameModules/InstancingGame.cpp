@@ -51,9 +51,6 @@ bool InstancingGame::Init()
 		glEnableVertexAttribArray(1);
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 
-		//Unbind the vertex Array Object
-		glBindVertexArray(0);
-
 		//Generate the offsets values(Will draw 100 instance of the quad)
 		glm::vec2 initialOffset = glm::vec2(-0.9, -0.9);
 		float offsetVal = 0.2f;
@@ -65,6 +62,21 @@ bool InstancingGame::Init()
 				offsets.push_back(offset);
 			}
 		}
+
+		//Create a new buffer for the instanced array holding quads offsets
+		unsigned int instanceVBO;
+		glGenBuffers(1, &instanceVBO);
+		glBindBuffer(GL_ARRAY_BUFFER, instanceVBO);
+		glBufferData(GL_ARRAY_BUFFER, offsets.size() * sizeof(glm::vec2), offsets.data(), GL_STATIC_DRAW);
+
+		//Assign the instanced array vertex attribute
+		glEnableVertexAttribArray(2);
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)0);
+		glVertexAttribDivisor(2, 1);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+		//Unbind the vertex Array Object
+		glBindVertexArray(0);
 
 
 		return true;
@@ -98,11 +110,7 @@ void InstancingGame::DrawFrame()
 	glBindVertexArray(VAO);
 	//Use the Shader program to draw the quad
 	shader->Use();
-	//Add the 100 value of Offsets as uniforms to the vertex shader
-	for (int i = 0; i < offsets.size(); i++)
-	{
-		shader->SetVec2("offsets["+std::to_string(i) + "]", offsets[i]);
-	}
+
 	//Draw the Quads as instanced draw
 	glDrawElementsInstanced(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0, 100);
 }
