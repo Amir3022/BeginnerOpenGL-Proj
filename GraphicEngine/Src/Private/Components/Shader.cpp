@@ -83,6 +83,57 @@ Shader::Shader(const char* vertexShaderPath, const char* fragmentShaderPath)
 
 }
 
+bool Shader::CreateGeometryShader(const char* geometryShaderPath)
+{
+	//Open the Geometry shader GLSL file and try to read the Geometry Shader source
+	std::string geometryShaderSource;
+	std::ifstream gShaderReader;
+	gShaderReader.exceptions(std::ifstream::failbit | std::ifstream::badbit);
+	try
+	{
+		std::stringstream gShaderStream;
+		gShaderReader.open(geometryShaderPath);
+		gShaderStream << gShaderReader.rdbuf();
+
+		geometryShaderSource = gShaderStream.str();
+
+		gShaderReader.close();
+	}
+	catch (std::exception e)
+	{
+		std::cout << "Failed to open Geometry Shader file with error: " << e.what() << std::endl;
+		return false;
+	}
+	//Create the Geometry Shader and try to compile it
+	int state; 
+	char infoLog[512];
+
+	const char* gShaderSource = geometryShaderSource.c_str();
+	unsigned int geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
+	glShaderSource(geometryShader, 1, &gShaderSource, nullptr);
+	glCompileShader(geometryShader);
+	glGetShaderiv(geometryShader, GL_COMPILE_STATUS, &state);
+	if (!state)
+	{
+		glGetShaderInfoLog(geometryShader, 512, nullptr, infoLog);
+		std::cout << "Failed to compile Geometry shader: " << geometryShaderPath << " , with Error: " << infoLog << std::endl;
+		return false;
+	}
+	//Try attaching Geometry Shader to Shader Program, and check if it successfully links
+	glAttachShader(shaderProgramID, geometryShader);
+	glLinkProgram(shaderProgramID);
+	glGetProgramiv(shaderProgramID, GL_LINK_STATUS, &state);
+	if (!state)
+	{
+		glGetProgramInfoLog(shaderProgramID, 512, nullptr, infoLog);
+		std::cout << "Shader Program failed to Link Geometry Shader with error: " << infoLog << std::endl;
+		return false;
+	}
+
+	//If the Geometry shader is successfully created, compiled and linked to the Shader Program, return true
+	return true;
+}
+
 void Shader::Use()
 {
 	glUseProgram(shaderProgramID);

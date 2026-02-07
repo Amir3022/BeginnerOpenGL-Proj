@@ -18,6 +18,9 @@ class Shader
 public:
 	Shader(const char* vertexShaderPath, const char* fragmentShaderPath);
 
+	//Geometry Shader creation Functions
+	bool CreateGeometryShader(const char* geometryShaderPath);
+
 	void Use();
 	void SetFloat(const std::string& paramName, float value);
 	void SetInt(const std::string& paramName, int value);
