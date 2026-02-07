@@ -115,6 +115,9 @@ void GSModelGame::DrawFrame()
 		//Set the Lit Mode variable
 		shader->SetBool("bLit", bSceneLit);
 
+		//Set time variable used in Geometry Shader
+		shader->SetFloat("time", glfwGetTime());
+
 		model->Draw(shader);
 	}
 }
