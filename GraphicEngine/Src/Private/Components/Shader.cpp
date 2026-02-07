@@ -159,6 +159,16 @@ void Shader::SetColor(const std::string& paramName, float red, float green, floa
 	glUniform4f(glGetUniformLocation(shaderProgramID, paramName.c_str()), red, green, blue, alpha);
 }
 
+void Shader::SetVec2(const std::string& paramName, float x, float y)
+{
+	glUniform2f(glGetUniformLocation(shaderProgramID, paramName.c_str()), x, y);
+}
+
+void Shader::SetVec2(const std::string& paramName, const glm::vec2& vec)
+{
+	SetVec2(paramName, vec.x, vec.y);
+}
+
 void Shader::SetVec3(const std::string& paramName, float x, float y, float z)
 {
 	glUniform3f(glGetUniformLocation(shaderProgramID, paramName.c_str()), x, y, z);

@@ -26,6 +26,8 @@ public:
 	void SetInt(const std::string& paramName, int value);
 	void SetBool(const std::string& paramName, bool value);
 	void SetColor(const std::string& paramName, float red, float green, float blue, float alpha);
+	void SetVec2(const std::string& paramName, float x, float y);
+	void SetVec2(const std::string& paramName, const glm::vec2& vec);
 	void SetVec3(const std::string& paramName, float x, float y, float z);
 	void SetVec3(const std::string& paramName, const glm::vec3& vec);
 	void SetVec4(const std::string& paramName, float x, float y, float z, float w);
