@@ -15,6 +15,6 @@ uniform mat4 projection;
 
 void main()
 {
-	vs_out.vs_outNormal = vec4(normalize(normalMatrix * aNormal), 1.0f);
+	vs_out.vs_outNormal = vec4(normalize(normalMatrix * aNormal), 0.0f);	//Directions should have w = 0.0f
 	gl_Position = projection * view * model * vec4(aPos , 1.0f);
 }
