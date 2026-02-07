@@ -169,6 +169,7 @@
     <ClCompile Include="Src\Private\GameModules\GLSLGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\GSGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\GSModelGame.cpp" />
+    <ClCompile Include="Src\Private\GameModules\InstancingGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\LightGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\ModelGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\PostProcessGame.cpp" />
@@ -182,6 +183,8 @@
   <ItemGroup>
     <None Include="Shaders\FragmentShader.glsl" />
     <None Include="Shaders\GSSceneShaders\GeometryShader.glsl" />
+    <None Include="Shaders\InstancingScene\FragmentShader.glsl" />
+    <None Include="Shaders\InstancingScene\VertexShader.glsl" />
     <None Include="Shaders\LightScene\FragmentShader.glsl" />
     <None Include="Shaders\LightScene\LightFragmentShader.glsl" />
     <None Include="Shaders\LightScene\LightVertexShader.glsl" />
@@ -203,6 +206,7 @@
     <ClInclude Include="Src\Public\GameModules\GLSLGame.h" />
     <ClInclude Include="Src\Public\GameModules\GSGame.h" />
     <ClInclude Include="Src\Public\GameModules\GSModelGame.h" />
+    <ClInclude Include="Src\Public\GameModules\InstancingGame.h" />
     <ClInclude Include="Src\Public\GameModules\ModelGame.h" />
     <ClInclude Include="Src\Public\GameModules\PostProcessGame.h" />
     <ClInclude Include="Src\Public\Utilities\EngineUtilities.h" />

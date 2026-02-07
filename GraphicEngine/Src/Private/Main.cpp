@@ -1,8 +1,8 @@
-#include "GameModules/GSModelGame.h"
+#include "GameModules/InstancingGame.h"
 
 int main()
 {
-    std::unique_ptr<GSModelGame> game = std::make_unique<GSModelGame>(1280, 720);
+    std::unique_ptr<InstancingGame> game = std::make_unique<InstancingGame>(1280, 720);
     if (game)
     {
         return game->Process();
