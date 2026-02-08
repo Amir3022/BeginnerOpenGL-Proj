@@ -63,6 +63,8 @@ public:
 	int GetWidth() { return width; }
 	int GetHeight() { return height; }
 
+	GLFWwindow* GetCurrentWindow() { return currentWindow; }
+
 //Internal Functions
 public:
 	static void framebuffer_resize_callback(GLFWwindow* targetWindow, int newWidth, int newHeight);

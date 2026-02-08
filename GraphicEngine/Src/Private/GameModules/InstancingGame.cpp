@@ -17,6 +17,8 @@ bool InstancingGame::Init()
 
 	try
 	{
+		//Disable Mouse input for the 2D instanced demo
+		glfwSetInputMode(GetCurrentWindow(), GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 		shader = std::make_shared<Shader>(vertexShaderPath.c_str(), fragmentShaderPath.c_str());
 
 		//Generate Vertex Array Object
