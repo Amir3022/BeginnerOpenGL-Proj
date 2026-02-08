@@ -97,6 +97,7 @@
     <None Include="Shaders\GSSceneShaders\GeometryShader.glsl" />
     <None Include="Shaders\InstancingScene\VertexShader.glsl" />
     <None Include="Shaders\InstancingScene\FragmentShader.glsl" />
+    <None Include="Shaders\AsteroidsScene\InstancedVertexShader.glsl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Src\Public\Components\Shader.h">

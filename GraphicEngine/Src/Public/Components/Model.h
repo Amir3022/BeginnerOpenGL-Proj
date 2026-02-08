@@ -18,6 +18,8 @@ public:
 	glm::vec3 GetRotation() const { return rotation; }
 	glm::vec3 GetScale() const { return scale; }
 
+	std::vector<Mesh>& GetMeshes() { return meshes; }
+
 private:
 	void LoadModel(const std::string& path);
 	void ProcessNode(aiNode* node, const aiScene* scene);

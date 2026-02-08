@@ -7,6 +7,7 @@ AsteroidsGame::AsteroidsGame(int in_width, int in_height)
 {
 	fragmentShaderPath = "Shaders/AsteroidsScene/FragmentShader.glsl";
 	vertexShaderPath = "Shaders/AsteroidsScene/VertexShader.glsl";
+	instancedVertexShaderPath = "Shaders/AsteroidsScene/InstancedVertexShader.glsl";
 	fixedSeed = 10;
 }
 
@@ -19,6 +20,9 @@ bool AsteroidsGame::Init()
 	{
 		//Create Shader Program from Class
 		shader = std::make_shared<Shader>(vertexShaderPath.c_str(), fragmentShaderPath.c_str());
+
+		//Create Instanced Shader Program
+		instancedShader = std::make_shared<Shader>(instancedVertexShaderPath.c_str(), fragmentShaderPath.c_str());
 
 		//Create Planet Model Instance
 		planetModel = std::make_shared<Model>("Assets/Meshes/Planet/planet.obj");
@@ -41,6 +45,36 @@ bool AsteroidsGame::Init()
 		if (asteroidModel)
 		{
 			GenerateAsteroidsTransforms(10000);
+		}
+
+		//Generate Instanced Array Buffer, and add data to it
+		glGenBuffers(1, &IBO);
+		glBindBuffer(GL_ARRAY_BUFFER, IBO);
+		glBufferData(GL_ARRAY_BUFFER, asteroidsTransforms.size() * sizeof(glm::mat4), asteroidsTransforms.data(), GL_STATIC_DRAW);
+
+		//Cycle through all meshes of the astronaut model, and bind the instanced array buffer object holding the asteroid instances transforms
+		for (int i = 0; i < asteroidModel->GetMeshes().size(); i++)
+		{
+			//Bind the mesh VAO
+			unsigned int currentVAO = asteroidModel->GetMeshes()[i].GetVAO();
+			glBindVertexArray(currentVAO);
+		
+			//Assign Vertex Attribute Pointer(Mat4 data pointer should be added as 4 vec4 data)
+			glEnableVertexAttribArray(3);
+			glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(glm::vec4), (void*)0);
+			glVertexAttribDivisor(3, 1);
+			glEnableVertexAttribArray(4);
+			glVertexAttribPointer(4, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(glm::vec4), (void*)(sizeof(glm::vec4)));
+			glVertexAttribDivisor(4, 1);
+			glEnableVertexAttribArray(5);
+			glVertexAttribPointer(5, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(glm::vec4), (void*)(2 * sizeof(glm::vec4)));
+			glVertexAttribDivisor(5, 1);
+			glEnableVertexAttribArray(6);
+			glVertexAttribPointer(6, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(glm::vec4), (void*)(3 * sizeof(glm::vec4)));
+			glVertexAttribDivisor(6, 1);
+
+			//Unbind the current bound mesh VAO
+			glBindVertexArray(0);
 		}
 
 		return true;
@@ -108,26 +142,53 @@ void AsteroidsGame::DrawFrame()
 	//Draw the asteroid model
 	if (asteroidModel)
 	{
+		//Use the Instanced Shader program
+		instancedShader->Use();
 		//Create the view matrix using camera lookAt target point
 		glm::mat4 view = camera->GetLookAtMat(camera->GetCameraLocation() + camera->GetCameraForwardDir());
 		//Create the projection matrix to project the view space to NDC
 		glm::mat4 projection = glm::perspective(glm::radians(camera->GetCameraFOV()), (float)GetWidth() / (float)GetHeight(), 0.1f, 1000.0f);
 
-		for (int i = 0; i < asteroidsTransforms.size(); i++)
+		instancedShader->SetMat44("view", view);
+		instancedShader->SetMat44("projection", projection);
+
+		//Cycle through all meshes, bind their VAO and draw elements instanced
+		for (int i = 0; i < asteroidModel->GetMeshes().size(); i++)
 		{
-			//Create the model matrix to rotate the object in world space
-			glm::mat4 modelMat = asteroidsTransforms[i];
-			//Create the Normal Model Matrix to convert normal from local space to World coordinates while respecting scale
-			glm::mat3 normalModelMatrix = glm::mat3(glm::transpose(glm::inverse(modelMat)));
+			glBindVertexArray(asteroidModel->GetMeshes()[i].GetVAO());
+			unsigned int nr_diffuse = 1;
+			unsigned int nr_specular = 1;
+			//Cycle through all Textures, and set their Data in Fragment Shader
+			for (int i = 0; i < asteroidModel->GetMeshes()[i].GetTextures().size(); i++)
+			{
+				Texture texture = asteroidModel->GetMeshes()[i].GetTextures()[i];
+				//Set Active Texture Unit
+				glActiveTexture(GL_TEXTURE0 + i);
+				//Bind the Texture to the Active Texture Unit
+				glBindTexture(GL_TEXTURE_2D, texture.texIndex);
+				//Get the correct texture name to set in the Data in the Fragment Shader
+				std::string textureName = "material.texture_";
+				if (texture.texType == ETextureType::diffuse)
+					textureName += "diffuse_" + std::to_string(nr_diffuse++);
+				else if (texture.texType == ETextureType::specular)
+					textureName += "specular_" + std::to_string(nr_specular++);
+				instancedShader->SetInt(textureName, i);
+			}
+			glDrawElementsInstanced(GL_TRIANGLES, asteroidModel->GetMeshes()[i].GetIndices().size(), GL_UNSIGNED_INT, 0, asteroidsTransforms.size());
 
-			//Use the Shader Program to draw Vertices using the defined vertex and fragment shaders, and apply model, view, projection matrices
-			shader->Use();
-			shader->SetMat44("model", modelMat);
-			shader->SetMat44("view", view);
-			shader->SetMat44("projection", projection);
-			shader->SetMat33("normalModelMatrix", normalModelMatrix);
+			//Unbind all bound textures
+			for (int i = 0; i < asteroidModel->GetMeshes()[i].GetTextures().size(); i++)
+			{
+				//Set Active Texture Unit
+				glActiveTexture(GL_TEXTURE0 + i);
+				//Unbind texture in the Active Texture Unit
+				glBindTexture(GL_TEXTURE_2D, 0);
+			}
+			//Deactivate the last used Texture
+			glActiveTexture(0);
 
-			asteroidModel->Draw(shader);
+			//Unbind the VAO
+			glBindVertexArray(0);
 		}
 	}
 }
@@ -200,4 +261,10 @@ void AsteroidsGame::UpdateAsteroidsPositions()
 		transform[3][1] = y;
 		transform[3][2] = z;
 	}
+
+
+	//Bind Instanced Array Buffer, and update its data
+	glBindBuffer(GL_ARRAY_BUFFER, IBO);
+	glBufferData(GL_ARRAY_BUFFER, asteroidsTransforms.size() * sizeof(glm::mat4),nullptr, GL_STATIC_DRAW);
+	glBufferSubData(GL_ARRAY_BUFFER, 0, asteroidsTransforms.size() * sizeof(glm::mat4), asteroidsTransforms.data());
 }

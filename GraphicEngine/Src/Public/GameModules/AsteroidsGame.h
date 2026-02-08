@@ -31,4 +31,11 @@ private:
 	//Asteroids Transforms
 	std::vector<glm::mat4> asteroidsTransforms;
 	int fixedSeed;		//Fixed seed to ensure same random values each run
+
+	//Instancing Shader Variables
+	std::shared_ptr<Shader> instancedShader;
+	std::string instancedVertexShaderPath;
+
+	//Instanced Array Buffer Index
+	unsigned int IBO;
 };

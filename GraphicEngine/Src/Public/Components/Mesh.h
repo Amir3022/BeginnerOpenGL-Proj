@@ -53,6 +53,10 @@ public:
 	glm::vec3 GetRotation() const { return rotation; }
 	glm::vec3 GetScale() const { return scale; }
 
+	unsigned int GetVAO() { return VAO; }
+	std::vector<unsigned int> GetIndices() { return indices; }
+	std::vector<Texture> GetTextures() { return textures; }
+
 private:
 	void SetupMesh();
 

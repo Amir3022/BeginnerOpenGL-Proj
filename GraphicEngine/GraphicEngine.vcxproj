@@ -182,6 +182,7 @@
     <ClCompile Include="Src\Public\Utilities\EngineTypes.h" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Shaders\AsteroidsScene\InstancedVertexShader.glsl" />
     <None Include="Shaders\FragmentShader.glsl" />
     <None Include="Shaders\GSSceneShaders\GeometryShader.glsl" />
     <None Include="Shaders\InstancingScene\FragmentShader.glsl" />
