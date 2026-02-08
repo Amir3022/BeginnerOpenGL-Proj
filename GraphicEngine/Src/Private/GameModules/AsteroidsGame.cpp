@@ -8,6 +8,10 @@ AsteroidsGame::AsteroidsGame(int in_width, int in_height)
 	fragmentShaderPath = "Shaders/AsteroidsScene/FragmentShader.glsl";
 	vertexShaderPath = "Shaders/AsteroidsScene/VertexShader.glsl";
 	instancedVertexShaderPath = "Shaders/AsteroidsScene/InstancedVertexShader.glsl";
+
+	cubemapFragmentShaderPath = "Shaders/CubemapScene/CubemapFragmentShader.glsl";
+	cubemapVertexShaderPath = "Shaders/CubemapScene/CubemapVertexShader.glsl";
+
 	fixedSeed = 10;
 }
 
@@ -23,6 +27,9 @@ bool AsteroidsGame::Init()
 
 		//Create Instanced Shader Program
 		instancedShader = std::make_shared<Shader>(instancedVertexShaderPath.c_str(), fragmentShaderPath.c_str());
+
+		//Create CubeMap Shader
+		cubemapShader = std::make_unique<Shader>(cubemapVertexShaderPath.c_str(), cubemapFragmentShaderPath.c_str());
 
 		//Create Planet Model Instance
 		planetModel = std::make_shared<Model>("Assets/Meshes/Planet/planet.obj");
@@ -76,6 +83,70 @@ bool AsteroidsGame::Init()
 			//Unbind the current bound mesh VAO
 			glBindVertexArray(0);
 		}
+
+		//Create VAO for the Post Process quad having only a single quad taking the whole screen real state
+		glGenVertexArrays(1, &cubemapVAO);
+		glBindVertexArray(cubemapVAO);
+
+		//Create a unit cube at Origin, consisting only of vertex locations
+		float cubemapVertices[] = {
+			-1.0f, -1.0f, 1.0f,		//0
+			1.0f, -1.0f, 1.0f,		//1
+			-1.0f, 1.0f, 1.0f,		//2
+			1.0f, 1.0f, 1.0f,		//3
+
+			-1.0f, -1.0f, -1.0f,	//4
+			1.0f, -1.0f, -1.0f,		//5
+			-1.0f, 1.0f, -1.0f,		//6
+			1.0f, 1.0f, -1.0f,		//7
+		};
+
+		unsigned int cubemapIndices[] =
+		{
+			0, 1, 3,
+			0, 3, 2,
+
+			4, 7, 5,
+			4, 6, 7,
+
+			1, 5, 7,
+			1, 7, 3,
+
+			4, 0, 2,
+			4, 2, 6,
+
+			2, 3, 7,
+			2, 7, 6,
+
+			0, 5, 1,
+			0, 4, 5,
+		};
+
+		//Create vertex and Element buffers
+		unsigned int cubemapVBO, cubemapEBO;
+		glGenBuffers(1, &cubemapVBO);
+		glBindBuffer(GL_ARRAY_BUFFER, cubemapVBO);
+		glGenBuffers(1, &cubemapEBO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubemapEBO);
+		//Assign data to the buffers
+		glBufferData(GL_ARRAY_BUFFER, sizeof(cubemapVertices), cubemapVertices, GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubemapIndices), cubemapIndices, GL_STATIC_DRAW);
+		//Declate Vertex attributes
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+		//Unbind the cubemapVAO
+		glBindVertexArray(0);
+
+		//Load the Cubemap texture
+		std::vector<std::string> cubemapImagePaths{
+			"Assets/Textures/Cubemaps/SpaceBox/right.png",
+			"Assets/Textures/Cubemaps/SpaceBox/left.png",
+			"Assets/Textures/Cubemaps/SpaceBox/top.png",
+			"Assets/Textures/Cubemaps/SpaceBox/bottom.png",
+			"Assets/Textures/Cubemaps/SpaceBox/front.png",
+			"Assets/Textures/Cubemaps/SpaceBox/back.png",
+		};
+		cubemapTexture = EngineUtilities::LoadImagesIntoCubemap(cubemapImagePaths);
 
 		return true;
 	}
@@ -190,6 +261,40 @@ void AsteroidsGame::DrawFrame()
 			//Unbind the VAO
 			glBindVertexArray(0);
 		}
+	}
+
+	//Draw the Cubemap
+	glDepthFunc(GL_LEQUAL);	//Change the Depth Test function to less than or equal, to make sure the cube map is rendered behind all other meshes in the scene
+	//Check if the cubemap Shader is valid
+	if (cubemapShader)
+	{
+		//Bind the cubemap VAO
+		glBindVertexArray(cubemapVAO);
+
+		//Create the view matrix using camera lookAt target point, need to remove the translation data from view matrix so take the 3x3 upper left matrix
+		glm::mat4 view = glm::mat3(camera->GetLookAtMat(camera->GetCameraLocation() + camera->GetCameraForwardDir()));
+
+		//Create the projection matrix to project the view space to NDC
+		glm::mat4 projection = glm::perspective(glm::radians(camera->GetCameraFOV()), (float)GetWidth() / (float)GetHeight(), 0.1f, 100.0f);
+
+		//Use the Shader Program to draw Vertices using the defined vertex and fragment shaders, view, projection matrices
+		cubemapShader->Use();
+		cubemapShader->SetMat44("view", view);
+		cubemapShader->SetMat44("projection", projection);
+
+		//Activate the first texture unit, and bind the cubemap texture to it
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+		//Use the texture unit index as the active texture sampler in fragment shader
+		cubemapShader->SetInt("cubemapTexture", 0);
+
+		//Draw the cubemap
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (void*)0);
+
+		//Unbind the cubemapVAO and cubemap texture
+		glBindVertexArray(0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+		glActiveTexture(0);
 	}
 }
 

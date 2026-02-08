@@ -38,4 +38,13 @@ private:
 
 	//Instanced Array Buffer Index
 	unsigned int IBO;
+
+	//Cubemap Shader Variables
+	std::shared_ptr<Shader> cubemapShader;
+	std::string cubemapVertexShaderPath;
+	std::string cubemapFragmentShaderPath;
+
+	//Cubemap Arrays variables
+	unsigned int cubemapVAO;
+	unsigned int cubemapTexture;
 };
