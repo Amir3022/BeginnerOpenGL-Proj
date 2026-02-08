@@ -2,6 +2,7 @@
 #include "Game.h"
 #include "Components/Model.h"
 
+
 class AsteroidsGame : public Game
 {
 public:
@@ -19,7 +20,15 @@ protected:
 	virtual void ProcessInput(GLFWwindow* window) override;
 
 private:
+	void GenerateAsteroidsTransforms(int amount);
+	void UpdateAsteroidsPositions();
+
+private:
 	//Model Variables
 	std::shared_ptr<Model> planetModel;
 	std::shared_ptr<Model> asteroidModel;
+
+	//Asteroids Transforms
+	std::vector<glm::mat4> asteroidsTransforms;
+	int fixedSeed;		//Fixed seed to ensure same random values each run
 };
