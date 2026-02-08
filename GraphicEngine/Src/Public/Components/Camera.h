@@ -49,6 +49,9 @@ public:
 	glm::vec3 GetCameraUpDir();
 	glm::mat4 GetLookAtMat(glm::vec3 targetPos);
 
+	//Setter Functions
+	void SetCameraLocation(glm::vec3 in_pos) { position = in_pos; }
+
 	//Input Handling
 	void ProcessKeyboardInput(glm::vec2 inputVec, float deltaTime);
 	void ProcessKeyboardHeightInput(float inputVal, float deltaTime);

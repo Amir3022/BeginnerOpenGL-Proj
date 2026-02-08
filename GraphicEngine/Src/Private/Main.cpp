@@ -1,8 +1,8 @@
-#include "GameModules/InstancingGame.h"
+#include "GameModules/AsteroidsGame.h"
 
 int main()
 {
-    std::unique_ptr<InstancingGame> game = std::make_unique<InstancingGame>(1280, 720);
+    std::unique_ptr<AsteroidsGame> game = std::make_unique<AsteroidsGame>(1280, 720);
     if (game)
     {
         return game->Process();
