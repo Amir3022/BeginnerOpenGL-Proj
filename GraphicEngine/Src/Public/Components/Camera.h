@@ -51,6 +51,7 @@ public:
 
 	//Setter Functions
 	void SetCameraLocation(glm::vec3 in_pos) { position = in_pos; }
+	void SetCamMoveSpeed(float in_speed) { camMoveSpeed = in_speed; }
 
 	//Input Handling
 	void ProcessKeyboardInput(glm::vec2 inputVec, float deltaTime);

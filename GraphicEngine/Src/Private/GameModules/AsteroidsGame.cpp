@@ -46,6 +46,7 @@ bool AsteroidsGame::Init()
 		if (camera)
 		{
 			camera->SetCameraLocation(glm::vec3(0.0f, 0.0f, 80.0f));
+			camera->SetCamMoveSpeed(50.0f);
 		}
 
 		//Generate transforms for 1000 asteroid to be drawn
