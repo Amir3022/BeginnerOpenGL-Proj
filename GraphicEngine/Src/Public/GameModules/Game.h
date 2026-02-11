@@ -74,6 +74,7 @@ public:
 protected:
 	virtual void ProcessInput(GLFWwindow* window);
 	void calculateDeltaTime();
+	void ReInitWindow();
 
 private:
 	//Window Size Variables

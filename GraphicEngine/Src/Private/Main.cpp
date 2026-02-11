@@ -1,8 +1,8 @@
-#include "GameModules/AsteroidsGame.h"
+#include "GameModules/AAGame.h"
 
 int main()
 {
-    std::unique_ptr<AsteroidsGame> game = std::make_unique<AsteroidsGame>(1280, 720);
+    std::unique_ptr<AAGame> game = std::make_unique<AAGame>(1280, 720);
     if (game)
     {
         return game->Process();

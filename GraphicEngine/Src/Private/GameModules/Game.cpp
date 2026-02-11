@@ -207,3 +207,36 @@ void Game::calculateDeltaTime()
     deltaTime = currentFrameTime - lastFrameTime;
     lastFrameTime = currentFrameTime;
 }
+
+void Game::ReInitWindow()
+{
+    //Destroy the Old GLFW Window
+    glfwDestroyWindow(currentWindow);
+
+    //Create GLFW Window
+    currentWindow = glfwCreateWindow(width, height, "Learning OpenGL", nullptr, nullptr);
+    if (!currentWindow)
+    {
+        std::cout << "Failed to create glfw Window";
+        glfwTerminate();
+        throw std::exception();
+    }
+    //Set current Window as the Current Context for GLFW
+    glfwMakeContextCurrent(currentWindow);
+
+    //Set openGL viewport coordinates
+    glViewport(0, 0, width, height); //Example of having GLAD get the function pointer for this specific system
+
+    //Set the Window User Pointer to the game class so it can have control over the window actions
+    glfwSetWindowUserPointer(currentWindow, this);
+
+    //Adding callback to the window to change the viewport size when it's size changes
+    glfwSetFramebufferSizeCallback(currentWindow, framebuffer_resize_callback);
+
+    //Capturing mouse cursor input, and add callback to when camera cusror is moved
+    glfwSetInputMode(currentWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    glfwSetCursorPosCallback(currentWindow, mouseCursor_move_callback);
+
+    //Capture mouse scroll input, and add callback to when scroll is used
+    glfwSetScrollCallback(currentWindow, mouseScroll_change_callback);
+}
