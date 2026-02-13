@@ -18,8 +18,23 @@ protected:
 	virtual void ProcessInput(GLFWwindow* window) override;
 
 private:
+	void DrawMainScene();
+	void DrawPPScene();
+
+private:
 	//Cube Rendering Variables
 	unsigned int VAO;
+
+	//Framebuffers Variables
+	unsigned int msFBO;
+	unsigned int interimFBO;
+	unsigned int outTex;
+
+	//Post Process Variables
+	unsigned int ppVAO;
+	std::string ppVertexShaderPath;
+	std::string ppFragmentShaderPath;
+	std::shared_ptr<Shader> ppShader;
 
 	//Input Variables
 	bool bWasChangeMSAAPressed;

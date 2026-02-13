@@ -101,7 +101,7 @@
     <None Include="Shaders\InstancingScene\VertexShader.glsl" />
     <None Include="Shaders\InstancingScene\FragmentShader.glsl" />
     <None Include="Shaders\AsteroidsScene\InstancedVertexShader.glsl" />
-    <None Include="Shaders\AAScene\VertexShader.glsl" />
+    <None Include="Shaders\AAScene\PPVertexShader.glsl" />
     <None Include="Shaders\AAScene\FragmentShader.glsl" />
   </ItemGroup>
   <ItemGroup>
