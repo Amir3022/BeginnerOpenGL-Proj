@@ -9,7 +9,7 @@ AAGame::AAGame(int in_width, int in_height)
 	ppFragmentShaderPath = "Shaders/AAScene/PPFragmentShader.glsl";
 	ppVertexShaderPath = "Shaders/AAScene/PPVertexShader.glsl";
 
-	currentSamplesNum = 4;
+	currentSamplesNum = 1;
 	prevSamplesNum = currentSamplesNum;
 }
 
