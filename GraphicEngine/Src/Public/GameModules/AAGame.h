@@ -14,14 +14,22 @@ public:
 
 	virtual void DrawFrame() override;
 
-protected:
-	virtual void ProcessInput(GLFWwindow* window) override;
+private:
+	void DrawMainScene();
+	void DrawPPScene();
 
 private:
 	//Cube Rendering Variables
 	unsigned int VAO;
 
-	//Input Variables
-	bool bWasChangeMSAAPressed;
-	bool bUseMSAA;
+	//Quad Rendering Variables
+	unsigned int ppVAO;
+	std::string ppVertexShaderPath;
+	std::string ppFragmentShaderPath;
+	std::shared_ptr<Shader> quadShader;
+
+	//Framebuffer Variables
+	unsigned int msFBO;
+	unsigned int interimFBO;
+	unsigned int screenTexture;
 };
