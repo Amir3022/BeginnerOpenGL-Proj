@@ -8,6 +8,9 @@ AAGame::AAGame(int in_width, int in_height)
 
 	ppFragmentShaderPath = "Shaders/AAScene/PPFragmentShader.glsl";
 	ppVertexShaderPath = "Shaders/AAScene/PPVertexShader.glsl";
+
+	currentSamplesNum = 4;
+	prevSamplesNum = currentSamplesNum;
 }
 
 bool AAGame::Init()
@@ -23,41 +26,10 @@ bool AAGame::Init()
 		//Create PostProcess Quad Shader to render the Light Cube
 		quadShader = std::make_unique<Shader>(ppVertexShaderPath.c_str(), ppFragmentShaderPath.c_str());
 
-		//Generate and bind the Multisample Framebuffer
-		glGenFramebuffers(1, &msFBO);
-		glBindFramebuffer(GL_FRAMEBUFFER, msFBO);
-		//Generate Texture buffer to be used as Color Buffer for the FB
-		unsigned int msColorTexture;
-		glGenTextures(1, &msColorTexture);
-		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, msColorTexture);
-		//Init the Texture Buffer with empty data
-		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGB, GetWidth(), GetHeight(), GL_TRUE);
-		glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		//Attach the texture as the color buffer of the Framebuffer
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, msColorTexture, 0);
-		//Unbind the generated color buffer texture
-		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
-
-		//Generate RenderBuffer to be used as Depth and stencil buffer for the FB
-		unsigned int msRBO;
-		glGenRenderbuffers(1, &msRBO);
-		glBindRenderbuffer(GL_RENDERBUFFER, msRBO);
-		//Reserve memory for the RenderBuffer
-		glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH24_STENCIL8, GetWidth(), GetHeight());
-		//Attach Renderbuffer to Framebuffer
-		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, msRBO);
-		//Unbind the generated Render Buffer
-		glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-		//Check if Framebuffer status is complete
-		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		if (!CreateFramebuffer(currentSamplesNum))
 		{
-			std::cout << "Failed to initialize the Framebuffer properly" << std::endl;
 			return false;
 		}
-		//Unbind the Framebuffer
-		glBindBuffer(GL_FRAMEBUFFER, 0);
 
 		//Generate and bind the Intermediate Framebuffer
 		glGenFramebuffers(1, &interimFBO);
@@ -188,6 +160,12 @@ void AAGame::Terminate()
 void AAGame::UpdateGame(float deltaTime)
 {
 	Game::UpdateGame(deltaTime);
+	if (currentSamplesNum != prevSamplesNum)
+	{
+		prevSamplesNum = currentSamplesNum;
+		if (!CreateFramebuffer(currentSamplesNum))
+			throw std::exception();
+	}
 }
 
 void AAGame::DrawFrame()
@@ -213,6 +191,75 @@ void AAGame::DrawFrame()
 	glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	DrawPPScene();
+}
+
+bool AAGame::CreateFramebuffer(int n_samples)
+{
+	//Generate and bind the Multisample Framebuffer
+	glGenFramebuffers(1, &msFBO);
+	glBindFramebuffer(GL_FRAMEBUFFER, msFBO);
+	if (n_samples > 1)
+	{
+		//Generate Texture buffer to be used as Color Buffer for the FB
+		unsigned int msColorTexture;
+		glGenTextures(1, &msColorTexture);
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, msColorTexture);
+		//Init the Texture Buffer with empty data
+		glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, n_samples, GL_RGB, GetWidth(), GetHeight(), GL_TRUE);
+		glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D_MULTISAMPLE, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		//Attach the texture as the color buffer of the Framebuffer
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, msColorTexture, 0);
+		//Unbind the generated color buffer texture
+		glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+
+		//Generate RenderBuffer to be used as Depth and stencil buffer for the FB
+		unsigned int msRBO;
+		glGenRenderbuffers(1, &msRBO);
+		glBindRenderbuffer(GL_RENDERBUFFER, msRBO);
+		//Reserve memory for the RenderBuffer
+		glRenderbufferStorageMultisample(GL_RENDERBUFFER, n_samples, GL_DEPTH24_STENCIL8, GetWidth(), GetHeight());
+		//Attach Renderbuffer to Framebuffer
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, msRBO);
+		//Unbind the generated Render Buffer
+		glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	}
+	else
+	{
+		//Generate Texture buffer to be used as Color Buffer for the FB
+		unsigned int msColorTexture;
+		glGenTextures(1, &msColorTexture);
+		glBindTexture(GL_TEXTURE_2D, msColorTexture);
+		//Init the Texture Buffer with empty data
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, GetWidth(), GetHeight(), 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		//Attach the texture as the color buffer of the Framebuffer
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, msColorTexture, 0);
+		//Unbind the generated color buffer texture
+		glBindTexture(GL_TEXTURE_2D, 0);
+
+		//Generate RenderBuffer to be used as Depth and stencil buffer for the FB
+		unsigned int msRBO;
+		glGenRenderbuffers(1, &msRBO);
+		glBindRenderbuffer(GL_RENDERBUFFER, msRBO);
+		//Reserve memory for the RenderBuffer
+		glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, GetWidth(), GetHeight());
+		//Attach Renderbuffer to Framebuffer
+		glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, msRBO);
+		//Unbind the generated Render Buffer
+		glBindRenderbuffer(GL_RENDERBUFFER, 0);
+	}
+
+	//Check if Framebuffer status is complete
+	if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+	{
+		std::cout << "Failed to initialize the Framebuffer properly" << std::endl;
+		return false;
+	}
+	//Unbind the Framebuffer
+	glBindBuffer(GL_FRAMEBUFFER, 0);
+	return true;
 }
 
 void AAGame::DrawMainScene()
@@ -267,4 +314,18 @@ void AAGame::DrawPPScene()
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glBindVertexArray(0);
 	}
+}
+
+void AAGame::ProcessInput(GLFWwindow* window)
+{
+	Game::ProcessInput(window);
+	//Change the MSAA samples count
+	if (glfwGetKey(window, GLFW_KEY_1) == GLFW_PRESS)
+		currentSamplesNum = 1;
+	else if (glfwGetKey(window, GLFW_KEY_2) == GLFW_PRESS)
+		currentSamplesNum = 2;
+	else if (glfwGetKey(window, GLFW_KEY_3) == GLFW_PRESS)
+		currentSamplesNum = 4;
+	else if (glfwGetKey(window, GLFW_KEY_4) == GLFW_PRESS)
+		currentSamplesNum = 8;
 }
