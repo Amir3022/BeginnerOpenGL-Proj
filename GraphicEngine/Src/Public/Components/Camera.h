@@ -50,8 +50,9 @@ public:
 	glm::mat4 GetLookAtMat(glm::vec3 targetPos);
 
 	//Setter Functions
-	void SetCameraLocation(glm::vec3 in_pos) { position = in_pos; }
+	void SetCameraLocation(const glm::vec3& in_pos) { position = in_pos; }
 	void SetCamMoveSpeed(float in_speed) { camMoveSpeed = in_speed; }
+	void SetCameraRotation(const glm::vec3& in_rot) { rotation = in_rot; }
 
 	//Input Handling
 	void ProcessKeyboardInput(glm::vec2 inputVec, float deltaTime);

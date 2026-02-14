@@ -162,6 +162,7 @@
     <ClCompile Include="Src\Private\Components\Mesh.cpp" />
     <ClCompile Include="Src\Private\Components\Model.cpp" />
     <ClCompile Include="Src\Private\GameModules\AAGame.cpp" />
+    <ClCompile Include="Src\Private\GameModules\AdvLightGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\AsteroidsGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\BlendingScene.cpp" />
     <ClCompile Include="Src\Private\GameModules\CubemapGame.cpp" />
@@ -203,6 +204,7 @@
     <ClInclude Include="Src\Public\Components\Mesh.h" />
     <ClInclude Include="Src\Public\Components\Model.h" />
     <ClInclude Include="Src\Public\GameModules\AAGame.h" />
+    <ClInclude Include="Src\Public\GameModules\AdvLightGame.h" />
     <ClInclude Include="Src\Public\GameModules\AsteroidsGame.h" />
     <ClInclude Include="Src\Public\GameModules\BlendingScene.h" />
     <ClInclude Include="Src\Public\GameModules\CubemapGame.h" />
