@@ -7,8 +7,17 @@ ShadowGame::ShadowGame(int in_width, int in_height)
 	vertexShaderPath = "Shaders/ShadowScene/VertexShader.glsl";
 	fragmentShaderPath = "Shaders/ShadowScene/FragmentShader.glsl";
 
+	shadowVertexShaderPath = "Shaders/ShadowScene/ShadowVertexShader.glsl";
+	shadowFragmentShaderPath = "Shaders/ShadowScene/ShadowFragmentShader.glsl";
+
+	ppFragmentShaderPath = "Shaders/ShadowScene/PPFragmentShader.glsl";
+	ppVertexShaderPath = "Shaders/ShadowScene/PPVertexShader.glsl";
+
 	dirLightDirection = glm::normalize(glm::vec3(1.0f, -1.0, -1.0f));
 	dirLightColor = glm::vec3(0.98f, 0.98f, 0.98f) * 0.8f;
+
+	shadowMapWidth = 1024;
+	shadowMapHeight = 1024;
 }
 
 bool ShadowGame::Init()
@@ -20,6 +29,12 @@ bool ShadowGame::Init()
 	{
 		//Create Shader Program from Class
 		shader = std::make_shared<Shader>(vertexShaderPath.c_str(), fragmentShaderPath.c_str());
+
+		//Create Simple Shadow Shader 
+		shadowSimpleShader = std::make_shared<Shader>(shadowVertexShaderPath.c_str(), shadowFragmentShaderPath.c_str());
+
+		//Create ppShader
+		ppShader = std::make_shared<Shader>(ppVertexShaderPath.c_str(), ppFragmentShaderPath.c_str());
 
 		//Change Camera transform
 		camera->SetCameraLocation(camera->GetCameraLocation() + glm::vec3(0.0f, 2.0f, 2.0f));
@@ -164,6 +179,63 @@ bool ShadowGame::Init()
 		meshes.push_back(cube_3);
 		bUseTiling.push_back(false);
 
+		//Create a framebuffer to hold depth map for shadow scene
+		glGenFramebuffers(1, &shadowFBO);
+		glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
+		//Generate Texture to be used as the depth buffer for the shadow framebuffer
+		glGenTextures(1, &shadowMap);
+		glBindTexture(GL_TEXTURE_2D, shadowMap);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shadowMapWidth, shadowMapHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowMap, 0);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		//Set the Color Read and Draw buffers as empty
+		glDrawBuffer(GL_NONE);
+		glReadBuffer(GL_NONE);
+		//Check if the Framebuffer is properly attached
+		if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+		{
+			std::cout << "Failed to create shadow map framebuffer" << std::endl;
+			return false;
+		}
+		//Unbind framebuffer
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+		//Create VAO for the Post Process quad having only a single quad taking the whole screen real state
+		glGenVertexArrays(1, &ppVAO);
+		glBindVertexArray(ppVAO);
+		//Create Vertex Buffer and Elements Buffer and fill with a single Quad data
+		float quadVertices[] = {
+			-1.0f, -1.0f, 0.0f, 0.0f, 0.0f,
+			1.0f, -1.0f, 0.0f, 1.0f, 0.0f,
+			-1.0f, 1.0f, 0.0f, 0.0f, 1.0f,
+			1.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+		};
+
+		unsigned int quadIndices[] =
+		{
+			0, 1, 3,
+			0, 3, 2,
+		};
+		//Create vertex and Element buffers
+		unsigned int ppVBO, ppEBO;
+		glGenBuffers(1, &ppVBO);
+		glBindBuffer(GL_ARRAY_BUFFER, ppVBO);
+		glGenBuffers(1, &ppEBO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, ppEBO);
+		//Assign data to the buffers
+		glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), quadVertices, GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(quadIndices), quadIndices, GL_STATIC_DRAW);
+		//Declate Vertex attributes
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+		glEnableVertexAttribArray(1);
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+		//Unbind the PPVAO
+		glBindVertexArray(0);
 
 		return true;
 	}
@@ -191,17 +263,29 @@ void ShadowGame::DrawFrame()
 {
 	Game::DrawFrame();
 
+	//Bind the shadow Map Framebuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
+	//Change Viewport to match shadow map resolution
+	glViewport(0, 0, shadowMapWidth, shadowMapHeight);
+	//Enable Depth Testing, and clear color and depth buffers
+	glEnable(GL_DEPTH_TEST);
+	glClearColor(0.02f, 0.02f, 0.02f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//Draw the shadow map by drawing the depth value of the main scene from the directional light point of view
+	RegisterShadowMap();
+
 	//Bind the main framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
+	//Change Viewport to proper resolution
+	glViewport(0, 0, GetWidth(), GetHeight());
 	//Enable Depth Testing, and clear color and depth buffers
 	glClearColor(0.02f, 0.02f, 0.02f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
 	//Enable Gamme Correction using sRGB Colors in Framebuffers
 	glEnable(GL_FRAMEBUFFER_SRGB);
-
-	//Draw the Main scene with the Wooden floor and the Point light source
-	DrawMainScene();
+	//Draw Shadow Map Representation using Shadow Map on a quad
+	glDisable(GL_DEPTH_TEST);
+	DrawShadowMapRepresentation();
 }
 
 void ShadowGame::DrawMainScene()
@@ -253,5 +337,64 @@ void ShadowGame::DrawMainScene()
 				mesh->Draw(shader);
 			}
 		}
+	}
+}
+
+void ShadowGame::RegisterShadowMap()
+{
+	//Check if the meshes is valid
+	if (shader && meshes.size() > 0)
+	{
+		//Use a point in the direction of the directional light to be used as the virtual camera location
+		glm::vec3 lightPosition = -dirLightDirection * 5.0f;
+		//Create the View matrix to see the plane model through the Light position
+		glm::mat4 view = glm::lookAt(lightPosition, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
+		//Create orthographic projection matrix from the light position
+		glm::mat4 projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 15.0f);
+
+		//Use the shader program, and set the matrices
+		shadowSimpleShader->Use();
+		shadowSimpleShader->SetMat44("lightSpaceMat", projection * view);
+
+
+		for (int i = 0; i < meshes.size(); i++)
+		{
+			std::shared_ptr<Mesh> mesh = meshes[i];
+			if (mesh)
+			{
+				//Create a model matrix to set plane location in world coordinates
+				glm::mat4 modelMat = glm::identity < glm::mat4>();
+				modelMat = glm::translate(modelMat, mesh->GetPosition());
+				modelMat = glm::rotate(modelMat, glm::radians(mesh->GetRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
+				modelMat = glm::rotate(modelMat, glm::radians(mesh->GetRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
+				modelMat = glm::rotate(modelMat, glm::radians(mesh->GetRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
+				modelMat = glm::scale(modelMat, mesh->GetScale());
+
+				//Set changing Model and normal model matrices
+				shadowSimpleShader->SetMat44("model", modelMat);
+
+				//Draw the Wooden floor mesh
+				mesh->Draw(shadowSimpleShader);
+			}
+		}
+	}
+}
+
+void ShadowGame::DrawShadowMapRepresentation()
+{
+	if (ppShader)
+	{
+		//Draw the quad from it's vertices, and use the color texture from our framebuffer as a texture sampled in the fragment shader
+		glBindVertexArray(ppVAO);
+		ppShader->Use();
+		//Activate a texture unit and bind the color texture to it
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, shadowMap);
+		ppShader->SetInt("screenTexture", 0);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0);
+		//Unbind the texture and the VAO
+		glActiveTexture(0);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glBindVertexArray(0);
 	}
 }
