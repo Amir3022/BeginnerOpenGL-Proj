@@ -90,6 +90,9 @@
     <ClCompile Include="Src\Private\GameModules\AdvLightGame.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Src\Private\GameModules\ShadowGame.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Shaders\VertexShader.glsl" />
@@ -166,6 +169,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Src\Public\GameModules\AdvLightGame.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Src\Public\GameModules\ShadowGame.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

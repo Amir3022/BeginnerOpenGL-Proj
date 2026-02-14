@@ -1,8 +1,8 @@
-#include "GameModules/AdvLightGame.h"
+#include "GameModules/ShadowGame.h"
 
 int main()
 {
-    std::unique_ptr<AdvLightGame> game = std::make_unique<AdvLightGame>(1280, 720);
+    std::unique_ptr<ShadowGame> game = std::make_unique<ShadowGame>(1280, 720);
     if (game)
     {
         return game->Process();
