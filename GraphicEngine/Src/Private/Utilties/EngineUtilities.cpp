@@ -3,7 +3,7 @@
 #include "Utilities/stb_image.h"
 #include <iostream>
 
-unsigned int EngineUtilities::LoadImageIntoTexture(const char* imagePath, bool bUseAlpha)
+unsigned int EngineUtilities::LoadImageIntoTexture(const char* imagePath, bool bUseAlpha, bool bUseSRGB)
 {
     unsigned int outTexture = -1;
     //Load Texture Data from image path
@@ -46,7 +46,8 @@ unsigned int EngineUtilities::LoadImageIntoTexture(const char* imagePath, bool b
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
         //Load image data to Texture object
-        glTexImage2D(GL_TEXTURE_2D, 0, bUseAlpha ? GL_RGBA : GL_RGB, width, height, 0, dataFormat, GL_UNSIGNED_BYTE, data);
+        GLint internalFormat = bUseAlpha ? (bUseSRGB ? GL_SRGB_ALPHA : GL_RGBA) : (bUseSRGB ? GL_SRGB : GL_RGB);
+        glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, width, height, 0, dataFormat, GL_UNSIGNED_BYTE, data);
         glGenerateMipmap(GL_TEXTURE_2D);
     }
     else

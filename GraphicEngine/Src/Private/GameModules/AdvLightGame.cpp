@@ -10,7 +10,6 @@ AdvLightGame::AdvLightGame(int in_width, int in_height)
 	bUseBlinn = false;
 	bSwitchLightModelWasPressed = false;
 
-	pointLightPos = glm::vec3(0.0f, 1.0f, 0.0f);
 	pointLightColor = glm::vec3(1.0f, 1.0f, 1.0f);
 }
 
@@ -53,7 +52,7 @@ bool AdvLightGame::Init()
 		};
 
 		//Load Wooden floor Image into texture
-		unsigned int texture1 = EngineUtilities::LoadImageIntoTexture("Assets/Textures/WoodenFloor.png");
+		unsigned int texture1 = EngineUtilities::LoadImageIntoTexture("Assets/Textures/WoodenFloor.png", false, true);
 
 		//Create Plane
 		//Create Plane Texture Object
@@ -66,6 +65,13 @@ bool AdvLightGame::Init()
 		planeMesh = std::make_shared<Mesh>(planeVertices, planeIndices, textures_Plane);
 		//Set Plane Transform
 		planeMesh->SetTransform(glm::vec3(0.0f), glm::vec3(90.0, 0.0f, 0.0f), glm::vec3(20.0f));
+
+		//Set 5 Different Point light positions
+		pointLightsPos.clear();
+		for (int i = 0; i < 5; i++)
+		{
+			pointLightsPos.push_back(glm::vec3(-8.0f, 0.5f, 0.0f) + glm::vec3(4.0f * i, 0.0f, 0.0f));
+		}
 
 		return true;
 	}
@@ -98,6 +104,9 @@ void AdvLightGame::DrawFrame()
 	//Enable Depth Testing, and clear color and depth buffers
 	glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	//Enable Gamme Correction using sRGB Colors in Framebuffers
+	glEnable(GL_FRAMEBUFFER_SRGB);
 
 	//Draw the Main scene with the Wooden floor and the Point light source
 	DrawMainScene();
@@ -133,13 +142,16 @@ void AdvLightGame::DrawMainScene()
 		shader->SetVec3("cameraPos", camera->GetCameraLocation());
 
 		//Setting point light properties in the Fragment shader
-		shader->SetVec3("pointLights[" + std::to_string(0) + "].sourcePos", pointLightPos);
-		shader->SetVec3("pointLights[" + std::to_string(0) + "].light.ambient", 0.1f * glm::normalize(pointLightColor));
-		shader->SetVec3("pointLights[" + std::to_string(0) + "].light.diffuse", 0.75f * pointLightColor);
-		shader->SetVec3("pointLights[" + std::to_string(0) + "].light.specular", 1.0f * pointLightColor);
-		shader->SetFloat("pointLights[" + std::to_string(0) + "].constant", 1.0f);	//Attenuation constants for a light source that covers and outer radius on 50 units
-		shader->SetFloat("pointLights[" + std::to_string(0) + "].linear", 0.09f);
-		shader->SetFloat("pointLights[" + std::to_string(0) + "].quad", 0.032f);
+		for (int i = 0; i < pointLightsPos.size(); i++)
+		{
+			shader->SetVec3("pointLights[" + std::to_string(i) + "].sourcePos", pointLightsPos[i]);
+			shader->SetVec3("pointLights[" + std::to_string(i) + "].light.ambient", 0.1f * glm::normalize(pointLightColor));
+			shader->SetVec3("pointLights[" + std::to_string(i) + "].light.diffuse", 0.75f * pointLightColor);
+			shader->SetVec3("pointLights[" + std::to_string(i) + "].light.specular", 1.0f * pointLightColor);
+			shader->SetFloat("pointLights[" + std::to_string(i) + "].constant", 1.0f);	//Attenuation constants for a light source that covers and outer radius on 50 units
+			shader->SetFloat("pointLights[" + std::to_string(i) + "].linear", 0.09f);
+			shader->SetFloat("pointLights[" + std::to_string(i) + "].quad", 0.032f);
+		}
 
 		//Set the Lighting Mode used
 		shader->SetBool("bBlinn", bUseBlinn);

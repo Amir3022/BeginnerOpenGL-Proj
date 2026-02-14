@@ -1,6 +1,6 @@
 #version 330 core
 
-#define NR_POINT_LIGHTS 4
+#define NR_POINT_LIGHTS 8
 //Object material struct
 struct Material
 {
@@ -148,12 +148,15 @@ vec3 CalculateSpotLightEffect(vec3 norm, SpotLight localSpotLight)
 
 vec3 PerformLightCalculations(vec3 norm, vec3 lightDir, vec3 viewDir, Light light, float attenuation, float intensity)
 {
+	//Try to have texture tile repeat 4 times
+	vec2 newTexCoord = mod((TexCoord * 4), 1.0f);
+
 	// Calculating Ambient light
-	vec3 ambientColor = light.ambient * attenuation * vec3(texture(material.texture_diffuse_1, TexCoord));
+	vec3 ambientColor = light.ambient * attenuation * vec3(texture(material.texture_diffuse_1, newTexCoord));
 
 	//Calculating Diffuse
 	float diffuse = max(dot(norm, lightDir), 0.0f) * intensity;
-	vec3 diffuseColor = light.diffuse * diffuse * attenuation * vec3(texture(material.texture_diffuse_1, TexCoord));
+	vec3 diffuseColor = light.diffuse * diffuse * attenuation * vec3(texture(material.texture_diffuse_1, newTexCoord));
 
 	//Calculating Specular
 	vec3 specularColor;
@@ -162,14 +165,14 @@ vec3 PerformLightCalculations(vec3 norm, vec3 lightDir, vec3 viewDir, Light ligh
 		//Blinn specular is calculated using the angle between the norm dir and the halfway vector, which is the middle vector between the view dir and light dir
 		vec3 halfwayVec = (lightDir + viewDir) / length(lightDir + viewDir); 
 		float specular = pow(max(dot(norm, halfwayVec), 0.0f), 32.0f) * intensity;	//Shininess should be from 2,4 times larger that phong specular
-		specularColor = light.specular * specular * attenuation * vec3(texture(material.texture_specular_1, TexCoord));
+		specularColor = light.specular * specular * attenuation * vec3(texture(material.texture_specular_1, newTexCoord));
 	}
 	else
 	{
 		//Phong specular is calculated by using the angle between the view dir and the reflected light Dir on the normal of the fragment
 		vec3 reflectedLightDir = normalize(reflect(-lightDir, norm));
 		float specular = pow(max(dot(reflectedLightDir, viewDir), 0.0f), 8.0f) * intensity;
-		specularColor = light.specular * specular * attenuation * vec3(texture(material.texture_specular_1, TexCoord));
+		specularColor = light.specular * specular * attenuation * vec3(texture(material.texture_specular_1, newTexCoord));
 	}
 
 	//Combining Ambient, Diffuse, Specular for complete Phong Shading Model

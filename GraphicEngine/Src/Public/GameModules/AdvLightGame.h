@@ -26,7 +26,7 @@ private:
 	std::shared_ptr<Mesh> planeMesh;
 
 	//Light Variables
-	glm::vec3 pointLightPos;
+	std::vector<glm::vec3> pointLightsPos;
 	glm::vec3 pointLightColor;
 
 	//Input Variables
