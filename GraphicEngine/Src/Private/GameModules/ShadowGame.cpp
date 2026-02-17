@@ -174,7 +174,7 @@ bool ShadowGame::Init()
 		//Create Third Cube Mesh 
 		std::shared_ptr<Mesh> cube_3 = std::make_shared<Mesh>(vertices, indices, textures_2);
 		//Set Second Cube Transform
-		cube_3->SetTransform(glm::vec3(2.0f, 3.0f, -2.0f), glm::vec3(15.0f, 30.0f, 0.0f));
+		cube_3->SetTransform(glm::vec3(-1.0f, 2.0f, -4.0f), glm::vec3(15.0f, 0.0f, 0.0f));
 		//Add second cube to meshes Vector
 		meshes.push_back(cube_3);
 		bUseTiling.push_back(false);
@@ -187,8 +187,10 @@ bool ShadowGame::Init()
 		glBindTexture(GL_TEXTURE_2D, shadowMap);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
+		float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shadowMapWidth, shadowMapHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
 		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowMap, 0);
 		glBindTexture(GL_TEXTURE_2D, 0);
@@ -271,6 +273,8 @@ void ShadowGame::DrawFrame()
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.02f, 0.02f, 0.02f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//Cull front face to render shadows from backface to improve shadows not being aligned with the object (Peter Pan effect)
+	glCullFace(GL_FRONT);
 	//Draw the shadow map by drawing the depth value of the main scene from the directional light point of view
 	RegisterShadowMap();
 
@@ -283,9 +287,10 @@ void ShadowGame::DrawFrame()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//Enable Gamme Correction using sRGB Colors in Framebuffers
 	glEnable(GL_FRAMEBUFFER_SRGB);
-	//Draw Shadow Map Representation using Shadow Map on a quad
-	glDisable(GL_DEPTH_TEST);
-	DrawShadowMapRepresentation();
+	//Draw the Scene with shadows using the ShadowMap
+	glEnable(GL_DEPTH_TEST);
+	glCullFace(GL_BACK);
+	DrawMainScene();
 }
 
 void ShadowGame::DrawMainScene()
@@ -302,12 +307,21 @@ void ShadowGame::DrawMainScene()
 		shader->Use();
 		shader->SetMat44("view", view);
 		shader->SetMat44("projection", projection);
+
+		//Set the Light Space transformation matrics
+		shader->SetMat44("lightSpaceTransformMat", lightSpaceTransformMat);
+
 		//Set the viewer (Camera) world position
 		shader->SetVec3("cameraPos", camera->GetCameraLocation());
 
+		//Set the Shadow map sampler to be used
+		glActiveTexture(GL_TEXTURE8);
+		glBindTexture(GL_TEXTURE_2D, shadowMap);
+		shader->SetInt("DirLightShadowMap", 8);
+
 		//Rendering directional Light
 		shader->SetVec3("dirLight.sourceDir", dirLightDirection);
-		shader->SetVec3("dirLight.light.ambient", 0.1f * dirLightColor);
+		shader->SetVec3("dirLight.light.ambient", 0.05f * dirLightColor);
 		shader->SetVec3("dirLight.light.diffuse", 0.75f * dirLightColor);
 		shader->SetVec3("dirLight.light.specular", 1.0f * dirLightColor);
 
@@ -337,6 +351,10 @@ void ShadowGame::DrawMainScene()
 				mesh->Draw(shader);
 			}
 		}
+		//Unbind the shadow map from it's texture Category
+		glActiveTexture(GL_TEXTURE15);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glActiveTexture(0);
 	}
 }
 
@@ -352,9 +370,12 @@ void ShadowGame::RegisterShadowMap()
 		//Create orthographic projection matrix from the light position
 		glm::mat4 projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 15.0f);
 
+		//Set the Directional Light LightSpaceTransformMat
+		lightSpaceTransformMat = projection * view;
+
 		//Use the shader program, and set the matrices
 		shadowSimpleShader->Use();
-		shadowSimpleShader->SetMat44("lightSpaceMat", projection * view);
+		shadowSimpleShader->SetMat44("lightSpaceMat", lightSpaceTransformMat);
 
 
 		for (int i = 0; i < meshes.size(); i++)

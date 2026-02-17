@@ -33,6 +33,7 @@ private:
 	std::string shadowFragmentShaderPath;
 	int shadowMapWidth;
 	int shadowMapHeight;
+	glm::mat4 lightSpaceTransformMat;
 
 	//Shadow Map Representation Variables
 	unsigned int ppVAO;
