@@ -259,6 +259,16 @@ void ShadowGame::UpdateGame(float deltaTime)
 	Game::UpdateGame(deltaTime);
 
 	//Update the meshes location if needed
+	//Change second cube rotation around the Y axis, change third cube height
+	if (meshes.size() > 2 && meshes[2])
+	{
+		meshes[2]->SetTransform(meshes[2]->GetPosition(), meshes[2]->GetRotation() + glm::vec3(0.0f, deltaTime * 45.0f, 0.0f), meshes[2]->GetScale());
+	}
+	if (meshes.size() > 3 && meshes[3])
+	{
+		glm::vec3 newPos = glm::vec3(-1.0f, 2.0f, -4.0f) + glm::vec3(0.0f, glm::sin(glfwGetTime()), 0.0f);
+		meshes[3]->SetTransform(newPos, meshes[3]->GetRotation(), meshes[3]->GetScale());
+	}
 }
 
 void ShadowGame::DrawFrame()
