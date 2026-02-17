@@ -273,8 +273,6 @@ void ShadowGame::DrawFrame()
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.02f, 0.02f, 0.02f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	//Cull front face to render shadows from backface to improve shadows not being aligned with the object (Peter Pan effect)
-	glCullFace(GL_FRONT);
 	//Draw the shadow map by drawing the depth value of the main scene from the directional light point of view
 	RegisterShadowMap();
 
@@ -289,7 +287,6 @@ void ShadowGame::DrawFrame()
 	glEnable(GL_FRAMEBUFFER_SRGB);
 	//Draw the Scene with shadows using the ShadowMap
 	glEnable(GL_DEPTH_TEST);
-	glCullFace(GL_BACK);
 	DrawMainScene();
 }
 
