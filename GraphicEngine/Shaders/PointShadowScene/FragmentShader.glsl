@@ -192,7 +192,10 @@ float CalculatePointLightShadow(vec3 lightDir, vec3 norm, float distanceToLight)
 	//Get the closest depth from the shadow map
 	float closestDepth = texture(PointLightShadowMap, -lightDir).r;
 	//Set the shadow value for the fragment
-	shadow = (currentDepth - bias > closestDepth) ? 1.0f : 0.0f;
+	if(currentDepth > 1.0f)
+		shadow = 0.0f;
+	else
+		shadow = (currentDepth - bias > closestDepth) ? 1.0f : 0.0f;
 
 	return shadow;
 }
