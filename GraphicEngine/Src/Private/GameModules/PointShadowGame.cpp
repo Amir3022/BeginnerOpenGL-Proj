@@ -18,13 +18,13 @@ PointShadowGame::PointShadowGame(int in_width, int in_height)
 	cubemapVertexShaderPath = "Shaders/PointShadowScene/CubemapVertexShader.glsl";
 
 	//Initialize Light Variables
-	pointLightPos = glm::vec3(0.0f);
+	pointLightPos = glm::vec3(0.0f, 0.0f, 0.0f);
 	pointLightColor = glm::vec3(1.0f);
 
 	//Init Shadow Map resolution
 	shadowMapWidth = 1024;
 	shadowMapHeight = 1024;
-	farPlaneDistance = 20.0f;
+	farPlaneDistance = 50.0f;
 }
 
 bool PointShadowGame::Init()
@@ -342,6 +342,11 @@ void PointShadowGame::UpdateGame(float deltaTime)
 	Game::UpdateGame(deltaTime);
 
 	//Update the point light position
+	if (lightCubeMesh)
+	{
+		pointLightPos = glm::vec3(0.0f, glm::sin(glfwGetTime() * 0.25f) * 7.5f, 0.0f);
+		lightCubeMesh->SetTransform(pointLightPos, glm::vec3(0.0f), lightCubeMesh->GetScale());
+	}
 }
 
 void PointShadowGame::DrawFrame()
@@ -355,7 +360,7 @@ void PointShadowGame::DrawFrame()
 	//Enable Depth Testing, and clear color and depth buffers
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.02f, 0.02f, 0.02f, 1.0f);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
 	//Draw the shadow map by drawing the depth value of the main scene from the directional light point of view
 	RegisterShadowMap();
 
@@ -371,6 +376,10 @@ void PointShadowGame::DrawFrame()
 	//Draw the Scene with shadows using the ShadowMap
 	glEnable(GL_DEPTH_TEST);
 	DrawMainScene();
+
+	//Draw the Cubemap
+	//glDepthFunc(GL_LEQUAL);	//Change the Depth Test function to less than or equal, to make sure the cube map is rendered behind all other meshes in the scene
+	//DrawPointShadowCubemap();
 }
 
 void PointShadowGame::DrawMainScene()
@@ -500,6 +509,8 @@ void PointShadowGame::RegisterShadowMap()
 	//Check if the meshes is valid
 	if (shader && (cubeMeshes.size() > 0 || wallMeshes.size() > 0))
 	{
+		//Use the shader program, and set the matrices
+		pointShadowShader->Use();
 		//Use point light position as the virtual camera position
 		glm::vec3 lightPosition = pointLightPos;
 		//Create perspective projection matrix from the point light position
@@ -523,19 +534,15 @@ void PointShadowGame::RegisterShadowMap()
 			glm::vec3(0.0f, -1.0f, 0.0f),
 			glm::vec3(0.0f, -1.0f, 0.0f),
 		};
+		//Empty the light Space Transform Matrices vector
+		lightSpaceTransformMats.clear();
 		for (int i = 0; i < 6; i++)
 		{
 			glm::mat4 view = glm::lookAt(lightPosition, lightPosition + viewDirs[i], upVectorDirs[i]);
 			lightSpaceTransformMats.push_back(projection * view);	//Add the light space transformation matrix for the indexed face
+			pointShadowShader->SetMat44("lightSpaceMat[" + std::to_string(i) + "]", lightSpaceTransformMats[i]);	//Set the light Space Transforms for each index
 		}
-
-		//Use the shader program, and set the matrices
-		pointShadowShader->Use();
-		//Set the light Space Transforms for each index
-		for (int i = 0; i < 6; i++)
-		{
-			pointShadowShader->SetMat44("lightSpaceMat["+std::to_string(i) + "]", lightSpaceTransformMats[i]);
-		}
+		
 		//Set the Far Plane distance used
 		pointShadowShader->SetFloat("far_Plane", farPlaneDistance);
 
