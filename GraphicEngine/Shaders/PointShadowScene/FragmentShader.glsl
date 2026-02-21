@@ -59,10 +59,10 @@ struct SpotLight
 vec3 CalculateDirectionalLightEffect(vec3 norm, DirLight localDirLight);
 vec3 CalculatePointLightEffect(vec3 norm, PointLight localPointLight);
 vec3 CalculateSpotLightEffect(vec3 norm, SpotLight localSpotLight);
-vec3 PerformLightCalculations(vec3 norm, vec3 lightDir, vec3 viewDir, Light light, float attenuation, float Intensity, float distanceToLight);
+vec3 PerformLightCalculations(vec3 norm, vec3 lightDir, vec3 viewDir, Light light, float attenuation, float Intensity, float distanceToLight, float viewDistance = 0.0f);
 
 //Calculate shadow from Point light
-float CalculatePointLightShadow(vec3 lightDir, vec3 norm, float distanceToLight);
+float CalculatePointLightShadow(vec3 lightDir, vec3 norm, float distanceToLight, float viewDistance);
 
 out vec4 FragColor;
 
@@ -132,7 +132,7 @@ vec3 CalculatePointLightEffect(vec3 norm, PointLight localPointLight)
 	vec3 viewDir = normalize(cameraPos - fs_in.FragPos);
 
 	//Use Light Calculation function to return the PointLight effect
-	return PerformLightCalculations(norm, lightDir, viewDir, localPointLight.light, attenuation, 1.0f, distanceToLight);
+	return PerformLightCalculations(norm, lightDir, viewDir, localPointLight.light, attenuation, 1.0f, distanceToLight, length(cameraPos - fs_in.FragPos));
 }
 
 vec3 CalculateSpotLightEffect(vec3 norm, SpotLight localSpotLight)
@@ -155,7 +155,7 @@ vec3 CalculateSpotLightEffect(vec3 norm, SpotLight localSpotLight)
 	return PerformLightCalculations(norm, lightDir, viewDir, localSpotLight.light, attenuation, lightIntensity, distanceToLight);
 }
 
-vec3 PerformLightCalculations(vec3 norm, vec3 lightDir, vec3 viewDir, Light light, float attenuation, float intensity, float distanceToLight)
+vec3 PerformLightCalculations(vec3 norm, vec3 lightDir, vec3 viewDir, Light light, float attenuation, float intensity, float distanceToLight, float viewDistance)
 {
 	//Try to have texture tile repeat 4 times
 	vec2 newTexCoord = bUseTiling ? mod((fs_in.TexCoord * 4), 1.0f) : fs_in.TexCoord;
@@ -175,28 +175,42 @@ vec3 PerformLightCalculations(vec3 norm, vec3 lightDir, vec3 viewDir, Light ligh
 	specularColor = light.specular * specular * attenuation * vec3(texture(material.texture_specular_1, newTexCoord));
 
 	//Apply shadow to both specular and diffuse output
-	float shadow = CalculatePointLightShadow(lightDir, norm, distanceToLight);
+	float shadow = CalculatePointLightShadow(lightDir, norm, distanceToLight, viewDistance);
 	vec3 combinedDiffSpec = (1 - shadow) * (diffuseColor + specularColor);
 
 	//Combining Ambient, Diffuse, Specular for complete Bling Phong Shading Model
 	return ambientColor + combinedDiffSpec;
 }
 
-float CalculatePointLightShadow(vec3 lightDir, vec3 norm, float distanceToLight)
+float CalculatePointLightShadow(vec3 lightDir, vec3 norm, float distanceToLight, float viewDistance)
 {
+	//Declare 20 offset directions around the sample direction 
+	vec3 sampleOffsetDirections[20] = vec3[]
+	(
+	   vec3( 1,  1,  1), vec3( 1, -1,  1), vec3(-1, -1,  1), vec3(-1,  1,  1), 
+	   vec3( 1,  1, -1), vec3( 1, -1, -1), vec3(-1, -1, -1), vec3(-1,  1, -1),
+	   vec3( 1,  1,  0), vec3( 1, -1,  0), vec3(-1, -1,  0), vec3(-1,  1,  0),
+	   vec3( 1,  0,  1), vec3(-1,  0,  1), vec3( 1,  0, -1), vec3(-1,  0, -1),
+	   vec3( 0,  1,  1), vec3( 0, -1,  1), vec3( 0, -1, -1), vec3( 0,  1, -1)
+	);  
 	float shadow = 0.0f;
 	//Calculate Bias based on the angle between the Light Source, and the normal of the fragment
 	float bias = max(0.008f * (1.0 - dot(norm, lightDir)), 0.005f);
 	//Get the current fragment linear depth compared to it's distance to light source
 	float currentDepth = distanceToLight / far_Plane;	//Divide by shadow registering farPlane to get the normalized depth
-	//Get the closest depth from the shadow map
-	float closestDepth = texture(PointLightShadowMap, -lightDir).r;
-	//Set the shadow value for the fragment
-	if(currentDepth > 1.0f)
-		shadow = 0.0f;
-	else
-		shadow = (currentDepth - bias > closestDepth) ? 1.0f : 0.0f;
+	//Get multiple shadow values for a disk radius around the sample direction and average them to get softer shadows
+	float diskRadius = (1.0f + (viewDistance / 1000.0f)) * 0.0025f;	//Modulate the shadow produced by view distance to make further shadows less sharp
+	for(int i = 0; i < 20; i++)
+	{
+		//Get the closest depth from the shadow map
+		float closestDepth = texture(PointLightShadowMap, -lightDir + sampleOffsetDirections[i] * diskRadius).r;
+		//Set the shadow value for the fragment
+		if(currentDepth > 1.0f)
+			shadow += 0.0f;
+		else
+			shadow += (currentDepth - bias > closestDepth) ? 1.0f : 0.0f;
+	}
 
-	return shadow;
+	return shadow / 20.0f;
 }
 

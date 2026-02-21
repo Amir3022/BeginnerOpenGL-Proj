@@ -400,7 +400,7 @@ void PointShadowGame::DrawMainScene()
 
 		//Rendering point Light
 		shader->SetVec3("pointLights[" + std::to_string(0) + "].sourcePos", pointLightPos);
-		shader->SetVec3("pointLights[" + std::to_string(0) + "].light.ambient", 0.1f * glm::normalize(pointLightColor));
+		shader->SetVec3("pointLights[" + std::to_string(0) + "].light.ambient", 0.2f * glm::normalize(pointLightColor));
 		shader->SetVec3("pointLights[" + std::to_string(0) + "].light.diffuse", 0.75f * pointLightColor);
 		shader->SetVec3("pointLights[" + std::to_string(0) + "].light.specular", 1.0f * pointLightColor);
 		shader->SetFloat("pointLights[" + std::to_string(0) + "].constant", 1.0f);	//Attenuation constants for a light source that covers and outer radius on 50 units
