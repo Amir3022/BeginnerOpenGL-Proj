@@ -1,0 +1,46 @@
+#pragma once
+#include "Game.h"
+#include "Components/Mesh.h"
+
+class PointShadowGame : public Game
+{
+public:
+	PointShadowGame(int in_width, int in_height);
+
+	virtual bool Init() override;
+
+	virtual void Terminate() override;
+
+	virtual void UpdateGame(float deltaTime) override;
+
+	virtual void DrawFrame() override;
+
+protected:
+	void RegisterShadowMap();
+	void DrawMainScene();
+
+private:
+	//Meshes Variables
+	std::vector<std::shared_ptr<Mesh>> cubeMeshes;
+	std::vector<std::shared_ptr<Mesh>> wallMeshes;
+
+	//Shadow Mapping Variables
+	unsigned int shadowFBO;
+	unsigned int shadowMap;
+	std::shared_ptr<Shader> pointShadowShader;
+	std::string shadowVertexShaderPath;
+	std::string shadowFragmentShaderPath;
+	int shadowMapWidth;
+	int shadowMapHeight;
+	std::vector<glm::mat4> lightSpaceTransformMats;		//Light Space transform matrix for each face of the point shadow map
+
+	//Light Variables
+	glm::vec3 pointLightPos;
+	glm::vec3 pointLightColor;
+
+	//Rendering Light Variables
+	std::shared_ptr<Shader> lightShader;
+	std::shared_ptr<Mesh> lightCubeMesh;
+	std::string lightVertexShaderPath;
+	std::string lightFragmentShaderPath;
+};
