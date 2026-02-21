@@ -199,6 +199,7 @@
     <None Include="Shaders\LightScene\VertexShader.glsl" />
     <None Include="Shaders\MeshScene\FragmentShader.glsl" />
     <None Include="Shaders\MeshScene\VertexShader.glsl" />
+    <None Include="Shaders\PointShadowScene\ShadowGeometryShader.glsl" />
     <None Include="Shaders\VertexShader.glsl" />
   </ItemGroup>
   <ItemGroup>

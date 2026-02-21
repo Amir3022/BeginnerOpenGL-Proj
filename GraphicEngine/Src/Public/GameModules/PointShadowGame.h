@@ -18,6 +18,7 @@ public:
 protected:
 	void RegisterShadowMap();
 	void DrawMainScene();
+	void DrawPointShadowCubemap();
 
 private:
 	//Meshes Variables
@@ -29,14 +30,22 @@ private:
 	unsigned int shadowMap;
 	std::shared_ptr<Shader> pointShadowShader;
 	std::string shadowVertexShaderPath;
+	std::string shadowGeometryShaderPath;
 	std::string shadowFragmentShaderPath;
 	int shadowMapWidth;
 	int shadowMapHeight;
 	std::vector<glm::mat4> lightSpaceTransformMats;		//Light Space transform matrix for each face of the point shadow map
+	float farPlaneDistance;
 
 	//Light Variables
 	glm::vec3 pointLightPos;
 	glm::vec3 pointLightColor;
+
+	//Point Shadow CubeMap variables
+	unsigned int cubemapVAO;
+	std::shared_ptr<Shader> cubemapShader;
+	std::string cubemapFragmentShaderPath;
+	std::string cubemapVertexShaderPath;
 
 	//Rendering Light Variables
 	std::shared_ptr<Shader> lightShader;

@@ -8,10 +8,14 @@ PointShadowGame::PointShadowGame(int in_width, int in_height)
 	fragmentShaderPath = "Shaders/PointShadowScene/FragmentShader.glsl";
 
 	shadowVertexShaderPath = "Shaders/PointShadowScene/ShadowVertexShader.glsl";
+	shadowGeometryShaderPath = "Shaders/PointShadowScene/ShadowGeometryShader.glsl";
 	shadowFragmentShaderPath = "Shaders/PointShadowScene/ShadowFragmentShader.glsl";
 
 	lightFragmentShaderPath = "Shaders/PointShadowScene/LightFragmentShader.glsl";
 	lightVertexShaderPath = "Shaders/PointShadowScene/LightVertexShader.glsl";
+
+	cubemapFragmentShaderPath = "Shaders/PointShadowScene/CubemapFragmentShader.glsl";
+	cubemapVertexShaderPath = "Shaders/PointShadowScene/CubemapVertexShader.glsl";
 
 	//Initialize Light Variables
 	pointLightPos = glm::vec3(0.0f);
@@ -20,6 +24,7 @@ PointShadowGame::PointShadowGame(int in_width, int in_height)
 	//Init Shadow Map resolution
 	shadowMapWidth = 1024;
 	shadowMapHeight = 1024;
+	farPlaneDistance = 20.0f;
 }
 
 bool PointShadowGame::Init()
@@ -34,9 +39,14 @@ bool PointShadowGame::Init()
 
 		//Create Simple Shadow Shader 
 		pointShadowShader = std::make_shared<Shader>(shadowVertexShaderPath.c_str(), shadowFragmentShaderPath.c_str());
+		//Bind the Shadow Geometry Shader
+		pointShadowShader->AttachGeometryShader(shadowGeometryShaderPath.c_str());
 
 		//Create Light Shader to render point lights
 		lightShader = std::make_shared<Shader>(lightVertexShaderPath.c_str(), lightFragmentShaderPath.c_str());
+
+		//Create CubeMap Shader
+		cubemapShader = std::make_unique<Shader>(cubemapVertexShaderPath.c_str(), cubemapFragmentShaderPath.c_str());
 
 		//Change Camera transform
 		camera->SetCameraLocation(camera->GetCameraLocation() + glm::vec3(0.0f, 2.0f, 2.0f));
@@ -187,14 +197,14 @@ bool PointShadowGame::Init()
 		{
 			glm::vec3(-6.80f,   5.10f,  -7.40f),
 			glm::vec3(7.20f,  -4.90f,   6.30f),
-			glm::vec3(-3.10f,   7.80f,   2.50f),
-			glm::vec3(4.60f,  -6.70f,  -5.90f),
+			glm::vec3(-3.10f,   4.80f,   2.50f),
+			glm::vec3(4.60f,  -3.70f,  -5.90f),
 			glm::vec3(5.40f,   3.20f,  -1.80f),
-			glm::vec3(-7.16f,  -6.61f,  -1.48f),
+			glm::vec3(7.16f,  -6.61f,  -1.48f),
 			glm::vec3(6.28f,   6.42f,  -7.39f),
 			glm::vec3(0.58f,  -2.68f,   5.63f),
-			glm::vec3(-5.45f,  -2.60f,  -2.66f),
-			glm::vec3(-4.08f,  -7.97f,  -1.02f)
+			glm::vec3(-2.45f,  -2.60f,  -2.66f),
+			glm::vec3(-4.08f,  -5.97f,  -1.02f)
 		};
 
 		//Declare cubes rotations
@@ -232,16 +242,20 @@ bool PointShadowGame::Init()
 		glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
 		//Generate Texture to be used as the depth buffer for the shadow framebuffer
 		glGenTextures(1, &shadowMap);
-		glBindTexture(GL_TEXTURE_2D, shadowMap);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
-		float borderColor[] = { 1.0f, 1.0f, 1.0f, 1.0f };
-		glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, shadowMapWidth, shadowMapHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, shadowMap, 0);
-		glBindTexture(GL_TEXTURE_2D, 0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, shadowMap);	//The generated texture will be a cubemap to capture depth from the whole surrounding scene
+		//Generate 6 images for each side of the shadowMap
+		for (int i = 0; i < 6; i++)
+		{
+			glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_DEPTH_COMPONENT, shadowMapWidth, shadowMapHeight, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+		}
+		//Set Bound textures parameteres
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		//Bind the cubemap to the framebuffer to be used as the depth buffer
+		glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, shadowMap, 0);
 		//Set the Color Read and Draw buffers as empty
 		glDrawBuffer(GL_NONE);
 		glReadBuffer(GL_NONE);
@@ -253,6 +267,60 @@ bool PointShadowGame::Init()
 		}
 		//Unbind framebuffer
 		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+
+		//Create VAO for the Cubemap
+		glGenVertexArrays(1, &cubemapVAO);
+		glBindVertexArray(cubemapVAO);
+
+		//Create a unit cube at Origin, consisting only of vertex locations
+		float cubemapVertices[] = {
+			-1.0f, -1.0f, 1.0f,		//0
+			1.0f, -1.0f, 1.0f,		//1
+			-1.0f, 1.0f, 1.0f,		//2
+			1.0f, 1.0f, 1.0f,		//3
+
+			-1.0f, -1.0f, -1.0f,	//4
+			1.0f, -1.0f, -1.0f,		//5
+			-1.0f, 1.0f, -1.0f,		//6
+			1.0f, 1.0f, -1.0f,		//7
+		};
+
+		unsigned int cubemapIndices[] =
+		{
+			0, 1, 3,
+			0, 3, 2,
+
+			4, 7, 5,
+			4, 6, 7,
+
+			1, 5, 7,
+			1, 7, 3,
+
+			4, 0, 2,
+			4, 2, 6,
+
+			2, 3, 7,
+			2, 7, 6,
+
+			0, 5, 1,
+			0, 4, 5,
+		};
+
+		//Create vertex and Element buffers
+		unsigned int cubemapVBO, cubemapEBO;
+		glGenBuffers(1, &cubemapVBO);
+		glBindBuffer(GL_ARRAY_BUFFER, cubemapVBO);
+		glGenBuffers(1, &cubemapEBO);
+		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, cubemapEBO);
+		//Assign data to the buffers
+		glBufferData(GL_ARRAY_BUFFER, sizeof(cubemapVertices), cubemapVertices, GL_STATIC_DRAW);
+		glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(cubemapIndices), cubemapIndices, GL_STATIC_DRAW);
+		//Declate Vertex attributes
+		glEnableVertexAttribArray(0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+		//Unbind the cubemapVAO
+		glBindVertexArray(0);
 
 		return true;
 	}
@@ -280,19 +348,16 @@ void PointShadowGame::DrawFrame()
 {
 	Game::DrawFrame();
 
-	if(false)//Disable registering shadows for first path
-	{
-		//Bind the shadow Map Framebuffer
-		glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
-		//Change Viewport to match shadow map resolution
-		glViewport(0, 0, shadowMapWidth, shadowMapHeight);
-		//Enable Depth Testing, and clear color and depth buffers
-		glEnable(GL_DEPTH_TEST);
-		glClearColor(0.02f, 0.02f, 0.02f, 1.0f);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		//Draw the shadow map by drawing the depth value of the main scene from the directional light point of view
-		RegisterShadowMap();
-	}
+	//Bind the shadow Map Framebuffer
+	glBindFramebuffer(GL_FRAMEBUFFER, shadowFBO);
+	//Change Viewport to match shadow map resolution
+	glViewport(0, 0, shadowMapWidth, shadowMapHeight);
+	//Enable Depth Testing, and clear color and depth buffers
+	glEnable(GL_DEPTH_TEST);
+	glClearColor(0.02f, 0.02f, 0.02f, 1.0f);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//Draw the shadow map by drawing the depth value of the main scene from the directional light point of view
+	RegisterShadowMap();
 
 	//Bind the main framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -327,9 +392,11 @@ void PointShadowGame::DrawMainScene()
 		shader->SetVec3("cameraPos", camera->GetCameraLocation());
 
 		//Set the Shadow map sampler to be used
-		/*glActiveTexture(GL_TEXTURE8);
-		glBindTexture(GL_TEXTURE_2D, shadowMap);
-		shader->SetInt("DirLightShadowMap", 8);*/
+		glActiveTexture(GL_TEXTURE15);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, shadowMap);
+		shader->SetInt("PointLightShadowMap", 15);
+		//Set the Far Plane value used in shadow registering
+		shader->SetFloat("far_Plane", farPlaneDistance);
 
 		//Rendering point Light
 		shader->SetVec3("pointLights[" + std::to_string(0) + "].sourcePos", pointLightPos);
@@ -422,51 +489,114 @@ void PointShadowGame::DrawMainScene()
 			lightCubeMesh->Draw(lightShader);
 		}
 		//Unbind the shadow map from it's texture Category
-		/*glActiveTexture(GL_TEXTURE15);
+		glActiveTexture(GL_TEXTURE15);
 		glBindTexture(GL_TEXTURE_2D, 0);
-		glActiveTexture(0);*/
+		glActiveTexture(0);
 	}
 }
 
 void PointShadowGame::RegisterShadowMap()
 {
 	//Check if the meshes is valid
-	//if (shader && meshes.size() > 0)
-	//{
-	//	//Use a point in the direction of the directional light to be used as the virtual camera location
-	//	glm::vec3 lightPosition = -dirLightDirection * 5.0f;
-	//	//Create the View matrix to see the plane model through the Light position
-	//	glm::mat4 view = glm::lookAt(lightPosition, glm::vec3(0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
-	//	//Create orthographic projection matrix from the light position
-	//	glm::mat4 projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.1f, 15.0f);
+	if (shader && (cubeMeshes.size() > 0 || wallMeshes.size() > 0))
+	{
+		//Use point light position as the virtual camera position
+		glm::vec3 lightPosition = pointLightPos;
+		//Create perspective projection matrix from the point light position
+		glm::mat4 projection = glm::perspective(glm::radians(90.0f), (float)shadowMapWidth / (float)shadowMapHeight, 0.1f, farPlaneDistance); //point of view is set to 90.0f to cover the whole face
+		//Create 6 View Matrices for each face of the cubemap using the point light position, direction from point light to the current face
+		std::vector<glm::vec3> viewDirs
+		{
+			glm::vec3(1.0f, 0.0f, 0.0f),
+			glm::vec3(-1.0f, 0.0f, 0.0f),
+			glm::vec3(0.0f, 1.0f, 0.0f),
+			glm::vec3(0.0f, -1.0f, 0.0f),
+			glm::vec3(0.0f, 0.0f, 1.0f),
+			glm::vec3(0.0f, 0.0f, -1.0f),
+		};
+		std::vector<glm::vec3> upVectorDirs
+		{
+			glm::vec3(0.0f, -1.0f, 0.0f),
+			glm::vec3(0.0f, -1.0f, 0.0f),
+			glm::vec3(0.0f, 0.0f, 1.0f),
+			glm::vec3(0.0f, 0.0f, -1.0f),
+			glm::vec3(0.0f, -1.0f, 0.0f),
+			glm::vec3(0.0f, -1.0f, 0.0f),
+		};
+		for (int i = 0; i < 6; i++)
+		{
+			glm::mat4 view = glm::lookAt(lightPosition, lightPosition + viewDirs[i], upVectorDirs[i]);
+			lightSpaceTransformMats.push_back(projection * view);	//Add the light space transformation matrix for the indexed face
+		}
 
-	//	//Set the Directional Light LightSpaceTransformMat
-	//	lightSpaceTransformMat = projection * view;
+		//Use the shader program, and set the matrices
+		pointShadowShader->Use();
+		//Set the light Space Transforms for each index
+		for (int i = 0; i < 6; i++)
+		{
+			pointShadowShader->SetMat44("lightSpaceMat["+std::to_string(i) + "]", lightSpaceTransformMats[i]);
+		}
+		//Set the Far Plane distance used
+		pointShadowShader->SetFloat("far_Plane", farPlaneDistance);
 
-	//	//Use the shader program, and set the matrices
-	//	shadowSimpleShader->Use();
-	//	shadowSimpleShader->SetMat44("lightSpaceMat", lightSpaceTransformMat);
+		//Set the point light Position
+		pointShadowShader->SetVec3("pointLightPos", pointLightPos);
 
+		//Register depth value for each mesh in cube meshes arrays (No need to get shadows from wall meshes for this demo)
+		for (int i = 0; i < cubeMeshes.size(); i++)
+		{
+			std::shared_ptr<Mesh> mesh = cubeMeshes[i];
+			if (mesh)
+			{
+				//Create a model matrix to set plane location in world coordinates
+				glm::mat4 modelMat = glm::identity < glm::mat4>();
+				modelMat = glm::translate(modelMat, mesh->GetPosition());
+				modelMat = glm::rotate(modelMat, glm::radians(mesh->GetRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
+				modelMat = glm::rotate(modelMat, glm::radians(mesh->GetRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
+				modelMat = glm::rotate(modelMat, glm::radians(mesh->GetRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
+				modelMat = glm::scale(modelMat, mesh->GetScale());
 
-	//	for (int i = 0; i < meshes.size(); i++)
-	//	{
-	//		std::shared_ptr<Mesh> mesh = meshes[i];
-	//		if (mesh)
-	//		{
-	//			//Create a model matrix to set plane location in world coordinates
-	//			glm::mat4 modelMat = glm::identity < glm::mat4>();
-	//			modelMat = glm::translate(modelMat, mesh->GetPosition());
-	//			modelMat = glm::rotate(modelMat, glm::radians(mesh->GetRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
-	//			modelMat = glm::rotate(modelMat, glm::radians(mesh->GetRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
-	//			modelMat = glm::rotate(modelMat, glm::radians(mesh->GetRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
-	//			modelMat = glm::scale(modelMat, mesh->GetScale());
+				//Set changing Model and normal model matrices
+				pointShadowShader->SetMat44("model", modelMat);
 
-	//			//Set changing Model and normal model matrices
-	//			shadowSimpleShader->SetMat44("model", modelMat);
+				//Draw the Wooden floor mesh
+				mesh->Draw(pointShadowShader);
+			}
+		}
+	}
+}
 
-	//			//Draw the Wooden floor mesh
-	//			mesh->Draw(shadowSimpleShader);
-	//		}
-	//	}
-	//}
+void PointShadowGame::DrawPointShadowCubemap()
+{
+	//Check if the cubemap Shader is valid
+	if (cubemapShader)
+	{
+		//Bind the cubemap VAO
+		glBindVertexArray(cubemapVAO);
+
+		//Create the view matrix using camera lookAt target point, need to remove the translation data from view matrix so take the 3x3 upper left matrix
+		glm::mat4 view = glm::mat3(camera->GetLookAtMat(camera->GetCameraLocation() + camera->GetCameraForwardDir()));
+
+		//Create the projection matrix to project the view space to NDC
+		glm::mat4 projection = glm::perspective(glm::radians(camera->GetCameraFOV()), (float)GetWidth() / (float)GetHeight(), 0.1f, 100.0f);
+
+		//Use the Shader Program to draw Vertices using the defined vertex and fragment shaders, view, projection matrices
+		cubemapShader->Use();
+		cubemapShader->SetMat44("view", view);
+		cubemapShader->SetMat44("projection", projection);
+
+		//Activate the first texture unit, and bind the cubemap texture to it
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, shadowMap);
+		//Use the texture unit index as the active texture sampler in fragment shader
+		cubemapShader->SetInt("cubemapTexture", 0);
+
+		//Draw the cubemap
+		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, (void*)0);
+
+		//Unbind the cubemapVAO and cubemap texture
+		glBindVertexArray(0);
+		glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+		glActiveTexture(0);
+	}
 }
