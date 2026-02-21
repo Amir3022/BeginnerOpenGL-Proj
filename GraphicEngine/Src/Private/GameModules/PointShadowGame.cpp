@@ -225,7 +225,7 @@ bool PointShadowGame::Init()
 		//Create a cube mesh to represent the point light position
 		lightCubeMesh = std::make_shared<Mesh>(vertices, indices, textures_2);
 		//Set lightCubeMesh transform
-		lightCubeMesh->SetTransform(pointLightPos, glm::vec3(0.f), glm::vec3(0.25f));	//Scale the cube down so it doesn't take much screen realstate
+		lightCubeMesh->SetTransform(pointLightPos, glm::vec3(0.f), glm::vec3(0.25f, 0.25f, 0.25f));	//Scale the cube down so it doesn't take much screen realstate
 
 		//Create a framebuffer to hold depth map for shadow scene
 		glGenFramebuffers(1, &shadowFBO);
@@ -394,6 +394,32 @@ void PointShadowGame::DrawMainScene()
 				//Draw the Wooden floor mesh
 				wallMesh->Draw(shader);
 			}
+		}
+
+		//Rendering point light cube
+		//Enable the Light Shader program
+		if (lightShader && lightCubeMesh)
+		{
+			lightShader->Use();
+
+			//Create a model matrix to set plane location in world coordinates
+			glm::mat4 modelMat = glm::identity < glm::mat4>();
+			modelMat = glm::translate(modelMat, lightCubeMesh->GetPosition());
+			modelMat = glm::rotate(modelMat, glm::radians(lightCubeMesh->GetRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
+			modelMat = glm::rotate(modelMat, glm::radians(lightCubeMesh->GetRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
+			modelMat = glm::rotate(modelMat, glm::radians(lightCubeMesh->GetRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
+			modelMat = glm::scale(modelMat, lightCubeMesh->GetScale());
+
+			//Set the matrices uniforms in the Light Shader
+			lightShader->SetMat44("model", modelMat);
+			lightShader->SetMat44("view", view);
+			lightShader->SetMat44("projection", projection);
+
+			//Set the point color in the light Shader
+			lightShader->SetVec3("lightColor", pointLightColor * 0.75f);
+
+			//Draw The lightCubeMesh
+			lightCubeMesh->Draw(lightShader);
 		}
 		//Unbind the shadow map from it's texture Category
 		/*glActiveTexture(GL_TEXTURE15);
