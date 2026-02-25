@@ -7,7 +7,7 @@
 class Model
 {
 public: 
-	Model(const std::string& path);
+	Model(const std::string& path, bool bUsesRGB = false);
 
 	void Draw(std::weak_ptr<Shader> shader);
 
@@ -35,4 +35,7 @@ private:
 	glm::vec3 position;
 	glm::vec3 rotation;
 	glm::vec3 scale;
+
+	//Texture rendering mode
+	bool bUsesRGB;
 };

@@ -1,12 +1,13 @@
 #include "Components/Model.h"
 #include "Utilities/EngineUtilities.h"
 
-Model::Model(const std::string& path)
+Model::Model(const std::string& path, bool bUsesRGB)
 {
-	LoadModel(path);
-
 	//Set Initial Transform for the Model
 	SetTransform(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(1.0f));
+	this->bUsesRGB = bUsesRGB;
+
+	LoadModel(path);
 }
 
 void Model::LoadModel(const std::string& path)
@@ -137,7 +138,7 @@ std::vector<Texture> Model::LoadMaterialTextures(aiMaterial* mat, aiTextureType 
 			{
 				//Fill the texture struct data
 				std::string textureLocalPath = Directory + '/' + texPath.C_Str();
-				texture.texIndex = EngineUtilities::LoadImageIntoTexture((textureLocalPath).c_str());
+				texture.texIndex = EngineUtilities::LoadImageIntoTexture((textureLocalPath).c_str(), false, bUsesRGB);
 				texture.texType = typeEnum;
 				texture.path = texPath.C_Str();
 				//Add the created texture to Textures vector and the Loaded textures vector
