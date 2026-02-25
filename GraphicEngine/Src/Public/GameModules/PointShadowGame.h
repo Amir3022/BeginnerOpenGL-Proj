@@ -1,6 +1,7 @@
 #pragma once
 #include "Game.h"
 #include "Components/Mesh.h"
+#include "Components/Model.h"
 
 class PointShadowGame : public Game
 {
@@ -23,7 +24,9 @@ protected:
 private:
 	//Meshes Variables
 	std::vector<std::shared_ptr<Mesh>> cubeMeshes;
+	std::shared_ptr<Model> model;
 	std::vector<std::shared_ptr<Mesh>> wallMeshes;
+	bool bRenderModel;
 
 	//Shadow Mapping Variables
 	unsigned int shadowFBO;

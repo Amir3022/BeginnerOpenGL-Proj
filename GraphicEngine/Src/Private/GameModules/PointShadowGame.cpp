@@ -18,13 +18,14 @@ PointShadowGame::PointShadowGame(int in_width, int in_height)
 	cubemapVertexShaderPath = "Shaders/PointShadowScene/CubemapVertexShader.glsl";
 
 	//Initialize Light Variables
-	pointLightPos = glm::vec3(0.0f, 0.0f, 0.0f);
+	pointLightPos = glm::vec3(0.0f, 0.0f, 5.0f);
 	pointLightColor = glm::vec3(1.0f);
 
 	//Init Shadow Map resolution
 	shadowMapWidth = 1024;
 	shadowMapHeight = 1024;
 	farPlaneDistance = 50.0f;
+	bRenderModel = true;
 }
 
 bool PointShadowGame::Init()
@@ -232,6 +233,9 @@ bool PointShadowGame::Init()
 			cubeMeshes.push_back(cubeMesh);
 		}
 
+		//Create the Model instance
+		model = std::make_shared<Model>("Assets/Meshes/backpack/backpack.obj", true);
+
 		//Create a cube mesh to represent the point light position
 		lightCubeMesh = std::make_shared<Mesh>(vertices, indices, textures_2);
 		//Set lightCubeMesh transform
@@ -344,7 +348,7 @@ void PointShadowGame::UpdateGame(float deltaTime)
 	//Update the point light position
 	if (lightCubeMesh)
 	{
-		pointLightPos = glm::vec3(0.0f, glm::sin(glfwGetTime() * 0.25f) * 7.5f, 0.0f);
+		pointLightPos = glm::vec3(0.0f, glm::sin(glfwGetTime() * 0.25f) * 7.5f, 5.0f);
 		lightCubeMesh->SetTransform(pointLightPos, glm::vec3(0.0f), lightCubeMesh->GetScale());
 	}
 }
@@ -416,19 +420,18 @@ void PointShadowGame::DrawMainScene()
 		shader->SetFloat("pointLights[" + std::to_string(0) + "].linear", 0.09f);
 		shader->SetFloat("pointLights[" + std::to_string(0) + "].quad", 0.032f);
 
-		//Rendering cube Meshes
-		for (int i = 0; i < cubeMeshes.size(); i++)
+		//Switch between rendering the Cube Meshes and the backpack model
+		if (bRenderModel)
 		{
-			std::shared_ptr<Mesh> cubeMesh = cubeMeshes[i];
-			if (cubeMesh)
+			if (model)
 			{
-				//Create a model matrix to set plane location in world coordinates
+				//Create a model matrix to set model location in world coordinates
 				glm::mat4 modelMat = glm::identity < glm::mat4>();
-				modelMat = glm::translate(modelMat, cubeMesh->GetPosition());
-				modelMat = glm::rotate(modelMat, glm::radians(cubeMesh->GetRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
-				modelMat = glm::rotate(modelMat, glm::radians(cubeMesh->GetRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
-				modelMat = glm::rotate(modelMat, glm::radians(cubeMesh->GetRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
-				modelMat = glm::scale(modelMat, cubeMesh->GetScale());
+				modelMat = glm::translate(modelMat, model->GetPosition());
+				modelMat = glm::rotate(modelMat, glm::radians(model->GetRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
+				modelMat = glm::rotate(modelMat, glm::radians(model->GetRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
+				modelMat = glm::rotate(modelMat, glm::radians(model->GetRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
+				modelMat = glm::scale(modelMat, model->GetScale());
 				//Create normal model matrix to transform fragment normals
 				glm::mat3 normalModelMatrix = glm::mat3(glm::transpose(glm::inverse(modelMat)));
 
@@ -436,11 +439,41 @@ void PointShadowGame::DrawMainScene()
 				shader->SetMat44("model", modelMat);
 				shader->SetMat33("normalModelMatrix", normalModelMatrix);
 
-				//Disable using tiling uniform for all cube meshes
+				//Disable using tiling uniform for the model
 				shader->SetBool("bUseTiling", false);
 
-				//Draw the Wooden floor mesh
-				cubeMesh->Draw(shader);
+				//Draw the model mesh
+				model->Draw(shader);
+			}
+		}
+		else
+		{
+			//Rendering cube Meshes
+			for (int i = 0; i < cubeMeshes.size(); i++)
+			{
+				std::shared_ptr<Mesh> cubeMesh = cubeMeshes[i];
+				if (cubeMesh)
+				{
+					//Create a model matrix to set plane location in world coordinates
+					glm::mat4 modelMat = glm::identity < glm::mat4>();
+					modelMat = glm::translate(modelMat, cubeMesh->GetPosition());
+					modelMat = glm::rotate(modelMat, glm::radians(cubeMesh->GetRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
+					modelMat = glm::rotate(modelMat, glm::radians(cubeMesh->GetRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
+					modelMat = glm::rotate(modelMat, glm::radians(cubeMesh->GetRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
+					modelMat = glm::scale(modelMat, cubeMesh->GetScale());
+					//Create normal model matrix to transform fragment normals
+					glm::mat3 normalModelMatrix = glm::mat3(glm::transpose(glm::inverse(modelMat)));
+
+					//Set changing Model and normal model matrices
+					shader->SetMat44("model", modelMat);
+					shader->SetMat33("normalModelMatrix", normalModelMatrix);
+
+					//Disable using tiling uniform for all cube meshes
+					shader->SetBool("bUseTiling", false);
+
+					//Draw the Wooden floor mesh
+					cubeMesh->Draw(shader);
+				}
 			}
 		}
 
@@ -549,25 +582,48 @@ void PointShadowGame::RegisterShadowMap()
 		//Set the point light Position
 		pointShadowShader->SetVec3("pointLightPos", pointLightPos);
 
-		//Register depth value for each mesh in cube meshes arrays (No need to get shadows from wall meshes for this demo)
-		for (int i = 0; i < cubeMeshes.size(); i++)
+		//Switch between rendering cubes and the model
+		if (bRenderModel)
 		{
-			std::shared_ptr<Mesh> mesh = cubeMeshes[i];
-			if (mesh)
+			if (model)
 			{
 				//Create a model matrix to set plane location in world coordinates
 				glm::mat4 modelMat = glm::identity < glm::mat4>();
-				modelMat = glm::translate(modelMat, mesh->GetPosition());
-				modelMat = glm::rotate(modelMat, glm::radians(mesh->GetRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
-				modelMat = glm::rotate(modelMat, glm::radians(mesh->GetRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
-				modelMat = glm::rotate(modelMat, glm::radians(mesh->GetRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
-				modelMat = glm::scale(modelMat, mesh->GetScale());
+				modelMat = glm::translate(modelMat, model->GetPosition());
+				modelMat = glm::rotate(modelMat, glm::radians(model->GetRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
+				modelMat = glm::rotate(modelMat, glm::radians(model->GetRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
+				modelMat = glm::rotate(modelMat, glm::radians(model->GetRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
+				modelMat = glm::scale(modelMat, model->GetScale());
 
 				//Set changing Model and normal model matrices
 				pointShadowShader->SetMat44("model", modelMat);
 
 				//Draw the Wooden floor mesh
-				mesh->Draw(pointShadowShader);
+				model->Draw(pointShadowShader);
+			}
+		}
+		else
+		{
+			//Register depth value for each mesh in cube meshes arrays (No need to get shadows from wall meshes for this demo)
+			for (int i = 0; i < cubeMeshes.size(); i++)
+			{
+				std::shared_ptr<Mesh> mesh = cubeMeshes[i];
+				if (mesh)
+				{
+					//Create a model matrix to set plane location in world coordinates
+					glm::mat4 modelMat = glm::identity < glm::mat4>();
+					modelMat = glm::translate(modelMat, mesh->GetPosition());
+					modelMat = glm::rotate(modelMat, glm::radians(mesh->GetRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
+					modelMat = glm::rotate(modelMat, glm::radians(mesh->GetRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
+					modelMat = glm::rotate(modelMat, glm::radians(mesh->GetRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
+					modelMat = glm::scale(modelMat, mesh->GetScale());
+
+					//Set changing Model and normal model matrices
+					pointShadowShader->SetMat44("model", modelMat);
+
+					//Draw the Wooden floor mesh
+					mesh->Draw(pointShadowShader);
+				}
 			}
 		}
 	}
