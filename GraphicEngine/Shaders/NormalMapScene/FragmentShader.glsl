@@ -10,6 +10,7 @@ struct Material
 	sampler2D texture_specular_1;
 	sampler2D texture_specular_2;
 	sampler2D texture_specular_3;
+	sampler2D texture_normal_1;
 	sampler2D texture_emissive;
 	float emissiveAmount;
 	float shininess;
@@ -74,6 +75,7 @@ in VS_OUT
 } fs_in;
 
 uniform bool bUseTiling;
+uniform bool bUseNormalMap;
 uniform vec3 cameraPos;
 uniform Material material;
 uniform DirLight dirLight;
@@ -85,8 +87,20 @@ uniform PointLight[NR_POINT_LIGHTS] pointLights;
 
 void main()
 {
-	//Calculate normalized normal vector
-	vec3 norm = normalize(fs_in.outNormal);
+	//Switch between vertex normal and Normal Map based on boolean
+	vec3 norm;
+	if(bUseNormalMap)
+	{	
+		//Get normal from normal map texture using fragment tex coordinates
+		//Try to have texture tile repeat 4 times
+		vec2 newTexCoord = bUseTiling ? mod((fs_in.TexCoord * 2), 1.0f) : fs_in.TexCoord;
+		norm = texture(material.texture_normal_1, newTexCoord).rgb;	//No need for conversions, rgb values from normal map texture are good representation for normal map
+	}
+	else
+	{
+		//Calculate normalized normal vector
+		norm = normalize(fs_in.outNormal);
+	}
 
 	vec3 combinedColor = vec3(0.0f);
 

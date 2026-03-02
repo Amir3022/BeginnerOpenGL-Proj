@@ -11,8 +11,10 @@ NormalMapGame::NormalMapGame(int in_width, int in_height)
 	lightVertexShaderPath = "Shaders/NormalMapScene/LightVertexShader.glsl";
 
 	//Initialize Light Variables
-	pointLightPos = glm::vec3(0.0f, 0.0f, 5.0f);
+	pointLightPos = glm::vec3(0.0f, 0.0f, 1.0f);
 	pointLightColor = glm::vec3(1.0f);
+
+	bUseNormalMap = false;
 }
 
 bool NormalMapGame::Init()
@@ -164,7 +166,7 @@ void NormalMapGame::UpdateGame(float deltaTime)
 	//Update the point light position
 	if (lightCubeMesh)
 	{
-		pointLightPos = glm::vec3(0.0f, glm::sin(glfwGetTime()) * 3.0f, 5.0f);
+		pointLightPos = glm::vec3(0.0f, glm::sin(glfwGetTime()) * 3.0f, 1.0f);
 		lightCubeMesh->SetTransform(pointLightPos, glm::vec3(0.0f), lightCubeMesh->GetScale());
 	}
 }
@@ -211,8 +213,8 @@ void NormalMapGame::DrawMainScene()
 		shader->SetVec3("pointLights[" + std::to_string(0) + "].light.diffuse", 0.75f * pointLightColor);
 		shader->SetVec3("pointLights[" + std::to_string(0) + "].light.specular", 1.0f * pointLightColor);
 		shader->SetFloat("pointLights[" + std::to_string(0) + "].constant", 1.0f);	//Attenuation constants for a light source that covers and outer radius on 50 units
-		shader->SetFloat("pointLights[" + std::to_string(0) + "].linear", 0.09f);
-		shader->SetFloat("pointLights[" + std::to_string(0) + "].quad", 0.032f);
+		shader->SetFloat("pointLights[" + std::to_string(0) + "].linear", 0.35f);
+		shader->SetFloat("pointLights[" + std::to_string(0) + "].quad", 0.44f);
 
 		//Rendering Wall Plane
 		//Create a model matrix to set plane location in world coordinates
@@ -231,6 +233,9 @@ void NormalMapGame::DrawMainScene()
 
 		//Enable using tiling uniform for all wall meshes
 		shader->SetBool("bUseTiling", true);
+
+		//Enable using Normal map for the Wall Mesh
+		shader->SetBool("bUseNormalMap", bUseNormalMap);
 
 		//Draw the Wooden floor mesh
 		wallMesh->Draw(shader);
@@ -261,5 +266,23 @@ void NormalMapGame::DrawMainScene()
 			//Draw The lightCubeMesh
 			lightCubeMesh->Draw(lightShader);
 		}
+	}
+}
+
+void NormalMapGame::ProcessInput(GLFWwindow* window)
+{
+	Game::ProcessInput(window);
+	//Cycle between Lit and Unlit Modes in Rendering Model when pressing P
+	if (glfwGetKey(window, GLFW_KEY_P) == GLFW_PRESS)
+	{
+		if (!bUseNormalMapSwitchPressed)
+		{
+			bUseNormalMapSwitchPressed = true;
+			bUseNormalMap = !bUseNormalMap;
+		}
+	}
+	else
+	{
+		bUseNormalMapSwitchPressed = false;
 	}
 }

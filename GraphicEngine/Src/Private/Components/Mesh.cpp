@@ -43,6 +43,7 @@ void Mesh::Draw(std::weak_ptr<Shader> shaderRef)
 
 		unsigned int nr_diffuse = 1;
 		unsigned int nr_specular = 1;
+		unsigned int nr_normal = 1;
 		//Cycle through all Textures, and set their Data in Fragment Shader
 		for (int i = 0; i < textures.size(); i++)
 		{
@@ -57,6 +58,8 @@ void Mesh::Draw(std::weak_ptr<Shader> shaderRef)
 				textureName += "diffuse_" + std::to_string(nr_diffuse++);
 			else if (texture.texType == ETextureType::specular)
 				textureName += "specular_" + std::to_string(nr_specular++);
+			else if (texture.texType == ETextureType::normal)
+				textureName += "normal_" + std::to_string(nr_normal++);
 			shader->SetInt(textureName, i);
 		}
 		//Draw mesh Triangles using all bound Data

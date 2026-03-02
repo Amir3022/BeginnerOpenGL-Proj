@@ -18,6 +18,8 @@ public:
 protected:
 	void DrawMainScene();
 
+	void ProcessInput(GLFWwindow* window);
+
 private:
 	//Mesh Variables
 	std::shared_ptr<Mesh> wallMesh;
@@ -31,4 +33,8 @@ private:
 	std::shared_ptr<Mesh> lightCubeMesh;
 	std::string lightVertexShaderPath;
 	std::string lightFragmentShaderPath;
+
+	//Input Variables
+	bool bUseNormalMap;
+	bool bUseNormalMapSwitchPressed;
 };
