@@ -1,8 +1,8 @@
-#include "GameModules/PointShadowGame.h"
+#include "GameModules/NormalMapGame.h"
 
 int main()
 {
-    std::unique_ptr<PointShadowGame> game = std::make_unique<PointShadowGame>(1280, 720);
+    std::unique_ptr<NormalMapGame> game = std::make_unique<NormalMapGame>(1280, 720);
     if (game)
     {
         return game->Process();
