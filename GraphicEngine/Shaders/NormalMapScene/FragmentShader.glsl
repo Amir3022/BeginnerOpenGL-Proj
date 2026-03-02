@@ -94,7 +94,8 @@ void main()
 		//Get normal from normal map texture using fragment tex coordinates
 		//Try to have texture tile repeat 4 times
 		vec2 newTexCoord = bUseTiling ? mod((fs_in.TexCoord * 2), 1.0f) : fs_in.TexCoord;
-		norm = texture(material.texture_normal_1, newTexCoord).rgb;	//No need for conversions, rgb values from normal map texture are good representation for normal map
+		norm = texture(material.texture_normal_1, newTexCoord).rgb;	//Normal map with values in range [0, 1]
+		norm = normalize(norm * 2.0f - 1.0f); //Map the normal value in range [-1, 1]
 	}
 	else
 	{

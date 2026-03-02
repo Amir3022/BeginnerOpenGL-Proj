@@ -11,7 +11,7 @@ NormalMapGame::NormalMapGame(int in_width, int in_height)
 	lightVertexShaderPath = "Shaders/NormalMapScene/LightVertexShader.glsl";
 
 	//Initialize Light Variables
-	pointLightPos = glm::vec3(0.0f, 0.0f, 1.0f);
+	pointLightPos = glm::vec3(0.0f, 0.0f, 0.3f);
 	pointLightColor = glm::vec3(1.0f);
 
 	bUseNormalMap = false;
@@ -142,7 +142,7 @@ bool NormalMapGame::Init()
 		//Create a cube mesh to represent the point light position
 		lightCubeMesh = std::make_shared<Mesh>(vertices, indices, std::vector<Texture>{});
 		//Set lightCubeMesh transform
-		lightCubeMesh->SetTransform(pointLightPos, glm::vec3(0.f), glm::vec3(0.1f));	//Scale the cube down so it doesn't take much screen realstate
+		lightCubeMesh->SetTransform(pointLightPos, glm::vec3(0.f), glm::vec3(0.025f));	//Scale the cube down so it doesn't take much screen realstate
 
 		return true;
 	}
@@ -164,9 +164,9 @@ void NormalMapGame::UpdateGame(float deltaTime)
 	Game::UpdateGame(deltaTime);
 
 	//Update the point light position
-	if (lightCubeMesh)
+	if (lightCubeMesh && false)
 	{
-		pointLightPos = glm::vec3(0.0f, glm::sin(glfwGetTime()) * 3.0f, 1.0f);
+		pointLightPos.y = glm::sin(glfwGetTime()) * 3.0f;
 		lightCubeMesh->SetTransform(pointLightPos, glm::vec3(0.0f), lightCubeMesh->GetScale());
 	}
 }
