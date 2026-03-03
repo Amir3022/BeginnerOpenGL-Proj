@@ -3,12 +3,12 @@
 #include "Utilities/stb_image.h"
 #include <iostream>
 
-unsigned int EngineUtilities::LoadImageIntoTexture(const char* imagePath, bool bUseAlpha, bool bUseSRGB)
+unsigned int EngineUtilities::LoadImageIntoTexture(const char* imagePath, bool bUseAlpha, bool bUseSRGB, bool bFlipImage)
 {
     unsigned int outTexture = -1;
     //Load Texture Data from image path
     int width, height, nChannels;
-    stbi_set_flip_vertically_on_load(true); //To match images and OpenGL texture y orientation
+    stbi_set_flip_vertically_on_load(bFlipImage); //To match images and OpenGL texture y orientation
     unsigned char* data = stbi_load(imagePath, &width, &height, &nChannels, 0);
     if (data)
     {

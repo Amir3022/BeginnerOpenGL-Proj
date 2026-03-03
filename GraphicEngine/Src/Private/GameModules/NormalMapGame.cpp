@@ -59,8 +59,8 @@ bool NormalMapGame::Init()
 		};
 
 		//Load Brick Wall textures
-		unsigned int texture1 = EngineUtilities::LoadImageIntoTexture("Assets/Textures/brickwall.jpg", false, true);
-		unsigned int texture2 = EngineUtilities::LoadImageIntoTexture("Assets/Textures/brickwall_normal.jpg", false, true);
+		unsigned int texture1 = EngineUtilities::LoadImageIntoTexture("Assets/Textures/brickwall.jpg", false, true, false);
+		unsigned int texture2 = EngineUtilities::LoadImageIntoTexture("Assets/Textures/brickwall_normal.jpg", false, true, false);
 
 
 		//Create Plane Mesh to be used as Wall
@@ -232,7 +232,7 @@ void NormalMapGame::DrawMainScene()
 		shader->SetMat33("normalModelMatrix", normalModelMatrix);
 
 		//Enable using tiling uniform for all wall meshes
-		shader->SetBool("bUseTiling", true);
+		shader->SetBool("bUseTiling", false);
 
 		//Enable using Normal map for the Wall Mesh
 		shader->SetBool("bUseNormalMap", bUseNormalMap);
