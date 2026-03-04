@@ -34,65 +34,53 @@ bool NormalMapGame::Init()
 		camera->SetCameraLocation(camera->GetCameraLocation() + glm::vec3(0.0f, 2.0f, 2.0f));
 		camera->SetCameraRotation(camera->GetCameraRotation() + glm::vec3(0.0f, -15.0f, 0.0f));
 
-		//Declare Vertices for a 2D plane (Position, Normal, Tangent, Bitangent, Tex Coord)
-		std::vector<float> planeVertices =
+		//Declare Vertices for a 2D plane
+		std::vector<Vertex> planeVertices =
 		{
-			-1.0f, -1.0f, 0.0f,		0.0f, 0.0f, 1.0f,	1.0f, 0.0f, 0.0f,	0.0f, 1.0f, 0.0f,	0.0f, 0.0f,			//0		//0
-			//-1.0, -1.0f, -0.0001f,  0.0f, 0.0f, -1.0f,	-1.0f, 0.0f, 0.0f,	0.0f, 1.0f, 0.0f	,0.0f, 0.0f,		//1	
+			{glm::vec3(-1.0f, -1.0f, 0.0f),  glm::vec3(0.0f,  0.0f,  1.0f), glm::vec2(0.0f, 0.0f)},		//0		//0
+			{glm::vec3(-1.0, -1.0f, -0.0001f),  glm::vec3(0.0f,  0.0f,  -1.0f), glm::vec2(0.0f, 0.0f)},	//1	
 
-			1.0f, -1.0f, 0.0f,		0.0f, 0.0f, 1.0f,	1.0f, 0.0f, 0.0f,	0.0f, 1.0f, 0.0f,	1.0f, 0.0f,			//2		//1
-			//1.0f, -1.0f, -0.0001f,	0.0f, 0.0f, -1.0f,	-1.0f, 0.0f, 0.0f,	0.0f, 1.0f, 0.0f	,1.0f, 0.0f,		//3
+			{glm::vec3(1.0f, -1.0f, 0.0f),  glm::vec3(0.0f,  0.0f,  1.0f), glm::vec2(1.0f, 0.0f)},		//2		//1
+			{glm::vec3(1.0f, -1.0f, -0.0001f),  glm::vec3(0.0f,  0.0f,  -1.0f), glm::vec2(1.0f, 0.0f)},	//3
 
-			-1.0f,  1.0f, 0.0f,		0.0f, 0.0f, 1.0f,	1.0f, 0.0f, 0.0f,	0.0f, 1.0f, 0.0f,	0.0f, 1.0f,			//4		//2
-			//-1.0f,  1.0f, -0.0001f, 0.0f, 0.0f, -1.0f,	-1.0f, 0.0f, 0.0f,	0.0f, 1.0f, 0.0f	,0.0f, 1.0f,		//5
+			{glm::vec3(-1.0f,  1.0f, 0.0f),  glm::vec3(0.0f,  0.0f,  1.0f), glm::vec2(0.0f, 1.0f)},		//4		//2
+			{glm::vec3(-1.0f,  1.0f, -0.0001f),  glm::vec3(0.0f,  0.0f,  -1.0f), glm::vec2(0.0f, 1.0f)},//5
 
-			1.0f,  1.0f, 0.0f,		0.0f, 0.0f, 1.0f,	1.0f, 0.0f, 0.0f,	0.0f, 1.0f, 0.0f,	1.0f, 1.0f,			//6		//3
-			//1.0f,  1.0f, -0.0001f,	0.0f, 0.0f, -1.0f,	-1.0f, 0.0f, 0.0f,	0.0f, 1.0f, 0.0f	,1.0f, 1.0f,		//7
+			{glm::vec3(1.0f,  1.0f, 0.0f),  glm::vec3(0.0f,  0.0f,  1.0f), glm::vec2(1.0f, 1.0f)},		//6		//3
+			{glm::vec3(1.0f,  1.0f, -0.0001f),  glm::vec3(0.0f,  0.0f,  -1.0f), glm::vec2(1.0f, 1.0f)},	//7
 		};
 		std::vector<unsigned int> planeIndices =
 		{
-			0, 1, 2,
-			2, 1, 3,
+			0, 2, 4,
+			4, 2, 6,
 
-			//1, 3, 5,
-			//5, 3, 7
+			1, 3, 5,
+			5, 3, 7
 		};
 
-		//Create VAO and bind
-		glGenVertexArrays(1, &VAO);
-		glBindVertexArray(VAO);
-
-		//Create VBO and EBO
-		unsigned int VBO, EBO;
-		glGenBuffers(1, &VBO);
-		glBindBuffer(GL_ARRAY_BUFFER, VBO);
-		glBufferData(GL_ARRAY_BUFFER, planeVertices.size() * sizeof(float), planeVertices.data(), GL_STATIC_DRAW);
-		glGenBuffers(1, &EBO);
-		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-		glBufferData(GL_ELEMENT_ARRAY_BUFFER, planeIndices.size() * sizeof(unsigned int), planeIndices.data(), GL_STATIC_DRAW);
-		//Assign Vertex Attribute Pointers
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)0);
-		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)(3 * sizeof(float)));
-		glEnableVertexAttribArray(2);					
-		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)(6 * sizeof(float)));
-		glEnableVertexAttribArray(3);					
-		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)(9 * sizeof(float)));
-		glEnableVertexAttribArray(4);					
-		glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)(12 * sizeof(float)));
-		//Unbind the VAO
-		glBindVertexArray(0);
-
-
 		//Load Brick Wall textures
-		diffuseTexture = EngineUtilities::LoadImageIntoTexture("Assets/Textures/brickwall.jpg", false, true, false);
-		normalTexture = EngineUtilities::LoadImageIntoTexture("Assets/Textures/brickwall_normal.jpg", false, false, false);	//Disable sRGB for normal maps since it messes up the RGB values
+		unsigned int texture1 = EngineUtilities::LoadImageIntoTexture("Assets/Textures/brickwall.jpg", false, true, false);
+		unsigned int texture2 = EngineUtilities::LoadImageIntoTexture("Assets/Textures/brickwall_normal.jpg", false, false, false);
 
+
+		//Create Plane Mesh to be used as Wall
+		//Create Plane Texture Object
+		Texture texture_Plane_diffuse;
+		texture_Plane_diffuse.texIndex = texture1;
+		texture_Plane_diffuse.texType = ETextureType::diffuse;
+		texture_Plane_diffuse.path = "Assets/Textures/brickwall.jpg";
+
+		Texture texture_Plane_Normal;
+		texture_Plane_Normal.texIndex = texture2;
+		texture_Plane_Normal.texType = ETextureType::normal;
+		texture_Plane_Normal.path = "Assets/Textures/brickwall_normal.jpg";
+
+		std::vector<Texture> textures_Plane{ texture_Plane_diffuse, texture_Plane_Normal };
+
+		wallMesh = std::make_shared<Mesh>(planeVertices, planeIndices, textures_Plane);
 		//Set Plane Transform
-		position = glm::vec3(0.0f);
-		rotation = glm::vec3(0.0f);
-		scale = glm::vec3(4.0f);
+		wallMesh->SetTransform(glm::vec3(0.0f), glm::vec3(0.0f), glm::vec3(4.0f));
+
 
 		//Create a  cube vertices array   (Vertex Location, Vertex Normal, Texture Coordinate)
 		std::vector<Vertex> vertices =
@@ -176,7 +164,7 @@ void NormalMapGame::UpdateGame(float deltaTime)
 	Game::UpdateGame(deltaTime);
 
 	//Update the point light position
-	if (lightCubeMesh && false)
+	if (lightCubeMesh)
 	{
 		pointLightPos.y = glm::sin(glfwGetTime()) * 3.0f;
 		lightCubeMesh->SetTransform(pointLightPos, glm::vec3(0.0f), lightCubeMesh->GetScale());
@@ -204,7 +192,7 @@ void NormalMapGame::DrawFrame()
 void NormalMapGame::DrawMainScene()
 {
 	//Check if the wall Mesh is valid
-	if (shader)
+	if (shader && wallMesh)
 	{
 		//Create the View matrix to see the plane model through the camera position
 		glm::mat4 view = camera->GetLookAtMat(camera->GetCameraLocation() + camera->GetCameraForwardDir());
@@ -220,22 +208,22 @@ void NormalMapGame::DrawMainScene()
 		shader->SetVec3("cameraPos", camera->GetCameraLocation());
 
 		//Rendering point Light
-		shader->SetVec3("pointLightPos", pointLightPos);
-		shader->SetVec3("pointLightAmbient", 0.2f * glm::normalize(pointLightColor));
-		shader->SetVec3("pointLightDiffuse", 0.75f * pointLightColor);
-		shader->SetVec3("pointLightSpecular", 1.0f * pointLightColor);
-		//shader->SetFloat("pointLights[" + std::to_string(0) + "].constant", 1.0f);	//Attenuation constants for a light source that covers and outer radius on 50 units
-		//shader->SetFloat("pointLights[" + std::to_string(0) + "].linear", 0.35f);
-		//shader->SetFloat("pointLights[" + std::to_string(0) + "].quad", 0.44f);
+		shader->SetVec3("pointLights[" + std::to_string(0) + "].sourcePos", pointLightPos);
+		shader->SetVec3("pointLights[" + std::to_string(0) + "].light.ambient", 0.2f * glm::normalize(pointLightColor));
+		shader->SetVec3("pointLights[" + std::to_string(0) + "].light.diffuse", 0.75f * pointLightColor);
+		shader->SetVec3("pointLights[" + std::to_string(0) + "].light.specular", 1.0f * pointLightColor);
+		shader->SetFloat("pointLights[" + std::to_string(0) + "].constant", 1.0f);	//Attenuation constants for a light source that covers and outer radius on 50 units
+		shader->SetFloat("pointLights[" + std::to_string(0) + "].linear", 0.35f);
+		shader->SetFloat("pointLights[" + std::to_string(0) + "].quad", 0.44f);
 
 		//Rendering Wall Plane
 		//Create a model matrix to set plane location in world coordinates
 		glm::mat4 modelMat = glm::identity < glm::mat4>();
-		modelMat = glm::translate(modelMat, position);
-		modelMat = glm::rotate(modelMat, glm::radians(rotation.x), glm::vec3(1.0f, 0.0f, 0.0f));
-		modelMat = glm::rotate(modelMat, glm::radians(rotation.y), glm::vec3(0.0f, 1.0f, 0.0f));
-		modelMat = glm::rotate(modelMat, glm::radians(rotation.z), glm::vec3(0.0f, 0.0f, 1.0f));
-		modelMat = glm::scale(modelMat, scale);
+		modelMat = glm::translate(modelMat, wallMesh->GetPosition());
+		modelMat = glm::rotate(modelMat, glm::radians(wallMesh->GetRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
+		modelMat = glm::rotate(modelMat, glm::radians(wallMesh->GetRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
+		modelMat = glm::rotate(modelMat, glm::radians(wallMesh->GetRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
+		modelMat = glm::scale(modelMat, wallMesh->GetScale());
 		//Create normal model matrix to transform fragment normals
 		glm::mat3 normalModelMatrix = glm::mat3(glm::transpose(glm::inverse(modelMat)));
 
@@ -249,21 +237,9 @@ void NormalMapGame::DrawMainScene()
 		//Enable using Normal map for the Wall Mesh
 		shader->SetBool("bUseNormalMap", bUseNormalMap);
 
-		//Bind textures to Texture Parameters
-		glActiveTexture(GL_TEXTURE0);
-		glBindTexture(GL_TEXTURE_2D, diffuseTexture);
-		glActiveTexture(GL_TEXTURE1);
-		glBindTexture(GL_TEXTURE_2D, normalTexture);
-
-		//Set the Textures variables in the Fragment Shader
-		shader->SetInt("diffuseTexture", 0);
-		shader->SetInt("normalTexture", 1);
-
-
-		//Bind the VAO holding the Wall vertices
-		glBindVertexArray(VAO);
 		//Draw the Wooden floor mesh
-		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
+		wallMesh->Draw(shader);
+
 
 		//Rendering point light cube
 		//Enable the Light Shader program

@@ -21,15 +21,8 @@ protected:
 	void ProcessInput(GLFWwindow* window);
 
 private:
-	//Rendering Variables
-	unsigned int VAO;
-	unsigned int diffuseTexture;
-	unsigned int normalTexture;
-
-	//Wall Transforms
-	glm::vec3 position;
-	glm::vec3 rotation;
-	glm::vec3 scale;
+	//Mesh Variables
+	std::shared_ptr<Mesh> wallMesh;
 
 	//Light Variables
 	glm::vec3 pointLightPos;
