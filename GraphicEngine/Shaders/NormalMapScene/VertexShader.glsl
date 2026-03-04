@@ -27,6 +27,9 @@ void main()
 	//Calculate the TBN matrix to transform normals from tangent to world space
 	vec3 T = normalize(normalModelMatrix * aTangent);
 	vec3 N = vs_out.outNormal;
+	//Re-orthogonalize Tangent and Normal vectors using Gramm Schmidt process (Correct the tangent with projection of the normal vector on tangent direction
+	T = normalize(T - dot(T, N) * N);
+	//Calculate the Bitangent vector from crossing normal and tangent
 	vec3 B = normalize(cross(N, T));
 	
 	vs_out.TBN = mat3(T, B, N);
