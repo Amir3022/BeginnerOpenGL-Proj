@@ -72,6 +72,7 @@ in VS_OUT
 	vec3 outNormal;
 	vec3 FragPos;
 	vec2 TexCoord;
+	mat3 TBN;
 } fs_in;
 
 uniform bool bUseTiling;
@@ -96,6 +97,7 @@ void main()
 		vec2 newTexCoord = bUseTiling ? mod((fs_in.TexCoord * 2), 1.0f) : fs_in.TexCoord;
 		norm = texture(material.texture_normal_1, newTexCoord).rgb;	//Normal map with values in range [0, 1]
 		norm = normalize(norm * 2.0f - 1.0f); //Map the normal value in range [-1, 1]
+		norm = fs_in.TBN * norm;	//Transform the normals from tangent space to world space, Better to transform camera and light position to tangent space in vertex shader to save GPU performance on performing matrix multiplications in vertex shader
 	}
 	else
 	{

@@ -4,22 +4,24 @@
 #include "Utilities/EngineTypes.h"
 #include "Components/Shader.h"
 
-struct Vertex
+struct TBNVertex
 {
 	glm::vec3 position;
 	glm::vec3 normal;
+	glm::vec3 tangent;
+	glm::vec3 bitangent;
 	glm::vec2 texCoords;
 };
 
-class Mesh
+class TBNMesh
 {
 public:
-	Mesh()
+	TBNMesh()
 	{
 		bIsValid = false;
 	}
 
-	Mesh(const std::vector<Vertex>& in_vertices, const std::vector<unsigned int>& in_indices, const std::vector<Texture>& in_textures)
+	TBNMesh(const std::vector<TBNVertex>& in_vertices, const std::vector<unsigned int>& in_indices, const std::vector<Texture>& in_textures)
 		:vertices(in_vertices), indices(in_indices), textures(in_textures)
 	{
 		SetupMesh();
@@ -55,7 +57,7 @@ private:
 
 private:
 	//Main Mesh Data
-	std::vector<Vertex> vertices;
+	std::vector<TBNVertex> vertices;
 	std::vector<unsigned int> indices;
 	std::vector<Texture> textures;
 

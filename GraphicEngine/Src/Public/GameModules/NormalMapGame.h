@@ -1,6 +1,7 @@
 #pragma once
 #include "Game.h"
 #include "Components/Mesh.h"
+#include "Components/TBNMesh.h"
 
 class NormalMapGame : public Game
 {
@@ -22,7 +23,7 @@ protected:
 
 private:
 	//Mesh Variables
-	std::shared_ptr<Mesh> wallMesh;
+	std::shared_ptr<TBNMesh> wallMesh;
 
 	//Light Variables
 	glm::vec3 pointLightPos;

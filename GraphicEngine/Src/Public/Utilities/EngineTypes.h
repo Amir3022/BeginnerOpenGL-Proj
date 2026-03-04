@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 
 enum ETextureType : unsigned char
 {
@@ -6,4 +7,11 @@ enum ETextureType : unsigned char
 	specular,
 	emissive,
 	normal,
+};
+
+struct Texture
+{
+	unsigned int texIndex;
+	ETextureType texType;
+	std::string path;
 };
