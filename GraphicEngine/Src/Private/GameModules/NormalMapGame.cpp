@@ -34,28 +34,28 @@ bool NormalMapGame::Init()
 		camera->SetCameraLocation(camera->GetCameraLocation() + glm::vec3(0.0f, 2.0f, 2.0f));
 		camera->SetCameraRotation(camera->GetCameraRotation() + glm::vec3(0.0f, -15.0f, 0.0f));
 
-		//Declare Vertices for a 2D plane (Position, Normal, Tex Coord)
+		//Declare Vertices for a 2D plane (Position, Normal, Tangent, Bitangent, Tex Coord)
 		std::vector<float> planeVertices =
 		{
-			-1.0f, -1.0f, 0.0f,  0.0f,  0.0f,  1.0f, 0.0f, 0.0f,		//0		//0
-			-1.0, -1.0f, -0.0001f,  0.0f,  0.0f,  -1.0f, 0.0f, 0.0f,	//1	
+			-1.0f, -1.0f, 0.0f,		0.0f, 0.0f, 1.0f,	1.0f, 0.0f, 0.0f,	0.0f, 1.0f, 0.0f,	0.0f, 0.0f,			//0		//0
+			//-1.0, -1.0f, -0.0001f,  0.0f, 0.0f, -1.0f,	-1.0f, 0.0f, 0.0f,	0.0f, 1.0f, 0.0f	,0.0f, 0.0f,		//1	
 
-			1.0f, -1.0f, 0.0f,  0.0f,  0.0f,  1.0f, 1.0f, 0.0f,		//2		//1
-			1.0f, -1.0f, -0.0001f, 0.0f,  0.0f,  -1.0f, 1.0f, 0.0f,	//3
+			1.0f, -1.0f, 0.0f,		0.0f, 0.0f, 1.0f,	1.0f, 0.0f, 0.0f,	0.0f, 1.0f, 0.0f,	1.0f, 0.0f,			//2		//1
+			//1.0f, -1.0f, -0.0001f,	0.0f, 0.0f, -1.0f,	-1.0f, 0.0f, 0.0f,	0.0f, 1.0f, 0.0f	,1.0f, 0.0f,		//3
 
-			-1.0f,  1.0f, 0.0f, 0.0f,  0.0f,  1.0f, 0.0f, 1.0f,		//4		//2
-			-1.0f,  1.0f, -0.0001f, 0.0f,  0.0f,  -1.0f, 0.0f, 1.0f,//5
+			-1.0f,  1.0f, 0.0f,		0.0f, 0.0f, 1.0f,	1.0f, 0.0f, 0.0f,	0.0f, 1.0f, 0.0f,	0.0f, 1.0f,			//4		//2
+			//-1.0f,  1.0f, -0.0001f, 0.0f, 0.0f, -1.0f,	-1.0f, 0.0f, 0.0f,	0.0f, 1.0f, 0.0f	,0.0f, 1.0f,		//5
 
-			1.0f,  1.0f, 0.0f, 0.0f,  0.0f,  1.0f, 1.0f, 1.0f,		//6		//3
-			1.0f,  1.0f, -0.0001f, 0.0f,  0.0f,  -1.0f, 1.0f, 1.0f,	//7
+			1.0f,  1.0f, 0.0f,		0.0f, 0.0f, 1.0f,	1.0f, 0.0f, 0.0f,	0.0f, 1.0f, 0.0f,	1.0f, 1.0f,			//6		//3
+			//1.0f,  1.0f, -0.0001f,	0.0f, 0.0f, -1.0f,	-1.0f, 0.0f, 0.0f,	0.0f, 1.0f, 0.0f	,1.0f, 1.0f,		//7
 		};
 		std::vector<unsigned int> planeIndices =
 		{
-			0, 2, 4,
-			4, 2, 6,
+			0, 1, 2,
+			2, 1, 3,
 
-			1, 3, 5,
-			5, 3, 7
+			//1, 3, 5,
+			//5, 3, 7
 		};
 
 		//Create VAO and bind
@@ -72,18 +72,22 @@ bool NormalMapGame::Init()
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, planeIndices.size() * sizeof(unsigned int), planeIndices.data(), GL_STATIC_DRAW);
 		//Assign Vertex Attribute Pointers
 		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)0);
 		glEnableVertexAttribArray(1);
-		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
-		glEnableVertexAttribArray(2);
-		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)(3 * sizeof(float)));
+		glEnableVertexAttribArray(2);					
+		glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)(6 * sizeof(float)));
+		glEnableVertexAttribArray(3);					
+		glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)(9 * sizeof(float)));
+		glEnableVertexAttribArray(4);					
+		glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, 14 * sizeof(float), (void*)(12 * sizeof(float)));
 		//Unbind the VAO
 		glBindVertexArray(0);
 
 
 		//Load Brick Wall textures
 		diffuseTexture = EngineUtilities::LoadImageIntoTexture("Assets/Textures/brickwall.jpg", false, true, false);
-		normalTexture = EngineUtilities::LoadImageIntoTexture("Assets/Textures/brickwall_normal.jpg", false, true, false);
+		normalTexture = EngineUtilities::LoadImageIntoTexture("Assets/Textures/brickwall_normal.jpg", false, false, false);	//Disable sRGB for normal maps since it messes up the RGB values
 
 		//Set Plane Transform
 		position = glm::vec3(0.0f);
@@ -259,7 +263,7 @@ void NormalMapGame::DrawMainScene()
 		//Bind the VAO holding the Wall vertices
 		glBindVertexArray(VAO);
 		//Draw the Wooden floor mesh
-		glDrawElements(GL_TRIANGLES, 12, GL_UNSIGNED_INT, nullptr);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, nullptr);
 
 		//Rendering point light cube
 		//Enable the Light Shader program
