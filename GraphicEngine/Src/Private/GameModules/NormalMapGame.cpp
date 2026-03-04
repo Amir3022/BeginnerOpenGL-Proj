@@ -11,7 +11,7 @@ NormalMapGame::NormalMapGame(int in_width, int in_height)
 	lightVertexShaderPath = "Shaders/NormalMapScene/LightVertexShader.glsl";
 
 	//Initialize Light Variables
-	pointLightPos = glm::vec3(0.0f, 0.0f, 0.3f);
+	pointLightPos = glm::vec3(0.0f, 0.0f, 1.0f);
 	pointLightColor = glm::vec3(1.0f);
 
 	bUseNormalMap = false;
@@ -34,52 +34,10 @@ bool NormalMapGame::Init()
 		camera->SetCameraLocation(camera->GetCameraLocation() + glm::vec3(0.0f, 2.0f, 2.0f));
 		camera->SetCameraRotation(camera->GetCameraRotation() + glm::vec3(0.0f, -15.0f, 0.0f));
 
-		//Declare Vertices for a 2D plane
-		std::vector<TBNVertex> planeVertices =
-		{
-			{glm::vec3(-1.0f, -1.0f, 0.0f),  glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec2(0.0f, 0.0f)},		//0		//0
-			{glm::vec3(-1.0, -1.0f, -0.0001f),  glm::vec3(0.0f,  0.0f,  -1.0f),  glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec2(0.0f, 0.0f)},	//1	
-
-			{glm::vec3(1.0f, -1.0f, 0.0f),  glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec2(1.0f, 0.0f)},		//2		//1
-			{glm::vec3(1.0f, -1.0f, -0.0001f),  glm::vec3(0.0f,  0.0f,  -1.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec2(1.0f, 0.0f)},	//3
-
-			{glm::vec3(-1.0f,  1.0f, 0.0f),  glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec2(0.0f, 1.0f)},		//4		//2
-			{glm::vec3(-1.0f,  1.0f, -0.0001f),  glm::vec3(0.0f,  0.0f,  -1.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec2(0.0f, 1.0f)},//5
-
-			{glm::vec3(1.0f,  1.0f, 0.0f),  glm::vec3(0.0f,  0.0f,  1.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec2(1.0f, 1.0f)},		//6		//3
-			{glm::vec3(1.0f,  1.0f, -0.0001f),  glm::vec3(0.0f,  0.0f,  -1.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec2(1.0f, 1.0f)},	//7
-		};
-		std::vector<unsigned int> planeIndices =
-		{
-			0, 2, 4,
-			4, 2, 6,
-
-			1, 3, 5,
-			5, 3, 7
-		};
-
-		//Load Brick Wall textures
-		unsigned int texture1 = EngineUtilities::LoadImageIntoTexture("Assets/Textures/brickwall.jpg", false, true, false);
-		unsigned int texture2 = EngineUtilities::LoadImageIntoTexture("Assets/Textures/brickwall_normal.jpg", false, false, false);
-
-
-		//Create Plane Mesh to be used as Wall
-		//Create Plane Texture Object
-		Texture texture_Plane_diffuse;
-		texture_Plane_diffuse.texIndex = texture1;
-		texture_Plane_diffuse.texType = ETextureType::diffuse;
-		texture_Plane_diffuse.path = "Assets/Textures/brickwall.jpg";
-
-		Texture texture_Plane_Normal;
-		texture_Plane_Normal.texIndex = texture2;
-		texture_Plane_Normal.texType = ETextureType::normal;
-		texture_Plane_Normal.path = "Assets/Textures/brickwall_normal.jpg";
-
-		std::vector<Texture> textures_Plane{ texture_Plane_diffuse, texture_Plane_Normal };
-
-		wallMesh = std::make_shared<TBNMesh>(planeVertices, planeIndices, textures_Plane);
+		//Create Backpack model from path
+		backpackModel = std::make_shared<TBNModel>("Assets/Meshes/backpack/backpack.obj", true);
 		//Set Plane Transform
-		wallMesh->SetTransform(glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(4.0f));
+		backpackModel->SetTransform(glm::vec3(0.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(1.0f));
 
 
 		//Create a  cube vertices array   (Vertex Location, Vertex Normal, Texture Coordinate)
@@ -192,7 +150,7 @@ void NormalMapGame::DrawFrame()
 void NormalMapGame::DrawMainScene()
 {
 	//Check if the wall Mesh is valid
-	if (shader && wallMesh)
+	if (shader && backpackModel)
 	{
 		//Create the View matrix to see the plane model through the camera position
 		glm::mat4 view = camera->GetLookAtMat(camera->GetCameraLocation() + camera->GetCameraForwardDir());
@@ -219,11 +177,11 @@ void NormalMapGame::DrawMainScene()
 		//Rendering Wall Plane
 		//Create a model matrix to set plane location in world coordinates
 		glm::mat4 modelMat = glm::identity < glm::mat4>();
-		modelMat = glm::translate(modelMat, wallMesh->GetPosition());
-		modelMat = glm::rotate(modelMat, glm::radians(wallMesh->GetRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
-		modelMat = glm::rotate(modelMat, glm::radians(wallMesh->GetRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
-		modelMat = glm::rotate(modelMat, glm::radians(wallMesh->GetRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
-		modelMat = glm::scale(modelMat, wallMesh->GetScale());
+		modelMat = glm::translate(modelMat, backpackModel->GetPosition());
+		modelMat = glm::rotate(modelMat, glm::radians(backpackModel->GetRotation().x), glm::vec3(1.0f, 0.0f, 0.0f));
+		modelMat = glm::rotate(modelMat, glm::radians(backpackModel->GetRotation().y), glm::vec3(0.0f, 1.0f, 0.0f));
+		modelMat = glm::rotate(modelMat, glm::radians(backpackModel->GetRotation().z), glm::vec3(0.0f, 0.0f, 1.0f));
+		modelMat = glm::scale(modelMat, backpackModel->GetScale());
 		//Create normal model matrix to transform fragment normals
 		glm::mat3 normalModelMatrix = glm::mat3(glm::transpose(glm::inverse(modelMat)));
 
@@ -238,7 +196,7 @@ void NormalMapGame::DrawMainScene()
 		shader->SetBool("bUseNormalMap", bUseNormalMap);
 
 		//Draw the Wooden floor mesh
-		wallMesh->Draw(shader);
+		backpackModel->Draw(shader);
 
 
 		//Rendering point light cube
