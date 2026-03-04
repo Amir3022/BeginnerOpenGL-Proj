@@ -29,9 +29,7 @@ void TBNMesh::SetupMesh()
 	glEnableVertexAttribArray(2);
 	glVertexAttribPointer(2, 3, GL_FLOAT, GL_FALSE, sizeof(TBNVertex), (void*)offsetof(TBNVertex, tangent));
 	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(TBNVertex), (void*)offsetof(TBNVertex, bitangent));
-	glEnableVertexAttribArray(4);
-	glVertexAttribPointer(4, 2, GL_FLOAT, GL_FALSE, sizeof(TBNVertex), (void*)offsetof(TBNVertex, texCoords));
+	glVertexAttribPointer(3, 2, GL_FLOAT, GL_FALSE, sizeof(TBNVertex), (void*)offsetof(TBNVertex, texCoords));
 
 	//Unbind the mesh VAO
 	glBindVertexArray(0);
