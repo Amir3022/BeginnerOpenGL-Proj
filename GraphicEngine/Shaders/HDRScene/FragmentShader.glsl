@@ -121,7 +121,8 @@ vec3 CalculatePointLightEffect(vec3 norm, PointLight localPointLight)
 	//Calculating light direction and attenuation
 	vec3 lightDir = normalize(vec3(localPointLight.sourcePos) - fs_in.FragPos);
 	float distanceToLight = length(vec3(localPointLight.sourcePos) - fs_in.FragPos);
-	float attenuation = clamp(1.0f / (localPointLight.constant + localPointLight.linear * distanceToLight + localPointLight.quad * (distanceToLight * distanceToLight)), 0.0f, 1.0f);
+	//float attenuation = clamp(1.0f / (localPointLight.constant + localPointLight.linear * distanceToLight + localPointLight.quad * (distanceToLight * distanceToLight)), 0.0f, 1.0f);
+	float attenuation =	1.0f / (distanceToLight * distanceToLight);
 
 	//Calculate the View Direction from camera to Fragment
 	vec3 viewDir = normalize(cameraPos - fs_in.FragPos);

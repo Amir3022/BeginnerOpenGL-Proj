@@ -19,6 +19,8 @@ protected:
 	void DrawMainScene();
 	void DrawHDRScene();
 
+	virtual void ProcessInput(GLFWwindow* window) override;
+
 private:
 	//Meshes Variables
 	std::vector<std::shared_ptr<Mesh>> wallMeshes;
@@ -33,6 +35,11 @@ private:
 
 	//HDR Quad variables
 	unsigned int HDRVAO;
+	float exposureValue;
+	bool bUseHDR;
+
+	//Input variables
+	bool bHDRTogglePressed;
 
 	//Light Variables
 	std::vector<glm::vec3> pointLightsPos;

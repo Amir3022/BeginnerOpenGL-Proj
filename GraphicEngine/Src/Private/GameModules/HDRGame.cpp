@@ -10,13 +10,18 @@ HDRGame::HDRGame(int in_width, int in_height)
 	HDRVertexShaderPath = "Shaders/HDRScene/HDRVertexShader.glsl";
 	HDRFragmentShaderPath = "Shaders/HDRScene/HDRFragmentShader.glsl";
 
+	bUseHDR = false;
+	exposureValue = 1.0f;
+
+	bHDRTogglePressed = false;
+
 	//Initialize Light Variables
 	pointLightsPos =
 	{
 		glm::vec3(-2.9f, 0.0f, 0.0f),
 		glm::vec3(2.9f, 0.0f, 0.0f),
 		glm::vec3(0.0f, -2.9f, 0.0f),
-		glm::vec3(0.0f, 0.0f, -49.9f)
+		glm::vec3(0.0f, 0.0f, -49.5f)
 	};
 
 	pointLightsColor =
@@ -127,8 +132,8 @@ bool HDRGame::Init()
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, GetWidth(), GetHeight(), 0, GL_RGBA, GL_FLOAT, nullptr);
 
 		//Set Bound textures parameteres
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
 		glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
@@ -218,8 +223,6 @@ void HDRGame::DrawFrame()
 	glEnable(GL_DEPTH_TEST);
 	glClearColor(0.02f, 0.02f, 0.02f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	//Enable Gamme Correction using sRGB Colors in Framebuffers
-	glEnable(GL_FRAMEBUFFER_SRGB);
 	//Draw the main scene to the ColorTexture attached to the HDR Framebuffer
 	DrawMainScene();
 
@@ -228,8 +231,6 @@ void HDRGame::DrawFrame()
 	//Enable Depth Testing, and clear color and depth buffers
 	glClearColor(0.02f, 0.02f, 0.02f, 1.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
-	//Enable Gamme Correction using sRGB Colors in Framebuffers
-	glEnable(GL_FRAMEBUFFER_SRGB);
 	//Draw the Scene with shadows using the ShadowMap
 	glEnable(GL_DEPTH_TEST);
 	DrawHDRScene();
@@ -306,10 +307,41 @@ void HDRGame::DrawHDRScene()
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, colorTexture);
 		HDRShader->SetInt("colorTexture", 0);
+		HDRShader->SetBool("UseHDR", bUseHDR);
+		HDRShader->SetFloat("exposure", exposureValue);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0);
 		//Unbind the texture and the VAO
 		glActiveTexture(0);
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glBindVertexArray(0);
+	}
+}
+
+void HDRGame::ProcessInput(GLFWwindow* window)
+{
+	Game::ProcessInput(window);
+
+	if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+	{
+		exposureValue += GetDeltaTime() * 0.5f;
+	}
+	else if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+	{
+		exposureValue -= GetDeltaTime() * 0.5f;
+	}
+
+	exposureValue = glm::clamp<float>(exposureValue, 0.0f, 3.0f);
+
+	if (glfwGetKey(window, GLFW_KEY_X) == GLFW_PRESS)
+	{
+		if (!bHDRTogglePressed)
+		{
+			bHDRTogglePressed = true;
+			bUseHDR = !bUseHDR;
+		}
+	}
+	else
+	{
+		bHDRTogglePressed = false;
 	}
 }
