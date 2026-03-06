@@ -82,6 +82,17 @@ vec2 ParallaxMapping(vec2 texCoord, vec3 viewDir)
 		currentTexCoordHeight = texture(displacementTexture, currentTexCoord).r;
 		currentLayerDepth += layerDepth;
 	}
+	//Perform Parallex Occlusion mapping to get rid of stepping artifacts from steep parallax mapping
+	vec2 prevTexCoord = currentTexCoord + texCoordinateDelta;
+	float prevTexCoordHeight = texture(displacementTexture, prevTexCoord).r;
+
+	//Get the difference between each tex Coord Height and it's layer depth
+	float currentDifference = currentTexCoordHeight - currentLayerDepth;
+	float prevDifference = (currentLayerDepth - layerDepth) - prevTexCoordHeight;
+
+	//Get the interpolated tex coordinate value
+	float alpha = currentDifference / (currentDifference + prevDifference);
+	currentTexCoord = alpha * prevTexCoord + (1 - alpha) * currentTexCoord;
 
 	return currentTexCoord;
 }
