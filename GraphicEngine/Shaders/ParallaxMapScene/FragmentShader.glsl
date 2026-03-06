@@ -61,11 +61,29 @@ void main()
 
 vec2 ParallaxMapping(vec2 texCoord, vec3 viewDir)
 {
-	float height = texture(displacementTexture, texCoord).r;	//Get the sample depth at original tex coordinate
+	//Determine the number of layers to use for Steep Parallax Mapping
+	int minLayers = 8;
+	int maxLayers = 32;
+	float numLayers = mix(minLayers, maxLayers, max(dot(viewDir, vec3(0.0f, 0.0f, 1.0f)), 0.0f));
+	float layerDepth = 1.0f / numLayers;
+	float currentLayerDepth = 0.0f;
 
-	vec2 displacementOffset = (viewDir.xy / (viewDir.z + 0.00001f)) * (height * displacementHeightScale);	//divide veiwDir XY by it's z component to get better results at extreme viewing angles when z approaches 0.0f, to have a higher offset value
+	//Determine the amount of each move along the Vector P in the view direction
+	vec2 P = (viewDir.xy / (viewDir.z + 0.0000001f)) * displacementHeightScale;
+	vec2 texCoordinateDelta = P / numLayers;
 
-	return texCoord - displacementOffset;
+	//Advance the current texture coordinate till the texCoord height is less than the currentLayerDepth
+	vec2 currentTexCoord = texCoord;
+	float currentTexCoordHeight = texture(displacementTexture, currentTexCoord).r;
+
+	while(currentLayerDepth < currentTexCoordHeight)
+	{	
+		currentTexCoord -= texCoordinateDelta;
+		currentTexCoordHeight = texture(displacementTexture, currentTexCoord).r;
+		currentLayerDepth += layerDepth;
+	}
+
+	return currentTexCoord;
 }
 
 
