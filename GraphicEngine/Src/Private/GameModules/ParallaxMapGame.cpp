@@ -31,8 +31,8 @@ bool ParallaxMapGame::Init()
 		lightShader = std::make_shared<Shader>(lightVertexShaderPath.c_str(), lightFragmentShaderPath.c_str());
 
 		//Change Camera transform
-		camera->SetCameraLocation(camera->GetCameraLocation() + glm::vec3(0.0f, 2.0f, 2.0f));
-		camera->SetCameraRotation(camera->GetCameraRotation() + glm::vec3(0.0f, -15.0f, 0.0f));
+		camera->SetCameraLocation(camera->GetCameraLocation() + glm::vec3(0.0f, 0.0f, 5.0f));
+		camera->SetCameraRotation(camera->GetCameraRotation() + glm::vec3(0.0f, 0.0f, 0.0f));
 
 		//Declare Vertices for a 2D plane (Position, Normal, Tangent, Tex Coord)
 		std::vector<float> planeVertices =
@@ -84,8 +84,9 @@ bool ParallaxMapGame::Init()
 
 
 		//Load Brick Wall textures
-		diffuseTexture = EngineUtilities::LoadImageIntoTexture("Assets/Textures/brickwall.jpg", false, true, false);
-		normalTexture = EngineUtilities::LoadImageIntoTexture("Assets/Textures/brickwall_normal.jpg", false, false, false);	//Disable sRGB for normal maps since it messes up the RGB values
+		diffuseTexture = EngineUtilities::LoadImageIntoTexture("Assets/Textures/bricks2.jpg", false, true, false);
+		normalTexture = EngineUtilities::LoadImageIntoTexture("Assets/Textures/bricks2_normal.jpg", false, false, false);	//Disable sRGB for normal maps since it messes up the RGB values
+		displacementTexture = EngineUtilities::LoadImageIntoTexture("Assets/Textures/bricks2_disp.jpg", false, false, false);	//Disable sRGB for normal maps since it messes up the RGB values
 
 		//Set Plane Transform
 		position = glm::vec3(0.0f);
@@ -252,10 +253,16 @@ void ParallaxMapGame::DrawMainScene()
 		glBindTexture(GL_TEXTURE_2D, diffuseTexture);
 		glActiveTexture(GL_TEXTURE1);
 		glBindTexture(GL_TEXTURE_2D, normalTexture);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, displacementTexture);
 
 		//Set the Textures variables in the Fragment Shader
 		shader->SetInt("diffuseTexture", 0);
 		shader->SetInt("normalTexture", 1);
+		shader->SetInt("displacementTexture", 2);
+
+		//Set displacement Height Scale Value
+		shader->SetFloat("displacementHeightScale", 0.1f);
 
 
 		//Bind the VAO holding the Wall vertices

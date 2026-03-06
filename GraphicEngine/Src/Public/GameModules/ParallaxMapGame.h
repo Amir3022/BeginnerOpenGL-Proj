@@ -25,6 +25,7 @@ private:
 	unsigned int VAO;
 	unsigned int diffuseTexture;
 	unsigned int normalTexture;
+	unsigned int displacementTexture;
 
 	//Wall Transforms
 	glm::vec3 position;
