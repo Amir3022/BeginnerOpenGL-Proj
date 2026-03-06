@@ -178,6 +178,7 @@
     <ClCompile Include="Src\Private\GameModules\LightGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\ModelGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\NormalMapGame.cpp" />
+    <ClCompile Include="Src\Private\GameModules\ParallaxMapGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\PointShadowGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\PostProcessGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\ShadowGame.cpp" />
@@ -226,6 +227,7 @@
     <ClInclude Include="Src\Public\GameModules\InstancingGame.h" />
     <ClInclude Include="Src\Public\GameModules\ModelGame.h" />
     <ClInclude Include="Src\Public\GameModules\NormalMapGame.h" />
+    <ClInclude Include="Src\Public\GameModules\ParallaxMapGame.h" />
     <ClInclude Include="Src\Public\GameModules\PointShadowGame.h" />
     <ClInclude Include="Src\Public\GameModules\PostProcessGame.h" />
     <ClInclude Include="Src\Public\GameModules\ShadowGame.h" />
