@@ -30,6 +30,10 @@ void main()
 	//Perform parallax mapping to get modified texture coordinates
 	vec2 texCoord = ParallaxMapping(fs_in.TexCoord, viewDir);
 
+	//Discard any fragment if the tex coord is out of range of [0, 1]
+	if(texCoord.x < 0 || texCoord.x > 1 || texCoord.y < 0 || texCoord.y > 1)
+		discard;
+
 	vec3 norm = texture(normalTexture, texCoord).rgb;	//Get fragment normal in range [0, 1]
 	norm = normalize(norm * 2.0f - 1.0f);	//Get normal in range [-1, 1] normalized
 
