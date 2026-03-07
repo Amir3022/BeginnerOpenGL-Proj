@@ -20,7 +20,9 @@ protected:
 
 	void DrawMainScene();
 
-	void DrawRenderQuad();
+	void DrawDebugRenderQuad();
+
+	void DrawDeferredLightingQuad();
 
 private:
 	//Model Variables
@@ -35,9 +37,17 @@ private:
 
 	//Render Quad variables
 	unsigned int quadVAO;
+	std::string debugVertexShaderPath;
+	std::string debugFragmentShaderPath;
 	std::string quadVertexShaderPath;
 	std::string quadFragmentShaderPath;
-	std::shared_ptr<Shader> quadShader;
+	std::shared_ptr<Shader> debugQuadShader;
+	std::shared_ptr<Shader> DLQuadShader;
+
+	//Lighting Variables
+	unsigned int NR_LIGHTS;
+	std::vector<glm::vec3> pointLightPositions;
+	std::vector<glm::vec3> pointLightColors;
 
 	//Input Variables
 	int DrawMode;

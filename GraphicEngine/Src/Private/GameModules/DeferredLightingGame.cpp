@@ -1,4 +1,5 @@
 #include "GameModules/DeferredLightingGame.h"
+#include <random>
 
 DeferredLightingGame::DeferredLightingGame(int in_width, int in_height)
 	: Game(in_width, in_height)
@@ -8,6 +9,9 @@ DeferredLightingGame::DeferredLightingGame(int in_width, int in_height)
 
 	quadFragmentShaderPath = "Shaders/DeferredLightingScene/QuadFragmentShader.glsl";
 	quadVertexShaderPath = "Shaders/DeferredLightingScene/QuadVertexShader.glsl";
+
+	debugFragmentShaderPath = "Shaders/DeferredLightingScene/DebugFragmentShader.glsl";
+	debugVertexShaderPath = "Shaders/DeferredLightingScene/DebugVertexShader.glsl";
 
 	DrawMode = 0;
 }
@@ -23,7 +27,10 @@ bool DeferredLightingGame::Init()
 		shader = std::make_shared<Shader>(vertexShaderPath.c_str(), fragmentShaderPath.c_str());
 
 		//Create Shader to draw on the screen quad
-		quadShader = std::make_shared<Shader>(quadVertexShaderPath.c_str(), quadFragmentShaderPath.c_str());
+		debugQuadShader = std::make_shared<Shader>(debugVertexShaderPath.c_str(), debugFragmentShaderPath.c_str());
+
+		//Create Shader to Draw Quad with deferred lighting calculations on Screen
+		DLQuadShader = std::make_shared<Shader>(quadVertexShaderPath.c_str(), quadFragmentShaderPath.c_str());
 
 		//Change camera initial location
 		camera->SetCameraLocation(glm::vec3(0.0f, 5.0f, 15.0f));
@@ -131,6 +138,25 @@ bool DeferredLightingGame::Init()
 		//Unbind the PPVAO
 		glBindVertexArray(0);
 
+		//Generate random variables for point light positions and colors
+		NR_LIGHTS = 32;
+		std::mt19937 rng(glfwGetTime());
+		std::uniform_real_distribution<float> posDist(-3.0f, 3.0f);
+		std::uniform_real_distribution<float> colorDist(0.05f, 0.25f);
+		for (unsigned int i = 0; i < NR_LIGHTS; i++)
+		{
+			// calculate slightly random offsets
+			float xPos = posDist(rng);
+			float yPos = posDist(rng);
+			float zPos = posDist(rng);
+			pointLightPositions.push_back(glm::vec3(xPos, yPos, zPos));
+			// also calculate random color
+			float rColor = colorDist(rng);
+			float gColor = colorDist(rng);
+			float bColor = colorDist(rng);
+			pointLightColors.push_back(glm::vec3(rColor, gColor, bColor));
+		}
+
 		return true;
 	}
 	catch (std::exception e)
@@ -173,10 +199,13 @@ void DeferredLightingGame::DrawFrame()
 	glClearColor(0.03f, 0.03f, 0.03f, 0.0f);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//Disable Depth test
-	//glDisable(GL_DEPTH_TEST);
-	//Draw render quad taking the screen
-	DrawRenderQuad();
+	glDisable(GL_DEPTH_TEST);
 
+	//Draw Deferred Lighting Quad
+	DrawDeferredLightingQuad();
+
+	////Draw Debug render quad
+	//DrawDebugRenderQuad();
 }
 
 void DeferredLightingGame::DrawMainScene()
@@ -221,15 +250,15 @@ void DeferredLightingGame::DrawMainScene()
 	}
 }
 
-void DeferredLightingGame::DrawRenderQuad()
+void DeferredLightingGame::DrawDeferredLightingQuad()
 {
 	//Check if QuadShader is valid
-	if (quadShader)
+	if (DLQuadShader)
 	{
 		//Bind the VAO holding the quad info
 		glBindVertexArray(quadVAO);
 		//Use the QuadShader Program to draw the desired color texture on the quad
-		quadShader->Use();
+		DLQuadShader->Use();
 		//Attach geometry layer buffers to different textures
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, positionBuffer);
@@ -237,11 +266,54 @@ void DeferredLightingGame::DrawRenderQuad()
 		glBindTexture(GL_TEXTURE_2D, normalBuffer);
 		glActiveTexture(GL_TEXTURE2);
 		glBindTexture(GL_TEXTURE_2D, albedoSpecBuffer);
-		quadShader->SetInt("positionBuffer", 0);
-		quadShader->SetInt("normalBuffer", 1);
-		quadShader->SetInt("albedoSpecBuffer", 2);
+		DLQuadShader->SetInt("positionBuffer", 0);
+		DLQuadShader->SetInt("normalBuffer", 1);
+		DLQuadShader->SetInt("albedoSpecBuffer", 2);
+
+		//Set the Camera position uniform
+		DLQuadShader->SetVec3("cameraPos", camera->GetCameraLocation());
+
+		//Set point Light properties uniform in Shader
+		for (int i = 0; i < NR_LIGHTS; i++)
+		{
+			DLQuadShader->SetVec3("pointLights[" + std::to_string(i) + "].position", pointLightPositions[i]);
+			DLQuadShader->SetVec3("pointLights[" + std::to_string(i) + "].color", pointLightColors[i]);
+			DLQuadShader->SetFloat("pointLights[" + std::to_string(i) + "].constant", 1.0f);
+			DLQuadShader->SetFloat("pointLights[" + std::to_string(i) + "].linear", 0.7f);
+			DLQuadShader->SetFloat("pointLights[" + std::to_string(i) + "].quadratic", 1.8f);
+		}
+
+		//Draw the quad using Shaders
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0);
+
+		//Unbind the texture and the VAO
+		glActiveTexture(0);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glBindVertexArray(0);
+	}
+}
+
+void DeferredLightingGame::DrawDebugRenderQuad()
+{
+	//Check if QuadShader is valid
+	if (debugQuadShader)
+	{
+		//Bind the VAO holding the quad info
+		glBindVertexArray(quadVAO);
+		//Use the QuadShader Program to draw the desired color texture on the quad
+		debugQuadShader->Use();
+		//Attach geometry layer buffers to different textures
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, positionBuffer);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, normalBuffer);
+		glActiveTexture(GL_TEXTURE2);
+		glBindTexture(GL_TEXTURE_2D, albedoSpecBuffer);
+		debugQuadShader->SetInt("positionBuffer", 0);
+		debugQuadShader->SetInt("normalBuffer", 1);
+		debugQuadShader->SetInt("albedoSpecBuffer", 2);
 		//Set the current buffer to be drawn
-		quadShader->SetInt("DrawMode", DrawMode);
+		debugQuadShader->SetInt("DrawMode", DrawMode);
 
 		//Draw the quad using Shaders
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0);
