@@ -167,6 +167,7 @@
     <ClCompile Include="Src\Private\GameModules\AdvLightGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\AsteroidsGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\BlendingScene.cpp" />
+    <ClCompile Include="Src\Private\GameModules\BloomGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\CubemapGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\CubesGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\DepthTestGame.cpp" />
@@ -217,6 +218,7 @@
     <ClInclude Include="Src\Public\GameModules\AdvLightGame.h" />
     <ClInclude Include="Src\Public\GameModules\AsteroidsGame.h" />
     <ClInclude Include="Src\Public\GameModules\BlendingScene.h" />
+    <ClInclude Include="Src\Public\GameModules\BloomGame.h" />
     <ClInclude Include="Src\Public\GameModules\CubemapGame.h" />
     <ClInclude Include="Src\Public\GameModules\CubesGame.h" />
     <ClInclude Include="Src\Public\GameModules\DepthTestGame.h" />
