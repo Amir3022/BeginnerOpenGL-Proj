@@ -141,8 +141,8 @@ bool DeferredLightingGame::Init()
 		//Generate random variables for point light positions and colors
 		NR_LIGHTS = 32;
 		std::mt19937 rng(glfwGetTime());
-		std::uniform_real_distribution<float> posDist(-3.0f, 3.0f);
-		std::uniform_real_distribution<float> colorDist(0.05f, 0.25f);
+		std::uniform_real_distribution<float> posDist(-5.0f, 5.0f);
+		std::uniform_real_distribution<float> colorDist(0.5f, 1.0f);
 		for (unsigned int i = 0; i < NR_LIGHTS; i++)
 		{
 			// calculate slightly random offsets
