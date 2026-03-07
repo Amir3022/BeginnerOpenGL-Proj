@@ -18,6 +18,7 @@ public:
 protected:
 	void DrawMainScene();
 	void DrawPPScene();
+	void ApplyGaussianBlur();
 	virtual void ProcessInput(GLFWwindow* window) override;
 
 private:
@@ -31,6 +32,13 @@ private:
 	std::shared_ptr<Shader> ppShader;
 	std::string ppVertexShaderPath;
 	std::string ppFragmentShaderPath;
+	unsigned int swapFBOs[2];
+	unsigned int swapColorBuffers[2];
+	std::shared_ptr<Shader> blurShader;
+	std::string blurVertexShaderPath;
+	std::string blurFragmentShaderPath;
+	bool bUseHorizontalGaussianPass;
+	bool bUseBloom;
 
 	//Framebuffer Quad variables
 	unsigned int ppVAO;
@@ -39,6 +47,7 @@ private:
 
 	//Input variables
 	bool bHDRTogglePressed;
+	bool bBloomTogglePressed;
 
 	//Light Variables
 	std::vector<glm::vec3> pointLightsPos;

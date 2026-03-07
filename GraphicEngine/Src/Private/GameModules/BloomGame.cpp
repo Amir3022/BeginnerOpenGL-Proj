@@ -10,13 +10,20 @@ BloomGame::BloomGame(int in_width, int in_height)
 	ppVertexShaderPath = "Shaders/BloomScene/ppVertexShader.glsl";
 	ppFragmentShaderPath = "Shaders/BloomScene/ppFragmentShader.glsl";
 
+	blurVertexShaderPath = "Shaders/BloomScene/BlurVertexShader.glsl";
+	blurFragmentShaderPath = "Shaders/BloomScene/BlurFragmentShader.glsl";
+
 	lightFragmentShaderPath = "Shaders/BloomScene/LightFragmentShader.glsl";
 	lightVertexShaderPath = "Shaders/BloomScene/LightVertexShader.glsl";
 
 	bUseHDR = false;
 	exposureValue = 1.0f;
+	bUseBloom = false;
 
 	bHDRTogglePressed = false;
+	bBloomTogglePressed = false;
+
+	bUseHorizontalGaussianPass = true;
 
 	//Initialize Light Variables
 	pointLightsPos =
@@ -48,6 +55,9 @@ bool BloomGame::Init()
 
 		//Create Light Shader to render point lights
 		lightShader = std::make_shared<Shader>(lightVertexShaderPath.c_str(), lightFragmentShaderPath.c_str());
+
+		//Create Blur Shader for the swapping framebuffers used for Gaussian Blur
+		blurShader = std::make_shared<Shader>(blurVertexShaderPath.c_str(), blurFragmentShaderPath.c_str());
 
 		//Change Camera transform
 		camera->SetCameraLocation(camera->GetCameraLocation() + glm::vec3(0.0f, 0.0f, 5.0f));
@@ -232,6 +242,38 @@ bool BloomGame::Init()
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glBindRenderbuffer(GL_RENDERBUFFER, 0);
 
+		//Generate Swap Buffers to use for vertial and horizontal gaussian blur
+		glGenFramebuffers(2, swapFBOs);
+		//Generate Texture to be Used as Color Buffer for bound Framebuffer
+		glGenTextures(2, swapColorBuffers);
+		for (int i = 0; i < 2; i++)
+		{
+			glBindFramebuffer(GL_FRAMEBUFFER, swapFBOs[i]);
+		
+			//Bind the appropriate color buffer to the bound framebuffer
+			glBindTexture(GL_TEXTURE_2D, swapColorBuffers[i]);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA16F, GetWidth(), GetHeight(), 0, GL_RGBA, GL_FLOAT, nullptr);
+
+			//Set Bound textures parameteres
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+			//Bind the texture to the framebuffer to be used as color attachment
+			glFramebufferTexture(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 , swapColorBuffers[i], 0);
+
+			//Check if the Framebuffer is properly attached
+			if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+			{
+				std::cout << "Failed to create Swap Framebuffers" << std::endl;
+				return false;
+			}
+			//Unbind framebuffer
+			glBindFramebuffer(GL_FRAMEBUFFER, 0);
+			glBindTexture(GL_TEXTURE_2D, 0);
+		}
+
 		//Create VAO for the Post Process quad having only a single quad taking the whole screen real state
 		glGenVertexArrays(1, &ppVAO);
 		glBindVertexArray(ppVAO);
@@ -301,6 +343,9 @@ void BloomGame::DrawFrame()
 	//Draw the main scene to the color and brightness buffers
 	DrawMainScene();
 
+	//Apply Gaussian Blur on the Brightness color buffer to create light leak effect
+	ApplyGaussianBlur();
+
 	//Bind the main framebuffer
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	//Enable Depth Testing, and clear color and depth buffers
@@ -334,7 +379,7 @@ void BloomGame::DrawMainScene()
 		{
 			shader->SetVec3("pointLights[" + std::to_string(i) + "].sourcePos", pointLightsPos[i]);
 			shader->SetVec3("pointLights[" + std::to_string(i) + "].light.ambient", 0.2f * glm::normalize(pointLightsColor[i]));
-			shader->SetVec3("pointLights[" + std::to_string(i) + "].light.diffuse", 0.75f * pointLightsColor[i]);
+			shader->SetVec3("pointLights[" + std::to_string(i) + "].light.diffuse", 1.0f * pointLightsColor[i]);
 			shader->SetVec3("pointLights[" + std::to_string(i) + "].light.specular", 1.0f * pointLightsColor[i]);
 			shader->SetFloat("pointLights[" + std::to_string(i) + "].constant", 1.0f);	//Attenuation constants for a light source that covers and outer radius on 50 units
 			shader->SetFloat("pointLights[" + std::to_string(i) + "].linear", 0.09f);
@@ -435,14 +480,56 @@ void BloomGame::DrawPPScene()
 		//Activate a texture unit and bind the color texture to it
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, colorBuffers[0]);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, swapColorBuffers[bUseHorizontalGaussianPass ? 0 : 1]);
 		ppShader->SetInt("colorTexture", 0);
+		ppShader->SetInt("brightnessTexture", 1);
 		ppShader->SetBool("UseHDR", bUseHDR);
+		ppShader->SetBool("UseBloom", bUseBloom);
 		ppShader->SetFloat("exposure", exposureValue);
 		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0);
 		//Unbind the texture and the VAO
 		glActiveTexture(0);
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glBindVertexArray(0);
+	}
+}
+
+void BloomGame::ApplyGaussianBlur()
+{
+	bool bFirstRun = true;
+	//Apply 10 Gaussian passes to get a good blur result
+	for (int i = 0; i < 50; i++)
+	{
+		//Bind either the Horizontal or vertical Color buffer depending on which is the pass turn
+		glBindFramebuffer(GL_FRAMEBUFFER, swapFBOs[bUseHorizontalGaussianPass ? 0 : 1]);
+		//Enable Depth Testing, and clear color and depth buffers
+		glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT);
+		//Draw the color Texture on the PP Quad
+		glEnable(GL_DEPTH_TEST);
+		//Use the BlurShader
+		blurShader->Use();
+
+		//Draw the quad from it's vertices, and use the color texture from our framebuffer as a texture sampled in the fragment shader
+		glBindVertexArray(ppVAO);
+		blurShader->Use();
+		//Activate a texture unit and bind the color texture to it
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, bFirstRun ? colorBuffers[1] : (swapColorBuffers[bUseHorizontalGaussianPass ? 1 : 0]));
+		blurShader->SetInt("colorTexture", 0);
+		blurShader->SetBool("Horizontal", bUseHorizontalGaussianPass);
+		glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, (void*)0);
+		//Unbind the texture and the VAO
+		glActiveTexture(0);
+		glBindTexture(GL_TEXTURE_2D, 0);
+		glBindVertexArray(0);
+
+		//Set the Averaging axis for the next pass
+		bUseHorizontalGaussianPass = !bUseHorizontalGaussianPass;
+
+		//Mark first run is over
+		bFirstRun = false;
 	}
 }
 
@@ -472,5 +559,18 @@ void BloomGame::ProcessInput(GLFWwindow* window)
 	else
 	{
 		bHDRTogglePressed = false;
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_Z) == GLFW_PRESS)
+	{
+		if (!bBloomTogglePressed)
+		{
+			bBloomTogglePressed = true;
+			bUseBloom = !bUseBloom;
+		}
+	}
+	else
+	{
+		bBloomTogglePressed = false;
 	}
 }
