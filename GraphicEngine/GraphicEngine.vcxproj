@@ -170,6 +170,7 @@
     <ClCompile Include="Src\Private\GameModules\BloomGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\CubemapGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\CubesGame.cpp" />
+    <ClCompile Include="Src\Private\GameModules\DeferredLightingGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\DepthTestGame.cpp" />
     <ClCompile Include="Src\Private\GameModules\Game.cpp" />
     <ClCompile Include="Src\Private\GameModules\GLSLGame.cpp" />
@@ -221,6 +222,7 @@
     <ClInclude Include="Src\Public\GameModules\BloomGame.h" />
     <ClInclude Include="Src\Public\GameModules\CubemapGame.h" />
     <ClInclude Include="Src\Public\GameModules\CubesGame.h" />
+    <ClInclude Include="Src\Public\GameModules\DeferredLightingGame.h" />
     <ClInclude Include="Src\Public\GameModules\DepthTestGame.h" />
     <ClInclude Include="Src\Public\GameModules\Game.h" />
     <ClInclude Include="Src\Public\Components\Shader.h" />
