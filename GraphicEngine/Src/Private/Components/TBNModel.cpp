@@ -32,9 +32,9 @@ void TBNModel::ProcessNode(aiNode* node, const aiScene* scene)
 	if (node && scene)
 	{
 		//Iterate through all node meshes, process them and add to Meshes vector
-		for (int i = 0; i < (int)scene->mNumMeshes; i++)
+		for (int i = 0; i < (int)node->mNumMeshes; i++)
 		{
-			aiMesh* mesh = scene->mMeshes[i];
+			aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
 			meshes.push_back(ProcessMesh(mesh, scene));
 		}
 		//Iterate through all child nodes, and process them

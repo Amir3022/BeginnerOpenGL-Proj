@@ -46,17 +46,17 @@ bool DeferredLightingGame::Init()
 		model = std::make_shared<TBNModel>("Assets/Meshes/backpack/backpack.obj");
 		modelPositions = 
 		{
-			glm::vec3(-5.0f, 0.0f, -5.0f),
-			glm::vec3(0.0f, 0.0f, -5.0f),
-			glm::vec3(5.0f, 0.0f, -5.0f),
+			glm::vec3(-8.0f, 0.0f, -8.0f),
+			glm::vec3(0.0f, 0.0f, -8.0f),
+			glm::vec3(8.0f, 0.0f, -8.0f),
 
-			glm::vec3(-5.0f, 0.0f, 0.0f),
+			glm::vec3(-8.0f, 0.0f, 0.0f),
 			glm::vec3(0.0f, 0.0f, 0.0f),
-			glm::vec3(5.0f, 0.0f, 0.0f),
+			glm::vec3(8.0f, 0.0f, 0.0f),
 
-			glm::vec3(-5.0f, 0.0f, 5.0f),
-			glm::vec3(0.0f, 0.0f, 5.0f),
-			glm::vec3(5.0f, 0.0f, 5.0f),
+			glm::vec3(-8.0f, 0.0f, 8.0f),
+			glm::vec3(0.0f, 0.0f, 8.0f),
+			glm::vec3(8.0f, 0.0f, 8.0f),
 		};
 
 		//Generate GBuffer Framebuffer and attach to it 3 color attachments for position, normal, albedoSpecular buffers
@@ -147,7 +147,7 @@ bool DeferredLightingGame::Init()
 		//Generate random variables for point light positions and colors
 		NR_LIGHTS = 32;
 		std::mt19937 rng(glfwGetTime());
-		std::uniform_real_distribution<float> posDist(-5.0f, 5.0f);
+		std::uniform_real_distribution<float> posDist(-8.0f, 8.0f);
 		std::uniform_real_distribution<float> colorDist(0.5f, 1.0f);
 		for (unsigned int i = 0; i < NR_LIGHTS; i++)
 		{
