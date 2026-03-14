@@ -1,6 +1,7 @@
 #pragma once
 #include "Game.h"
 #include "Components/TBNModel.h"
+#include "Components/Mesh.h"
 
 class DeferredLightingGame : public Game
 {
@@ -23,6 +24,8 @@ protected:
 	void DrawDebugRenderQuad();
 
 	void DrawDeferredLightingQuad();
+
+	void DrawPointLights();
 
 private:
 	//Model Variables
@@ -48,6 +51,10 @@ private:
 	unsigned int NR_LIGHTS;
 	std::vector<glm::vec3> pointLightPositions;
 	std::vector<glm::vec3> pointLightColors;
+	std::shared_ptr<Mesh> pointLightCubeMesh;
+	std::shared_ptr<Shader> lightShader;
+	std::string lightVertexShaderPath;
+	std::string lightFragmentShaderPath;
 
 	//Input Variables
 	int DrawMode;

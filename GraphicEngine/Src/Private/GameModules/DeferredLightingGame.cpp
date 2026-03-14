@@ -13,6 +13,9 @@ DeferredLightingGame::DeferredLightingGame(int in_width, int in_height)
 	debugFragmentShaderPath = "Shaders/DeferredLightingScene/DebugFragmentShader.glsl";
 	debugVertexShaderPath = "Shaders/DeferredLightingScene/DebugVertexShader.glsl";
 
+	lightVertexShaderPath = "Shaders/DeferredLightingScene/LightVertexShader.glsl";
+	lightFragmentShaderPath = "Shaders/DeferredLightingScene/LightFragmentShader.glsl";
+
 	DrawMode = 0;
 }
 
@@ -31,6 +34,9 @@ bool DeferredLightingGame::Init()
 
 		//Create Shader to Draw Quad with deferred lighting calculations on Screen
 		DLQuadShader = std::make_shared<Shader>(quadVertexShaderPath.c_str(), quadFragmentShaderPath.c_str());
+
+		//Create light Shader to render point light representations
+		lightShader = std::make_shared<Shader>(lightVertexShaderPath.c_str(), lightFragmentShaderPath.c_str());
 
 		//Change camera initial location
 		camera->SetCameraLocation(glm::vec3(0.0f, 5.0f, 15.0f));
@@ -157,6 +163,65 @@ bool DeferredLightingGame::Init()
 			pointLightColors.push_back(glm::vec3(rColor, gColor, bColor));
 		}
 
+		//Create the Point Light Cube Mesh representation for the point lights rendering
+		std::vector<Vertex> vertices =
+		{
+			{glm::vec3(-1.0f, -1.0f, 1.0f),  glm::vec3(0.0f,  0.0f,  1.0f), glm::vec2(0.0f, 0.0f)},		//0		//0
+			{glm::vec3(-1.0f, -1.0f, 1.0f),  glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec2(1.0f, 0.0f)},	//1
+			{glm::vec3(-1.0f, -1.0f, 1.0f),  glm::vec3(0.0f, -1.0f,  0.0f), glm::vec2(0.0f, 1.0f)},		//2
+
+			{glm::vec3(1.0f, -1.0f, 1.0f),  glm::vec3(0.0f,  0.0f,  1.0f), glm::vec2(1.0f, 0.0f)},		//3		//1
+			{glm::vec3(1.0f, -1.0f, 1.0f),  glm::vec3(1.0f,  0.0f,  0.0f), glm::vec2(0.0f, 0.0f)},		//4
+			{glm::vec3(1.0f, -1.0f, 1.0f),  glm::vec3(0.0f, -1.0f,  0.0f), glm::vec2(1.0f, 1.0f)},		//5
+
+			{glm::vec3(-1.0f,  1.0f, 1.0f),  glm::vec3(0.0f,  0.0f,  1.0f), glm::vec2(0.0f, 1.0f)},		//6		//2
+			{glm::vec3(-1.0f,  1.0f, 1.0f),  glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec2(1.0f, 1.0f)},	//7
+			{glm::vec3(-1.0f,  1.0f, 1.0f),  glm::vec3(0.0f,  1.0f,  0.0f), glm::vec2(0.0f, 0.0f)},		//8
+
+			{glm::vec3(1.0f,  1.0f, 1.0f),  glm::vec3(0.0f,  0.0f,  1.0f), glm::vec2(1.0f, 1.0f)},		//9		//3
+			{glm::vec3(1.0f,  1.0f, 1.0f),  glm::vec3(1.0f,  0.0f,  0.0f), glm::vec2(0.0f, 1.0f)},		//10
+			{glm::vec3(1.0f,  1.0f, 1.0f),  glm::vec3(0.0f,  1.0f,  0.0f), glm::vec2(1.0f, 0.0f)},		//11
+
+			{glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec2(0.0f, 0.0f)},		//12	//4
+			{glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec2(0.0f, 0.0f)},	//13
+			{glm::vec3(-1.0f, -1.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec2(0.0f, 0.0f)},		//14
+
+			{glm::vec3(1.0f, -1.0f, -1.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec2(1.0f, 0.0f)},		//15	//5
+			{glm::vec3(1.0f, -1.0f, -1.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec2(1.0f, 0.0f)},		//16
+			{glm::vec3(1.0f, -1.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f), glm::vec2(1.0f, 0.0f)},		//17
+
+			{glm::vec3(-1.0f,  1.0f, -1.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec2(0.0f, 1.0f)},		//18	//6
+			{glm::vec3(-1.0f,  1.0f, -1.0f), glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec2(0.0f, 1.0f)},	//19
+			{glm::vec3(-1.0f,  1.0f, -1.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec2(0.0f, 1.0f)},		//20
+
+			{glm::vec3(1.0f,  1.0f, -1.0f), glm::vec3(0.0f,  0.0f, -1.0f), glm::vec2(1.0f, 1.0f)},		//21	//7
+			{glm::vec3(1.0f,  1.0f, -1.0f), glm::vec3(1.0f,  0.0f,  0.0f), glm::vec2(1.0f, 1.0f)},		//22
+			{glm::vec3(1.0f,  1.0f, -1.0f), glm::vec3(0.0f,  1.0f,  0.0f), glm::vec2(1.0f, 1.0f)},		//23
+		};
+
+		std::vector<unsigned int> indices =
+		{
+			0, 3, 6,
+			6, 3, 9,
+
+			12, 18, 21,
+			12, 21, 15,
+
+			1, 7, 13,
+			7, 19, 13,
+
+			4, 16, 10,
+			10, 16, 22,
+
+			2, 14, 5,
+			14, 17, 5,
+
+			8, 11, 20,
+			20, 11, 23
+		};
+
+		pointLightCubeMesh = std::make_shared<Mesh>(vertices, indices, std::vector<Texture>{});
+
 		return true;
 	}
 	catch (std::exception e)
@@ -206,6 +271,9 @@ void DeferredLightingGame::DrawFrame()
 
 	////Draw Debug render quad
 	//DrawDebugRenderQuad();
+
+	//Draw the Point Light Representations using forward rendering
+	DrawPointLights();
 }
 
 void DeferredLightingGame::DrawMainScene()
@@ -290,6 +358,49 @@ void DeferredLightingGame::DrawDeferredLightingQuad()
 		glActiveTexture(0);
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glBindVertexArray(0);
+	}
+}
+
+void DeferredLightingGame::DrawPointLights()
+{
+	if (lightShader && (int)pointLightPositions.size() == NR_LIGHTS)
+	{
+		//Copy the Content of the gBuffer depth buffer to the default framebuffer depth buffer to allow for depth test for the rendered light cubes
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, gBuffer);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+		glBlitFramebuffer(0, 0, GetWidth(), GetHeight(), 0, 0, GetWidth(), GetHeight(), GL_DEPTH_BUFFER_BIT, GL_NEAREST);
+		//Bind the Main default framebuffer to be used for output
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+		//Enable Depth Test
+		glEnable(GL_DEPTH_TEST);
+
+		//Use the Light Shader
+		lightShader->Use();
+		//Create the view matrix using camera lookAt target point
+		glm::mat4 view = camera->GetLookAtMat(camera->GetCameraLocation() + camera->GetCameraForwardDir());
+		//Create the projection matrix to project the view space to NDC
+		glm::mat4 projection = glm::perspective(glm::radians(camera->GetCameraFOV()), (float)GetWidth() / (float)GetHeight(), 0.1f, 100.0f);
+
+		//Set the View and projection matrices on all to be drawn models
+		lightShader->SetMat44("view", view);
+		lightShader->SetMat44("projection", projection);
+		//Iterate over all point light positions and render them with the correct color
+		for (int i = 0; i < NR_LIGHTS; i++)
+		{
+			glm::vec3 pointLightPos = pointLightPositions[i];
+			glm::vec3 pointLightColor = pointLightColors[i];
+			//Create the model matrix to transform the mesh in world space
+			glm::mat4 modelMat = glm::identity<glm::mat4>();
+			modelMat = glm::translate(modelMat, pointLightPos);
+			modelMat = glm::scale(modelMat, glm::vec3(0.1f));
+			//Set the model and normal Model Matrix in the shader
+			lightShader->SetMat44("model", modelMat);
+			//Set the Point Light color
+			lightShader->SetVec3("lightColor", pointLightColor);
+
+			//Draw Point Light Cube Mesh Instance
+			pointLightCubeMesh->Draw(lightShader);
+		}
 	}
 }
 
